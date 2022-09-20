@@ -1,0 +1,80 @@
+include ~/toolsets/gcc/gcc-app.hsl
+include ~/toolsets/gcc/gcc-lib.hsl
+include ~/toolsets/clang/clang-app.hsl
+include ~/toolsets/clang/clang-lib.hsl
+include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
+
+function has_gcc() : result type int {
+    result (hefesto.sys.run("gcc --version >/dev/null 2>&1") == 0);
+}
+
+function has_clang() : result type int {
+    result (hefesto.sys.run("clang --version >/dev/null 2>&1") == 0);
+}
+
+function get_app_toolset() : result type string {
+    result get_toolset() + "app";
+}
+
+function get_lib_toolset() : result type string {
+    result get_toolset() + "lib";
+}
+
+function get_toolset() : result type string {
+    var option type list;
+    $option = hefesto.sys.get_option("toolset");
+    if ($option.count() > 0) {
+        result $option.item(0);
+    }
+    if (has_gcc()) {
+        result "gcc-c-";
+    }
+    if (has_clang()) {
+        result "clang-c-";
+    }
+    result "";
+}
+
+function get_codes(dirlist type list, deps type string) : result type list {
+    var oldcwd type string;
+    var codes type list;
+
+    $oldcwd = hefesto.sys.pwd();
+
+    hefesto.sys.setenv("GET_C_CPP_DEPS_SRC_ROOT", $oldcwd);
+
+    var d type int;
+
+    $d = 0;
+
+    while ($d < $dirlist.count()) {
+        var dirpath type string;
+        $dirpath = $dirlist.item($d);
+
+        if (hefesto.sys.cd($dirpath)) {
+            $deps = $deps + get_c_cpp_deps();
+            $codes.ls(".*\\.c$");
+            hefesto.sys.cd($oldcwd);
+        } else {
+            hefesto.sys.echo("WARN: Unable to access the path \'" + $dirpath + "'. Just skipping it.\n");
+        }
+
+        $d = $d + 1;
+    }
+
+    hefesto.sys.cd($oldcwd);
+
+    hefesto.sys.byref($deps);
+
+    result $codes;
+}
+
+function build(dep type string) : result type int {
+    var build_task type int;
+    $build_task = hefesto.sys.get_func_addr($dep);
+    if ($build_task == 0) {
+        hefesto.sys.echo("ERROR: Unable to find build task for " + $dep + ".\n");
+        result 1;
+    }
+    result hefesto.sys.call_func_addr($build_task);
+}

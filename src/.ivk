@@ -1,0 +1,2 @@
+--forgefiles=Forgefile.hsl --Forgefile-projects=macgonuts-static-lib --bin-output-dir=../lib --obj-output-dir=.o --includes=.
+
