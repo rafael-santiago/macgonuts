@@ -3,6 +3,27 @@ include ~/toolsets/gcc/gcc-lib.hsl
 include ~/toolsets/clang/clang-app.hsl
 include ~/toolsets/clang/clang-lib.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
+include ~/fsutil.hsl
+
+function runtests(binary type string, args type string) : result type none {
+    if (hefesto.sys.run($binary + " " + $args) != 0) {
+        hefesto.project.abort(1);
+    }
+}
+
+function set_rootdir(change_to type string) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if ($change_to.len() > 0) {
+        hefesto.sys.cd($change_to);
+    }
+    hefesto.sys.setenv("MACGONUTS_ROOT_DIR", hefesto.sys.pwd());
+    hefesto.sys.cd($oldcwd);
+}
+
+function get_rootdir() : result type string {
+    result hefesto.sys.env("MACGONUTS_ROOT_DIR");
+}
 
 function has_gcc() : result type int {
     result (hefesto.sys.run("gcc --version >/dev/null 2>&1") == 0);
@@ -13,11 +34,11 @@ function has_clang() : result type int {
 }
 
 function get_app_toolset() : result type string {
-    result get_toolset() + "app";
+    result get_toolset() + "-c-app";
 }
 
 function get_lib_toolset() : result type string {
-    result get_toolset() + "lib";
+    result get_toolset() + "-c-lib";
 }
 
 function get_toolset() : result type string {
@@ -27,10 +48,10 @@ function get_toolset() : result type string {
         result $option.item(0);
     }
     if (has_gcc()) {
-        result "gcc-c-";
+        result "gcc";
     }
     if (has_clang()) {
-        result "clang-c-";
+        result "clang";
     }
     result "";
 }
@@ -71,10 +92,41 @@ function get_codes(dirlist type list, deps type string) : result type list {
 
 function build(dep type string) : result type int {
     var build_task type int;
-    $build_task = hefesto.sys.get_func_addr($dep);
+    $build_task = hefesto.sys.get_func_addr("build_" + $dep);
     if ($build_task == 0) {
         hefesto.sys.echo("ERROR: Unable to find build task for " + $dep + ".\n");
         result 1;
     }
     result hefesto.sys.call_func_addr($build_task);
+}
+
+local function build_cutest() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    var exit_code type int;
+    $exit_code = 1;
+    var cutest_src_dir type string;
+    $cutest_src_dir = hefesto.sys.make_path(get_rootdir(), "libs/cutest/src");
+    if (hefesto.sys.cd($cutest_src_dir)) {
+        if (isfile("lib/libcutest.a") == 0) {
+            $exit_code = hefesto.sys.run("hefesto --toolset=" + get_lib_toolset());
+        } else {
+            $exit_code = 0;
+        }
+    }
+    hefesto.sys.cd($oldcwd);
+    result $exit_code;
+}
+
+local function build_tests() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd("test") == 0) {
+        hefesto.sys.echo("ERROR: test directory not found.\n");
+        result 1;
+    }
+    var exit_code type int;
+    $exit_code = hefesto.sys.run("hefesto --toolset=" + get_toolset());
+    hefesto.sys.cd($oldcwd);
+    result $exit_code;
 }
