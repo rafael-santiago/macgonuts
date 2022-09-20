@@ -40,9 +40,9 @@ int macgonuts_getrandom_ether_addr(char *ether, const size_t max_ether_size) {
         return EXIT_FAILURE;
     }
     ep = ether;
-    for (oct_nr = 0; oct_nr < 6; oct_nr++) {
+    for (oct_nr = 0; oct_nr < 7; oct_nr++) {
         read(urandom, &u8, sizeof(u8));
-        snprintf(ep, ep - ether, "%.2X%c", u8, (oct_nr < 5) ? ':' : '\0');
+        snprintf(ep, max_ether_size - (ep - ether), "%.2X%c", u8, (oct_nr < 5) ? ':' : '\0');
         ep += 3;
     }
     close(urandom);

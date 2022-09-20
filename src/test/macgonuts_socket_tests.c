@@ -70,3 +70,7 @@ static void *ping_pkt(void *args) {
     system((*version == 4) ? "ping 8.8.8.8 -c 5" : (*version == 6) ? "ping6 8.8.8.8 -c 5" : "echo unknown ip version.");
     return NULL;
 }
+
+#if defined(DEFAULT_TEST_IFACE)
+# undef DEFAULT_TEST_IFACE
+#endif // defined(DEFAULT_TEST_IFACE)
