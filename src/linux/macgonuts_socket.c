@@ -12,14 +12,11 @@
 
 static int get_iface_index(const char *iface);
 
-macgonuts_socket_t macgonuts_create_socket(const char *iface, const int ip_version) {
+macgonuts_socket_t macgonuts_create_socket(const char *iface) {
     struct timeval tv = { 0 };
     int yes = 1;
     macgonuts_socket_t sockfd = -1;
     struct sockaddr_ll sll = { 0 };
-    if (ip_version != 4 && ip_version != 6) {
-        return -1;
-    }
     sockfd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sockfd == -1) {
         perror("socket()");

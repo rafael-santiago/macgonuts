@@ -3,7 +3,7 @@
 
 #include <macgonuts_types.h>
 
-macgonuts_socket_t macgonuts_create_socket(const char *iface, const int ip_version);
+macgonuts_socket_t macgonuts_create_socket(const char *iface);
 
 void macgonuts_release_socket(const macgonuts_socket_t sockfd);
 
