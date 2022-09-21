@@ -6,11 +6,11 @@ static int chk_ipv4_addr(const char *ip, const size_t ip_size);
 
 static int chk_ipv6_addr(const char *ip, const size_t ip_size);
 
-static int chk_ipvn_range(const size_t n, const char *ip, const size_t ip_size);
+static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size, const char *bits, const size_t bits_size);
 
-static int chk_ipv4_range(const char *ip, const size_t ip_size);
+static int chk_ipv4_cidr(const char *addr, const size_t addr_size, const char *bits, const size_t bits_size);
 
-static int chk_ipv6_range(const char *ip, const size_t ip_size);
+static int chk_ipv6_cidr(const char *addr, const size_t addr_size, const char *bits, const size_t bits_size);
 
 static int is_int(const char *buf, const size_t buf_size);
 
@@ -41,15 +41,27 @@ int macgonuts_check_ip_addr(const char *ip, const size_t ip_size) {
     return is_valid;
 }
 
-int macgonuts_check_ip_range(const char *ip, const size_t ip_size) {
+int macgonuts_check_ip_cidr(const char *ip, const size_t ip_size) {
+    char addr[128] = { 0 };
+    size_t addr_size = 0;
+    const char *ap = NULL;
     int is_valid = 0;
-    switch(macgonuts_get_ip_version(ip, ip_size)) {
+    if (ip == NULL || ip_size == 0) {
+        return 0;
+    }
+    ap = strstr(ip, "/");
+    if (ap == NULL) {
+        return 0;
+    }
+    memcpy(addr, ip, (ap - ip) % (sizeof(addr) - 1));
+    addr_size = strlen(addr);
+    switch(macgonuts_get_ip_version(addr, addr_size)) {
         case 4:
-            is_valid = chk_ipv4_range(ip, ip_size);
+            is_valid = chk_ipv4_cidr(addr, addr_size, ap + 1, strlen(ap + 1));
             break;
 
         case 6:
-            is_valid = chk_ipv6_range(ip, ip_size);
+            is_valid = chk_ipv6_cidr(addr, addr_size, ap + 1, strlen(ap + 1));
             break;
 
         default:
@@ -70,7 +82,7 @@ static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
     while (p < p_end) {
         if (*p == '.' || (p + 1) == p_end) {
             p += ((p + 1) == p_end);
-            dots_nr++;
+            dots_nr += (*p == '.');
             if (lp == p || (p - lp) > 3 || dots_nr > 3) {
                 return 0;
             }
@@ -99,12 +111,17 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     if (p == NULL) {
         return 0;
     }
+    if (ip_size < 3 || (p == ':' && p[1] != ':')) {
+        return 0;
+    }
     while (p < p_end) {
         if (*p == ':' || (p + 1) == p_end) {
             p += ((p + 1) == p_end);
             if ((p - lp) > sizeof(word)) {
                 return 0;
             }
+            p += (lp == p);
+            p += (isxdigit(*p) && (p + 1) < p_end && isxdigit(*(p + 1)));
             memset(word, 0, sizeof(word));
             memcpy(word, lp, p - lp);
             is_valid = 1;
@@ -130,37 +147,25 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     return 1;
 }
 
-static int chk_ipvn_range(const size_t n, const char *ip, const size_t ip_size) {
-    char addr[100] = { 0 };
-    char *ap = NULL;
-    int cidr_nr = 0;
+static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size, const char *bits, const size_t bits_size) {
+    int cidr_bits = 0;
     int (*chk_ipvn_addr)(const char *, const size_t) = (n == 4) ? chk_ipv4_addr : chk_ipv6_addr;
-    if (ip == NULL) {
+    if (chk_ipvn_addr(addr, addr_size) == 0) {
         return 0;
     }
-    memcpy(addr, ip, ip_size % sizeof(addr) - 1);
-    ap = strstr(addr, "/");
-    if (ap == NULL) {
+    if (!is_int(bits, bits_size)) {
         return 0;
     }
-    *ap = 0;
-    if (chk_ipvn_addr(addr, strlen(addr)) == 0) {
-        return 0;
-    }
-    ap += 2;
-    if (!is_int(ap, strlen(ap))) {
-        return 0;
-    }
-    cidr_nr = atoi(ap);
-    return (n == 4) ? (cidr_nr > 0 && cidr_nr < 32) : (cidr_nr > 0 && cidr_nr < 128);
+    cidr_bits = atoi(bits);
+    return (n == 4) ? (cidr_bits > 0 && cidr_bits < 31) : (cidr_bits > 0 && cidr_bits < 127);
 }
 
-static int chk_ipv4_range(const char *ip, const size_t ip_size) {
-    return chk_ipvn_range(4, ip, ip_size);
+static int chk_ipv4_cidr(const char *addr, const size_t addr_size, const char *bits, const size_t bits_size) {
+    return chk_ipvn_cidr(4, addr, addr_size, bits, bits_size);
 }
 
-static int chk_ipv6_range(const char *ip, const size_t ip_size) {
-    return chk_ipvn_range(6, ip, ip_size);
+static int chk_ipv6_cidr(const char *addr, const size_t addr_size, const char *bits, const size_t bits_size) {
+    return chk_ipvn_cidr(6, addr, addr_size, bits, bits_size);
 }
 
 static int is_int(const char *buf, const size_t buf_size) {
