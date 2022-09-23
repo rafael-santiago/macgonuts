@@ -25,20 +25,8 @@ int macgonuts_get_ip_version(const char *ip, const size_t ip_size) {
 }
 
 int macgonuts_check_ip_addr(const char *ip, const size_t ip_size) {
-    int is_valid = 0;
-    switch (macgonuts_get_ip_version(ip, ip_size)) {
-        case 4:
-            is_valid = chk_ipv4_addr(ip, ip_size);
-            break;
-
-        case 6:
-            is_valid = chk_ipv6_addr(ip, ip_size);
-            break;
-
-        default:
-            break;
-    }
-    return is_valid;
+    int version = macgonuts_get_ip_version(ip, ip_size);
+    return (version == 4 || version == 6);
 }
 
 int macgonuts_check_ip_cidr(const char *ip, const size_t ip_size) {
@@ -108,6 +96,7 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     long int u16_frac = 0;
     int is_valid = 0;
     int has_double_colon = 0;
+    int double_colon_nr = 0;
     if (p == NULL) {
         return 0;
     }
@@ -116,6 +105,7 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     }
     while (p < p_end) {
         if (*p == ':' || (p + 1) == p_end) {
+            double_colon_nr += (*p == ':');
             p += ((p + 1) == p_end);
             if ((p - lp) > sizeof(word)) {
                 return 0;
@@ -144,7 +134,7 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
         }
         p++;
     }
-    return 1;
+    return (double_colon_nr > 0);
 }
 
 static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size, const char *bits, const size_t bits_size) {
