@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2022, Rafael Santiago
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
@@ -100,7 +107,7 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     if (p == NULL) {
         return 0;
     }
-    if (ip_size < 3 || (p == ':' && p[1] != ':')) {
+    if (ip_size < 3 || (*p == ':' && p[1] != ':')) {
         return 0;
     }
     while (p < p_end) {
