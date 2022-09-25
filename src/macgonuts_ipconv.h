@@ -16,4 +16,5 @@ int macgonuts_check_ip_addr(const char *ip, const size_t ip_size);
 
 int macgonuts_check_ip_cidr(const char *ip, const size_t ip_size);
 
-#endif
+#endif // MACGONUTS_IPCONV_H
+

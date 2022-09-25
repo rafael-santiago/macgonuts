@@ -18,4 +18,5 @@ ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, cons
 
 ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size);
 
-#endif
+#endif // MACGONUTS_SOCKET_H
+

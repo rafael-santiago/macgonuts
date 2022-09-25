@@ -8,7 +8,15 @@
 #ifndef MACGONUTS_TYPES_H
 #define MACGONUTS_TYPES_H 1
 
+// INFO(Rafael): I have been included system and stdlib headers only here.
+//               So every macgonuts module that includes it will fully able
+//               to deal with anything inside the library/tool's scope.
+
 #include <stdlib.h>
+#include <stdint.h>
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
 
 #define MACGONUTS_VERSION "v1"
 
