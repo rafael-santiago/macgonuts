@@ -7,6 +7,10 @@
  */
 #include <macgonuts_arphdr.h>
 
+#define ARP_HDR_BASE_SIZE(ctx) (sizeof(ctx->htype) + sizeof(ctx->ptype) +\
+                                sizeof(ctx->hlen) + sizeof(ctx->plen) +\
+                                sizeof(ctx->oper))
+
 unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr, size_t *pkt_size) {
     unsigned char *pkt = NULL;
     unsigned char *p = NULL;
@@ -17,7 +21,7 @@ unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr,
         return NULL;
     }
 
-    *pkt_size = 10 + ((arphdr->hlen + arphdr->plen) << 1);
+    *pkt_size = ARP_HDR_BASE_SIZE(arphdr) + ((arphdr->hlen + arphdr->plen) << 1);
     pkt = (unsigned char *)malloc(*pkt_size);
     if (pkt == NULL) {
         perror("malloc()");
@@ -57,7 +61,7 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
 
     memset(arphdr, 0, sizeof(struct macgonuts_arphdr_ctx));
 
-    if (arpbuf_size < 8) {
+    if (arpbuf_size < ARP_HDR_BASE_SIZE(arphdr)) {
         err = EPROTO;
         goto macgonuts_read_arp_pkt_epilogue;
     }
@@ -68,7 +72,7 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
     arphdr->plen = arpbuf[5];
     arphdr->oper = (uint16_t)arpbuf[6] << 16 | (uint16_t)arpbuf[7];
 
-    if ((arpbuf_size - 8)  < ((arphdr->hlen + arphdr->plen) << 1)) {
+    if ((arpbuf_size - ARP_HDR_BASE_SIZE(arphdr))  < ((arphdr->hlen + arphdr->plen) << 1)) {
         err = EPROTO;
         goto macgonuts_read_arp_pkt_epilogue;
     }
