@@ -137,3 +137,5 @@ macgonuts_read_arp_pkt_epilogue:
 
     return err;
 }
+
+#undef ARP_HDR_BASE_SIZE
