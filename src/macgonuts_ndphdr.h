@@ -19,9 +19,6 @@ typedef enum macgonuts_ndp_message_type {
 }macgonuts_ndp_message_type_t;
 
 struct macgonuts_ndphdr_nsna_ctx {
-    uint8_t type;
-    uint8_t code;
-    uint16_t chsum;
     uint32_t reserv;
     uint32_t target_addr[4];
     uint8_t *options;
