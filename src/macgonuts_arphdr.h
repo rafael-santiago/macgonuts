@@ -57,5 +57,7 @@ unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr,
 
 int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned char *arpbuf, const size_t arpbuf_size);
 
+void macgonuts_release_arphdr(struct macgonuts_arphdr_ctx *arphdr);
+
 #endif // MACGONUTS_ARPHDR_H
 

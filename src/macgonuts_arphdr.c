@@ -29,13 +29,13 @@ unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr,
         return NULL;
     }
 
-    pkt[0] = arphdr->htype >> 16;
+    pkt[0] = arphdr->htype >> 8;
     pkt[1] = arphdr->htype & 0xFF;
-    pkt[2] = arphdr->ptype >> 16;
+    pkt[2] = arphdr->ptype >> 8;
     pkt[3] = arphdr->ptype & 0xFF;
     pkt[4] = arphdr->hlen;
     pkt[5] = arphdr->plen;
-    pkt[6] = arphdr->oper >> 16;
+    pkt[6] = arphdr->oper >> 8;
     pkt[7] = arphdr->oper & 0xFF;
 
     p = &pkt[8];
@@ -54,7 +54,7 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
     const unsigned char *ap = NULL, *ap_end = NULL;
     int err = EFAULT;
 
-    if (arphdr == NULL || arpbuf == NULL || arpbuf_size == 0) {
+    if (arphdr == NULL || arpbuf == NULL) {
         err = EINVAL;
         goto macgonuts_read_arp_pkt_epilogue;
     }
@@ -66,11 +66,11 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
         goto macgonuts_read_arp_pkt_epilogue;
     }
 
-    arphdr->htype = (uint16_t)arpbuf[0] << 16 | (uint16_t)arpbuf[1];
-    arphdr->ptype = (uint16_t)arpbuf[2] << 16 | (uint16_t)arpbuf[3];
+    arphdr->htype = (uint16_t)arpbuf[0] << 8 | (uint16_t)arpbuf[1];
+    arphdr->ptype = (uint16_t)arpbuf[2] << 8 | (uint16_t)arpbuf[3];
     arphdr->hlen = arpbuf[4];
     arphdr->plen = arpbuf[5];
-    arphdr->oper = (uint16_t)arpbuf[6] << 16 | (uint16_t)arpbuf[7];
+    arphdr->oper = (uint16_t)arpbuf[6] << 8 | (uint16_t)arpbuf[7];
 
     if ((arpbuf_size - ARP_HDR_BASE_SIZE(arphdr))  < ((arphdr->hlen + arphdr->plen) << 1)) {
         err = EPROTO;
@@ -116,26 +116,33 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
 
 macgonuts_read_arp_pkt_epilogue:
 
-    if (err != EXIT_SUCCESS) {
-        if (arphdr->sha != NULL) {
-            free(arphdr->sha);
-            arphdr->sha = NULL;
-        }
-        if (arphdr->spa != NULL) {
-            free(arphdr->spa);
-            arphdr->spa = NULL;
-        }
-        if (arphdr->tha != NULL) {
-            free(arphdr->tha);
-            arphdr->tha = NULL;
-        }
-        if (arphdr->tpa != NULL) {
-            free(arphdr->tpa);
-            arphdr->tpa = NULL;
-        }
+    if (arphdr != NULL && err != EXIT_SUCCESS) {
+        macgonuts_release_arphdr(arphdr);
     }
 
     return err;
+}
+
+void macgonuts_release_arphdr(struct macgonuts_arphdr_ctx *arphdr) {
+    if (arphdr == NULL) {
+        return;
+    }
+    if (arphdr->sha != NULL) {
+        free(arphdr->sha);
+        arphdr->sha = NULL;
+    }
+    if (arphdr->spa != NULL) {
+        free(arphdr->spa);
+        arphdr->spa = NULL;
+    }
+    if (arphdr->tha != NULL) {
+        free(arphdr->tha);
+        arphdr->tha = NULL;
+    }
+    if (arphdr->tpa != NULL) {
+        free(arphdr->tpa);
+        arphdr->tpa = NULL;
+    }
 }
 
 #undef ARP_HDR_BASE_SIZE
