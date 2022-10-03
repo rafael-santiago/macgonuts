@@ -26,4 +26,6 @@ unsigned char *macgonuts_make_ip6_pkt(const struct macgonuts_ip6hdr_ctx *ip6hdr,
 
 int macgonuts_read_ip6_pkt(struct macgonuts_ip6hdr_ctx *ip6hdr, const unsigned char *ip6buf, const size_t ip6buf_size);
 
+void macgonuts_release_ip6hdr(struct macgonuts_ip6hdr_ctx *ip6hdr);
+
 #endif // MACGONUTS_IP6HDR_H

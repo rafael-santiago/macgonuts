@@ -7,7 +7,7 @@
  */
 #include <macgonuts_ip6hdr.h>
 
-#define IP6_HDR_BASE_SIZE(ctx) ( (sizeof(ctx->version) >> 1) + (sizeof(ctx->priority) >> 1) +\
+#define IP6_HDR_BASE_SIZE(ctx) ( 1 /* INFO(Rafael): version and priority. */+\
                                  (sizeof(ctx->flow_label) - 1) + sizeof(ctx->payload_length) +\
                                  sizeof(ctx->next_header) + sizeof(ctx->hop_limit) +\
                                  sizeof(ctx->src_addr) + sizeof(ctx->dest_addr) )
@@ -65,7 +65,7 @@ int macgonuts_read_ip6_pkt(struct macgonuts_ip6hdr_ctx *ip6hdr, const unsigned c
     ip6hdr->next_header = bp[6];
     ip6hdr->hop_limit = bp[7];
     memcpy(&ip6hdr->src_addr[0], &bp[8], sizeof(ip6hdr->src_addr));
-    bp += sizeof(ip6hdr->src_addr);
+    bp += 8 + sizeof(ip6hdr->src_addr);
     memcpy(&ip6hdr->dest_addr[0], &bp[0], sizeof(ip6hdr->dest_addr));
     bp += sizeof(ip6hdr->dest_addr);
     if (ip6hdr->payload_length > 0) {
@@ -80,6 +80,17 @@ int macgonuts_read_ip6_pkt(struct macgonuts_ip6hdr_ctx *ip6hdr, const unsigned c
     }
 
     return EXIT_SUCCESS;
+}
+
+void macgonuts_release_ip6hdr(struct macgonuts_ip6hdr_ctx *ip6hdr) {
+    if (ip6hdr == NULL) {
+        return;
+    }
+    if (ip6hdr->payload != NULL) {
+        free(ip6hdr->payload);
+        ip6hdr->payload_length = 0;
+        ip6hdr->payload = NULL;
+    }
 }
 
 #undef IP6_HDR_BASE_SIZE
