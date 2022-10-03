@@ -15,20 +15,25 @@ int macgonuts_read_ethernet_frm(struct macgonuts_ethfrm_ctx *ethfrm, const unsig
     const unsigned char *fp = NULL;
     const unsigned char *fp_end = NULL;
 
-    if (ethfrm == NULL || frm == NULL || frm_size < ETH_FRAME_BASE_SIZE(ethfrm)) {
+    if (ethfrm == NULL || frm == NULL) {
+        fflush(stderr);
         return EINVAL;
+    }
+
+    if (frm_size < ETH_FRAME_BASE_SIZE(ethfrm)) {
+        return EPROTO;
     }
 
     fp = frm;
     fp_end = fp + frm_size;
 
-    memcpy(ethfrm->dest_hw_addr, fp, fp_end - fp);
+    memcpy(ethfrm->dest_hw_addr, fp, sizeof(ethfrm->dest_hw_addr));
     fp += sizeof(ethfrm->dest_hw_addr);
 
-    memcpy(ethfrm->src_hw_addr , fp, fp_end - fp);
+    memcpy(ethfrm->src_hw_addr , fp, sizeof(ethfrm->src_hw_addr));
     fp += sizeof(ethfrm->src_hw_addr);
 
-    ethfrm->ether_type = (uint16_t)fp[0] << 16 |
+    ethfrm->ether_type = (uint16_t)fp[0] << 8 |
                          (uint16_t)fp[1];
 
     fp += sizeof(ethfrm->ether_type);
@@ -39,7 +44,7 @@ int macgonuts_read_ethernet_frm(struct macgonuts_ethfrm_ctx *ethfrm, const unsig
     ethfrm->data_size = fp_end - fp;
     ethfrm->data = (uint8_t *)malloc(ethfrm->data_size);
     if (ethfrm->data == NULL) {
-        ethfrm->data_size = 0;
+        macgonuts_release_ethfrm(ethfrm);
         return ENOMEM;
     }
     memcpy(ethfrm->data, fp, fp_end - fp);
@@ -69,13 +74,24 @@ unsigned char *macgonuts_make_ethernet_frm(const struct macgonuts_ethfrm_ctx *et
     memcpy(fp, ethfrm->src_hw_addr, sizeof(ethfrm->src_hw_addr));
     fp += sizeof(ethfrm->src_hw_addr);
 
-    fp[0] = ethfrm->ether_type >> 16;
+    fp[0] = ethfrm->ether_type >> 8;
     fp[1] = ethfrm->ether_type & 0xFF;
     fp += sizeof(ethfrm->ether_type);
 
     memcpy(fp, ethfrm->data, ethfrm->data_size);
 
     return frm;
+}
+
+void macgonuts_release_ethfrm(struct macgonuts_ethfrm_ctx *ethfrm) {
+    if (ethfrm == NULL) {
+        return;
+    }
+    if (ethfrm->data != NULL) {
+        free(ethfrm->data);
+        ethfrm->data = NULL;
+        ethfrm->data_size = 0;
+    }
 }
 
 #undef ETH_FRAME_BASE_SIZE

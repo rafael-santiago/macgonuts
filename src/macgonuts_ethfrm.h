@@ -25,5 +25,6 @@ int macgonuts_read_ethernet_frm(struct macgonuts_ethfrm_ctx *ethfrm, const unsig
 
 unsigned char *macgonuts_make_ethernet_frm(const struct macgonuts_ethfrm_ctx *ethfrm, size_t *frm_size);
 
+void macgonuts_release_ethfrm(struct macgonuts_ethfrm_ctx *ethfrm);
 
 #endif // MACGONUTS_ETHFRM_H
