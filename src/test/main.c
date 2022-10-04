@@ -9,6 +9,7 @@
 #include "macgonuts_etherconv_tests.h"
 #include "macgonuts_socket_tests.h"
 #include "macgonuts_ipconv_tests.h"
+#include "macgonuts_ip6mcast_tests.h"
 #include "macgonuts_ethfrm_tests.h"
 #include "macgonuts_arphdr_tests.h"
 #include "macgonuts_ip6hdr_tests.h"
@@ -20,6 +21,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_check_ip_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_ip_version_tests);
     CUTE_RUN_TEST(macgonuts_check_ip_cidr_tests);
+    CUTE_RUN_TEST(macgonuts_get_multicast_addr_tests);
     CUTE_RUN_TEST(macgonuts_read_ethernet_frm_tests);
     CUTE_RUN_TEST(macgonuts_make_ethernet_frm_tests);
     CUTE_RUN_TEST(macgonuts_read_arp_pkt_tests);
