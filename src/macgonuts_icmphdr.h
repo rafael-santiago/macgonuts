@@ -22,4 +22,6 @@ unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmph
 
 int macgonuts_read_icmp_pkt(struct macgonuts_icmphdr_ctx *icmphdr, const unsigned char *icmpbuf, const size_t icmpbuf_size);
 
+void macgonuts_release_icmphdr(struct macgonuts_icmphdr_ctx *icmphdr);
+
 #endif // MACGONUTS_ICMPHDR_H

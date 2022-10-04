@@ -12,6 +12,7 @@
 #include "macgonuts_ethfrm_tests.h"
 #include "macgonuts_arphdr_tests.h"
 #include "macgonuts_ip6hdr_tests.h"
+#include "macgonuts_icmphdr_tests.h"
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_check_ether_addr_tests);
@@ -24,6 +25,8 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_make_arp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_read_ip6_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_ip6_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_read_icmp_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_make_icmp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_getrandom_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_create_release_socket_tests);
     CUTE_RUN_TEST(macgonuts_sendpkt_tests);

@@ -25,7 +25,7 @@ unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmph
 
     pkt[0] = icmphdr->type;
     pkt[1] = icmphdr->code;
-    pkt[2] = (icmphdr->chsum >> 16) & 0xFF;
+    pkt[2] = (icmphdr->chsum >> 8) & 0xFF;
     pkt[3] = icmphdr->chsum & 0xFF;
     if (icmphdr->payload_size > 0 && icmphdr->payload != NULL) {
         memcpy(&pkt[4], icmphdr->payload, icmphdr->payload_size);
@@ -35,7 +35,7 @@ unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmph
 }
 
 int macgonuts_read_icmp_pkt(struct macgonuts_icmphdr_ctx *icmphdr, const unsigned char *icmpbuf, const size_t icmpbuf_size) {
-    if (icmphdr == NULL || icmpbuf == NULL || icmpbuf_size == 0) {
+    if (icmphdr == NULL || icmpbuf == NULL) {
         return EINVAL;
     }
 
@@ -43,9 +43,9 @@ int macgonuts_read_icmp_pkt(struct macgonuts_icmphdr_ctx *icmphdr, const unsigne
         return EPROTO;
     }
 
-    icmphdr->code = icmpbuf[0];
-    icmphdr->type = icmpbuf[1];
-    icmphdr->chsum = (uint16_t)icmpbuf[2] << 16 | (uint16_t)icmpbuf[3];
+    icmphdr->type = icmpbuf[0];
+    icmphdr->code = icmpbuf[1];
+    icmphdr->chsum = (uint16_t)icmpbuf[2] << 8 | (uint16_t)icmpbuf[3];
     if (icmpbuf_size > ICMP_BASE_HDR_SIZE(icmphdr)) {
         icmphdr->payload_size = icmpbuf_size - ICMP_BASE_HDR_SIZE(icmphdr);
         icmphdr->payload = (uint8_t *)malloc(icmphdr->payload_size);
@@ -56,6 +56,17 @@ int macgonuts_read_icmp_pkt(struct macgonuts_icmphdr_ctx *icmphdr, const unsigne
     }
 
     return EXIT_SUCCESS;
+}
+
+void macgonuts_release_icmphdr(struct macgonuts_icmphdr_ctx *icmphdr) {
+    if (icmphdr == NULL) {
+        return;
+    }
+    if (icmphdr->payload != NULL) {
+        free(icmphdr->payload);
+        icmphdr->payload = NULL;
+        icmphdr->payload_size = 0;
+    }
 }
 
 #undef ICMP_BASE_HDR_SIZE
