@@ -7,7 +7,7 @@
  */
 #include <macgonuts_ipchsum.h>
 
-uint16_t eval_ipchsum(const void *data, const size_t data_size) {
+uint16_t macgonuts_eval_ipchsum(const void *data, const size_t data_size) {
     const uint8_t *bp = NULL;
     const uint8_t *bp_end = NULL;
     uint32_t sum = 0;
