@@ -71,7 +71,7 @@ int macgonuts_read_ip6_pkt(struct macgonuts_ip6hdr_ctx *ip6hdr, const unsigned c
     if (ip6hdr->payload_length > 0) {
         ip6hdr->payload = (unsigned char *)malloc(ip6hdr->payload_length);
         if (ip6hdr->payload == NULL) {
-            memset(ip6hdr, 0, sizeof(ip6hdr));
+            memset(ip6hdr, 0, sizeof(struct macgonuts_ip6hdr_ctx));
             return ENOMEM;
         }
         memcpy(&ip6hdr->payload[0], bp, ip6hdr->payload_length);

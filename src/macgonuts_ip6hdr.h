@@ -22,6 +22,13 @@ struct macgonuts_ip6hdr_ctx {
     uint8_t *payload;
 };
 
+struct macgonuts_ip6_pseudo_hdr_ctx {
+    uint8_t src_addr[16];
+    uint8_t dest_addr[16];
+    uint8_t upper_layer_pkt_len[4];
+    uint8_t next_header[4];
+};
+
 unsigned char *macgonuts_make_ip6_pkt(const struct macgonuts_ip6hdr_ctx *ip6hdr, size_t *pkt_size);
 
 int macgonuts_read_ip6_pkt(struct macgonuts_ip6hdr_ctx *ip6hdr, const unsigned char *ip6buf, const size_t ip6buf_size);

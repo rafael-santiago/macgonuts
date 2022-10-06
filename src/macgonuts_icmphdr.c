@@ -6,11 +6,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_icmphdr.h>
+#include <macgonuts_ipchsum.h>
 
 #define ICMP_BASE_HDR_SIZE(ctx) (sizeof(ctx->type) + sizeof(ctx->code) + sizeof(ctx->chsum))
 
-unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmphdr, size_t *pkt_size) {
+unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmphdr, size_t *pkt_size,
+                                       const struct macgonuts_ip6_pseudo_hdr_ctx *ip6phdr) {
     unsigned char *pkt = NULL;
+    uint16_t chsum;
 
     if (icmphdr == NULL || pkt_size == NULL) {
         return NULL;
@@ -25,10 +28,18 @@ unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmph
 
     pkt[0] = icmphdr->type;
     pkt[1] = icmphdr->code;
-    pkt[2] = (icmphdr->chsum >> 8) & 0xFF;
-    pkt[3] = icmphdr->chsum & 0xFF;
     if (icmphdr->payload_size > 0 && icmphdr->payload != NULL) {
         memcpy(&pkt[4], icmphdr->payload, icmphdr->payload_size);
+    }
+    if (ip6phdr == NULL) {
+        pkt[2] = (icmphdr->chsum >> 8) & 0xFF;
+        pkt[3] = icmphdr->chsum & 0xFF;
+    } else {
+        pkt[2] = 0;
+        pkt[3] = 0;
+        chsum = macgonuts_eval_ipchsum(pkt, *pkt_size, ip6phdr, sizeof(struct macgonuts_ip6_pseudo_hdr_ctx));
+        pkt[2] = (chsum >> 8) & 0xFF;
+        pkt[3] = chsum & 0xFF;
     }
 
     return pkt;

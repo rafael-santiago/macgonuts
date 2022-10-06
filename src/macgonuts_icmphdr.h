@@ -9,6 +9,7 @@
 #define MACGONUTS_ICMPHDR_H 1
 
 #include <macgonuts_types.h>
+#include <macgonuts_ip6hdr.h>
 
 struct macgonuts_icmphdr_ctx {
     uint8_t type;
@@ -18,7 +19,8 @@ struct macgonuts_icmphdr_ctx {
     size_t payload_size;
 };
 
-unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmphdr, size_t *pkt_size);
+unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmphdr, size_t *pkt_size,
+                                       const struct macgonuts_ip6_pseudo_hdr_ctx *ip6phdr);
 
 int macgonuts_read_icmp_pkt(struct macgonuts_icmphdr_ctx *icmphdr, const unsigned char *icmpbuf, const size_t icmpbuf_size);
 
