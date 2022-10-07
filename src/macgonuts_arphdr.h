@@ -10,6 +10,8 @@
 
 #include <macgonuts_types.h>
 
+#define MACGONUTS_ARP_HW_TYPE_ETHERNET 1
+
 typedef enum macgonuts_arp_oper_code {
     kARPOperFirstReserved = 0,
     kARPOperRequest,

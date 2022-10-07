@@ -17,6 +17,9 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #define MACGONUTS_VERSION "v1"
 

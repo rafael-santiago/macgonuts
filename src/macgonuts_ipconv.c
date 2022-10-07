@@ -5,9 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
+#include <macgonuts_ipconv.h>
 
 static int chk_ipv4_addr(const char *ip, const size_t ip_size);
 
@@ -20,6 +18,23 @@ static int chk_ipv4_cidr(const char *addr, const size_t addr_size, const char *b
 static int chk_ipv6_cidr(const char *addr, const size_t addr_size, const char *bits, const size_t bits_size);
 
 static int is_int(const char *buf, const size_t buf_size);
+
+static int get_raw_ip4(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size);
+
+static int get_raw_ip6(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size);
+
+int macgonuts_get_raw_ip_addr(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size) {
+    int version = 0;
+    if (raw == NULL || raw_max_size == 0 || ip == NULL || ip_size == 0) {
+        return EINVAL;
+    }
+    version = macgonuts_get_ip_version(ip, ip_size);
+    if (version == -1) {
+        return EINVAL;
+    }
+    return (version == 4) ? get_raw_ip4(raw, raw_max_size, ip, ip_size) :
+                            get_raw_ip6(raw, raw_max_size, ip, ip_size);
+}
 
 int macgonuts_get_ip_version(const char *ip, const size_t ip_size) {
     if (chk_ipv4_addr(ip, ip_size)) {
@@ -107,12 +122,18 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     if (p == NULL) {
         return 0;
     }
+    if (strstr(ip, ".") != NULL) {
+        return 0;
+    }
+    if (strstr(ip, ":") == NULL) {
+        return 0;
+    }
     if (ip_size < 3 || (*p == ':' && p[1] != ':')) {
         return 0;
     }
     while (p < p_end) {
         if (*p == ':' || (p + 1) == p_end) {
-            double_colon_nr += (*p == ':');
+            double_colon_nr += ((p + 1) != p_end && p[1] == ':');
             p += ((p + 1) == p_end);
             if ((p - lp) > sizeof(word)) {
                 return 0;
@@ -132,7 +153,7 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
                     return 0;
                 }
             } else if (!is_valid && !has_double_colon) {
-                is_valid = has_double_colon = (strcmp(word, ":") == 0);
+                is_valid = has_double_colon = (strstr(word, ":") == &word[0]);
             }
             if (!is_valid) {
                 return 0;
@@ -141,7 +162,7 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
         }
         p++;
     }
-    return (double_colon_nr > 0);
+    return (double_colon_nr < 2);
 }
 
 static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size, const char *bits, const size_t bits_size) {
@@ -177,4 +198,91 @@ static int is_int(const char *buf, const size_t buf_size) {
         bp++;
     } while (!is && bp != bp_end);
     return is;
+}
+
+static int get_raw_ip4(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size) {
+    const char *i = NULL;
+    const char *i_end = NULL;
+    const char *op = NULL;
+    uint8_t *rp = NULL;
+    char oc[4] = { 0 };
+    if (raw_max_size < 4) {
+        return ERANGE;
+    }
+    i = op = ip;
+    i_end = i + ip_size;
+    rp = raw;
+    while (i < i_end && rp < (raw + raw_max_size)) {
+        if (*i == '.' || (i + 1) == i_end) {
+            i += ((i + 1) == i_end);
+            memset(oc, 0, sizeof(oc));
+            if ((i - op) > sizeof(oc)) {
+                return ENOBUFS;
+            }
+            memcpy(oc, op, i - op);
+            *rp = atoi(oc);
+            op = i + 1;
+            rp++;
+        }
+        i++;
+    }
+    return EXIT_SUCCESS;
+}
+
+static int get_raw_ip6(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size) {
+    const char *i = NULL, *ii = NULL;
+    const char *i_end = NULL;
+    const char *op = NULL;
+    uint8_t *rp = NULL;
+    uint16_t u16 = 0;
+    size_t dcolon_nr = 0;
+    int nibbles_nr = 0;
+    char xb[3] = { 0 };
+    if (raw_max_size < 16) {
+        return ERANGE;
+    }
+    i = op = ip;
+    i_end = i + ip_size;
+    rp = raw;
+    while (i < i_end && rp < (raw + raw_max_size)) {
+        switch (i[0]) {
+            case ':':
+                op = i + 1;
+                if ((i + 1) != i_end && i[1] == ':') {
+                    i++;
+                    ii = i;
+                    while (ii != i_end) {
+                        dcolon_nr += (*ii == ':');
+                        ii++;
+                    }
+                    dcolon_nr = 16 - ((rp - raw) + (dcolon_nr << 1));
+                    while (dcolon_nr > 0 && rp != (raw + raw_max_size)) {
+                        *rp = 0;
+                        rp++;
+                        dcolon_nr--;
+                    }
+                    op += 1;
+                }
+                break;
+
+            default:
+#define nib2num(n) ( isdigit((n)) ? ((n) - 48) : (toupper((n)) - 55) )
+                u16 = (u16 << 4) | nib2num(i[0]);
+                nibbles_nr++;
+                if ((i + 1) < i_end && i[-1] == ':' && i[1] == ':' || (i + 1) == i_end) {
+                    nibbles_nr = 4;
+                }
+#undef nibnum
+                if (nibbles_nr == 4) {
+                    rp[0] = (u16 >> 8) & 0xFF;
+                    rp[1] = u16 & 0xFF;
+                    rp += 2;
+                    u16 = 0;
+                    nibbles_nr = 0;
+                }
+                break;
+        }
+        i++;
+    }
+    return EXIT_SUCCESS;
 }

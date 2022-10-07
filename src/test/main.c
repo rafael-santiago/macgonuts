@@ -19,10 +19,12 @@
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_check_ether_addr_tests);
+    CUTE_RUN_TEST(macgonuts_get_raw_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_check_ip_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_ip_version_tests);
     CUTE_RUN_TEST(macgonuts_check_ip_cidr_tests);
     CUTE_RUN_TEST(macgonuts_get_multicast_addr_tests);
+    CUTE_RUN_TEST(macgonuts_get_raw_ip_addr_tests);
     CUTE_RUN_TEST(macgonuts_eval_ipchsum_tests);
     CUTE_RUN_TEST(macgonuts_read_ethernet_frm_tests);
     CUTE_RUN_TEST(macgonuts_make_ethernet_frm_tests);

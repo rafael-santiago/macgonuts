@@ -63,6 +63,7 @@ CUTE_TEST_CASE(macgonuts_check_ip_addr_tests)
         { "::10000", 0                                             },
         { "2001:db8:0:f101::2", 1                                  },
         { "2001:db8827:0:f101::2", 0                               },
+        { "2001::cafe:0:3", 1                                      },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_check_ip_addr(test->addr, strlen(test->addr)) == test->is_valid);
@@ -102,6 +103,36 @@ CUTE_TEST_CASE(macgonuts_check_ip_cidr_tests)
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_check_ip_cidr(test->addr, strlen(test->addr)) == test->is_valid);
+        test++;
+    }
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_raw_ip_addr_tests)
+    struct test_ctx {
+        const char *addr;
+        const uint8_t *expected;
+        const size_t expected_size;
+    } test_vector[] = {
+        { "127.0.0.1", (uint8_t *)"\x7F\x00\x00\x01", 4 },
+        { "192.30.70.3", (uint8_t *)"\xC0\x1E\x46\x03", 4 },
+        { "255.255.255.255", (uint8_t *) "\xFF\xFF\xFF\xFF", 4 },
+        { "1.2.1.2", (uint8_t *) "\x01\x02\x01\x02", 4 },
+        { "CA:FE:CA:FE:CA:FE:CA:FE:"
+          "CA:FE:CA:FE:CA:FE:CA:FE", (uint8_t *)"\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE"
+                                                "\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE", 16 },
+        { "CAFE:CAFE:CAFE:CAFE:"
+          "CAFE:CAFE:CAFE:CAFE", (uint8_t *)"\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE"
+                                            "\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE", 16 },
+        { "2001::CAFE:0:3", (uint8_t *)"\x20\x01\x00\x00\x00\x00\x00\x00\x00\x00\xCA\xFE\x00\x00\x00\x03", 16 },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    uint8_t raw[16] = { 0 };
+    CUTE_ASSERT(macgonuts_get_raw_ip_addr(NULL, 4, test->addr, strlen(test->addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_ip_addr(raw, 0, test->addr, strlen(test->addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_ip_addr(raw, 4, NULL, strlen(test->addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_ip_addr(raw, 4, test->addr, 0) == EINVAL);
+    while (test != test_end) {
+        CUTE_ASSERT(macgonuts_get_raw_ip_addr(raw, test->expected_size, test->addr, strlen(test->addr)) == EXIT_SUCCESS);
+        CUTE_ASSERT(memcmp(raw, test->expected, test->expected_size) == 0);
         test++;
     }
 CUTE_TEST_CASE_END

@@ -5,19 +5,20 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <macgonuts_etherconv.h>
+//#include <fcntl.h>
+//#include <unistd.h>
+//#include <errno.h>
+//#include <ctype.h>
+//#include <stdio.h>
+//#include <stdlib.h>
 
 int macgonuts_check_ether_addr(const char *ether, const size_t ether_size) {
     const char *ep = ether, *lp = ep;
     const char *ep_end = ep + ether_size;
     int is_valid = 1;
     int two_colon_nr = 0;
-    if (ep == NULL && ether_size == 0) {
+    if (ep == NULL || ether_size == 0) {
         return 0;
     }
     do {
@@ -56,3 +57,29 @@ int macgonuts_getrandom_ether_addr(char *ether, const size_t max_ether_size) {
     return EXIT_SUCCESS;
 }
 
+int macgonuts_get_raw_ether_addr(uint8_t *raw, const size_t max_raw_size,
+                                 const char *ether_addr, const size_t ether_addr_size) {
+    uint8_t *rp = NULL;
+    uint8_t *rp_end = NULL;
+    const char *ep = NULL;
+    const char *ep_end = NULL;
+    if (raw == NULL || !macgonuts_check_ether_addr(ether_addr, ether_addr_size)) {
+        return EINVAL;
+    }
+    if (max_raw_size < 6) {
+        return ERANGE;
+    }
+    memset(raw, 0, max_raw_size);
+    rp = raw;
+    rp_end = rp + max_raw_size;
+    ep = ether_addr;
+    ep_end = ep + ether_addr_size;
+    while (ep < ep_end && rp != rp_end) {
+#define nib2num(n) (isdigit((n)) ? (n) - 48 : toupper((n)) - 55)
+        *rp = (uint8_t)nib2num(ep[0]) << 4 | (uint8_t)nib2num(ep[1]);
+#undef nib2num
+        ep += 3;
+        rp++;
+    }
+    return EXIT_SUCCESS;
+}
