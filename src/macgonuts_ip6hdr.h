@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #ifndef MACGONUTS_IP6HDR_H
-#define MACGINUTS_IP6HDR_H 1
+#define MACGONUTS_IP6HDR_H 1
 
 #include <macgonuts_types.h>
 

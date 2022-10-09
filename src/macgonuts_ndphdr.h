@@ -14,7 +14,7 @@ typedef enum macgonuts_ndp_message_type {
     kNDPMsgTypeRouterSolicitation = 133,
     kNDPMsgTypeRouterAdvertisement,
     kNDPMsgTypeNeighborSolicitation,
-    kNDPMsgTypeNeighborAdvertisemet,
+    kNDPMsgTypeNeighborAdvertisement,
     kNDPMsgTypeRedirectMessageFormat,
 }macgonuts_ndp_message_type_t;
 
