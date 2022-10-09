@@ -16,4 +16,8 @@ CUTE_DECLARE_TEST_CASE(macgonuts_sendpkt_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_recvpkt_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_addr_from_iface_tests);
+
+CUTE_DECLARE_TEST_CASE(macgonuts_get_mac_from_iface_tests);
+
 #endif // MACGONUTS_MACGONUTS_SOCKET_TESTS_H

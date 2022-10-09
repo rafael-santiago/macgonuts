@@ -18,5 +18,10 @@ ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, cons
 
 ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size);
 
+int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
+                                  const int addr_version, const char *iface);
+
+int macgonuts_get_mac_from_iface(char *mac_buf, const size_t max_mac_buf_size, const char *iface);
+
 #endif // MACGONUTS_SOCKET_H
 

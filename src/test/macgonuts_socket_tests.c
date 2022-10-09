@@ -25,6 +25,10 @@ static void *get_pkt(void *args);
 
 static void *ping_pkt(void *args);
 
+static int get_iface_addr4(char *addr, const size_t max_addr_size, const char *iface);
+
+static int get_iface_addr6(char *addr, const size_t max_addr_size, const char *iface);
+
 CUTE_TEST_CASE(macgonuts_create_release_socket_tests)
     macgonuts_socket_t rsk = -1;
     rsk = macgonuts_create_socket("unk0");
@@ -65,6 +69,29 @@ CUTE_TEST_CASE(macgonuts_recvpkt_tests)
     g_cute_leak_check = leak_chk_status;
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(macgonuts_get_addr_from_iface_tests)
+    char addr[50] = "";
+    char expected_addr[256] = "";
+#if defined(__linux__)
+    char *iface = "eth0";
+#else
+# error Some code wanted.
+#endif
+    CUTE_ASSERT(get_iface_addr4(expected_addr, sizeof(expected_addr), iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_addr_from_iface(NULL, sizeof(addr), 4, iface) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_addr_from_iface(addr, 0, 4, iface) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_addr_from_iface(addr, sizeof(addr), 0, iface) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_addr_from_iface(addr, sizeof(addr), 4, NULL) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_addr_from_iface(addr, sizeof(addr), 4, iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(strcmp(addr, expected_addr) == 0);
+    CUTE_ASSERT(get_iface_addr6(expected_addr, sizeof(expected_addr), iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_addr_from_iface(addr, sizeof(addr), 6, iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(strcmp(addr, expected_addr) == 0);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_mac_from_iface_tests)
+CUTE_TEST_CASE_END
+
 static void *get_pkt(void *args) {
     char buf[1<<10];
     struct rcvctx *p = (struct rcvctx *)args;
@@ -77,6 +104,37 @@ static void *ping_pkt(void *args) {
     system((*version == 4) ? "ping 8.8.8.8 -c 5" : (*version == 6) ? "ping6 8.8.8.8 -c 5" : "echo unknown ip version.");
     return NULL;
 }
+
+static int get_iface_addr4(char *addr, const size_t max_addr_size, const char *iface) {
+    FILE *proc = NULL;
+    char cmdline[1<<10];
+    snprintf(cmdline, sizeof(cmdline) - 1,
+             "ifconfig %s | grep \"inet.\\+[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\" "
+             "| sed 's/.*inet//;s/netmask.*$//;s/^[ \\t]\\+//;s/[ \\t\\n]\\+$//' | tr -d '\n'", iface);
+    proc = popen(cmdline, "r");
+    if (proc == NULL) {
+        return EFAULT;
+    }
+    fread(addr, 1, max_addr_size, proc);
+    pclose(proc);
+    return EXIT_SUCCESS;
+}
+
+static int get_iface_addr6(char *addr, const size_t max_addr_size, const char *iface) {
+    FILE *proc = NULL;
+    char cmdline[1<<10];
+    snprintf(cmdline, sizeof(cmdline) - 1,
+             "ifconfig %s | grep \"inet.\\+[0-9,a-f]:\\+\""
+             "| sed 's/.*inet6//;s/prefixlen.*$//;s/^[ \\t]\\+//;s/[ \\t\\n]\\+$//' | tr -d '\n'", iface);
+    proc = popen(cmdline, "r");
+    if (proc == NULL) {
+        return EFAULT;
+    }
+    fread(addr, 1, max_addr_size, proc);
+    pclose(proc);
+    return EXIT_SUCCESS;
+}
+
 
 #if defined(DEFAULT_TEST_IFACE)
 # undef DEFAULT_TEST_IFACE

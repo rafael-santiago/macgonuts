@@ -15,23 +15,23 @@
 
 typedef int (*get_ethaddr_handler_func)(uint8_t *hw_addr, const size_t hw_addr_size,
                                         const char *layer3addr, const size_t layer3addr_size,
-                                        macgonuts_socket_t rsk);
+                                        macgonuts_socket_t rsk, const char *iface);
 
 static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk);
+                           macgonuts_socket_t rsk, const char *iface);
 
 static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk);
+                           macgonuts_socket_t rsk, const char *iface);
 
 static int get_ethaddr_unk(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk);
+                           macgonuts_socket_t rsk, const char *iface);
 
 int macgonuts_get_ethaddr(uint8_t *hw_addr, const size_t hw_addr_size,
                           const char *layer3addr, const size_t layer3addr_size,
-                          macgonuts_socket_t rsk) {
+                          macgonuts_socket_t rsk, const char *iface) {
     get_ethaddr_handler_func get_ethaddr = NULL;
     int l3addr_version = 0;
 
@@ -46,17 +46,17 @@ int macgonuts_get_ethaddr(uint8_t *hw_addr, const size_t hw_addr_size,
 
     assert(get_ethaddr != NULL);
 
-    return get_ethaddr(hw_addr, hw_addr_size, layer3addr, layer3addr_size, rsk);
+    return get_ethaddr(hw_addr, hw_addr_size, layer3addr, layer3addr_size, rsk, iface);
 }
 
 static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk) {
+                           macgonuts_socket_t rsk, const char *iface) {
     int err = EFAULT;
     struct macgonuts_ethfrm_ctx ethfrm = { 0 };
     struct macgonuts_arphdr_ctx arp_req_hdr = { 0 }, arp_rep_hdr = { 0 };
-    char src_hw_addr[18] = { 0 };
-    uint8_t src_ip_addr[4] = { 0 };
+    char src_hw_addr[20] = { 0 };
+    char src_ip_addr[20] = { 0 };
     int ntry = 10;
     int done = 0;
     ssize_t bytes_nr = 0;
@@ -70,8 +70,14 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
     if (err != EXIT_SUCCESS) {
         goto get_ethaddr_ip4_epilogue;
     }
-    // TODO(Rafael): Acquire the mac address from the interface associated with rsk.
-    // TODO(Rafael): Acquire the ip address from the interface associated with rsk.
+    err = macgonuts_get_mac_from_iface(src_hw_addr, sizeof(src_hw_addr), iface);
+    if (err != EXIT_SUCCESS) {
+        goto get_ethaddr_ip4_epilogue;
+    }
+    err = macgonuts_get_addr_from_iface(src_ip_addr, sizeof(src_ip_addr), 4, iface);
+    if (err != EXIT_SUCCESS) {
+        goto get_ethaddr_ip4_epilogue;
+    }
     err = macgonuts_get_raw_ether_addr(ethfrm.src_hw_addr, sizeof(ethfrm.src_hw_addr),
                                        src_hw_addr, strlen(src_hw_addr));
     if (err != EXIT_SUCCESS) {
@@ -164,13 +170,13 @@ get_ethaddr_ip4_epilogue:
 
 static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk) {
+                           macgonuts_socket_t rsk, const char *iface) {
     return ENOENT;
 }
 
 static int get_ethaddr_unk(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk) {
+                           macgonuts_socket_t rsk, const char *iface) {
     fprintf(stderr, "error: layer3 address '%s' does not seem with a valid ipv4 or ipv6 address.\n");
     return EINVAL;
 }
