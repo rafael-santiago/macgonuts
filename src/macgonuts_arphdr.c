@@ -112,7 +112,7 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
     memcpy(arphdr->tpa, ap, arphdr->plen);
     ap += arphdr->plen;
 
-    err = (ap == ap_end) ? EXIT_SUCCESS : EPROTO;
+    err = EXIT_SUCCESS;
 
 macgonuts_read_arp_pkt_epilogue:
 

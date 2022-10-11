@@ -19,7 +19,17 @@
 
 static int get_iface_index(const char *iface);
 
-macgonuts_socket_t macgonuts_create_socket(const char *iface) {
+static int set_iface_promisc_flag(const int on, const char *iface);
+
+int macgonuts_set_iface_promisc_on(const char *iface) {
+    return set_iface_promisc_flag(1, iface);
+}
+
+int macgonuts_set_iface_promisc_off(const char *iface) {
+    return set_iface_promisc_flag(0, iface);
+}
+
+macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_timeo) {
     struct timeval tv = { 0 };
     int yes = 1;
     macgonuts_socket_t sockfd = -1;
@@ -30,9 +40,6 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface) {
         fprintf(stderr, "error: unable to create raw socket.\n");
         return -1;
     }
-    tv.tv_sec = 1;
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
     sll.sll_family = AF_PACKET;
     sll.sll_protocol = htons(ETH_P_ALL);
     sll.sll_ifindex = get_iface_index(iface);
@@ -41,6 +48,11 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface) {
         fprintf(stderr, "error: cannot bind raw socket.\n");
         macgonuts_release_socket(sockfd);
         return -1;
+    }
+    if (io_timeo > 0) {
+        tv.tv_sec = io_timeo;
+        setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+        setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
     }
     return sockfd;
 }
@@ -53,7 +65,7 @@ int macgonuts_get_mac_from_iface(char *mac_buf, const size_t max_mac_buf_size, c
     int sockfd = -1;
     struct ifconf ifc = { 0 };
     struct ifreq ifr = { 0 }, *ifp = NULL, *ifp_end = NULL;
-    char buf[32] = "";
+    char buf[4<<10] = "";
     int err = EFAULT;
 
     if (mac_buf == NULL || max_mac_buf_size == 0 || iface == NULL) {
@@ -75,7 +87,7 @@ int macgonuts_get_mac_from_iface(char *mac_buf, const size_t max_mac_buf_size, c
     }
 
     ifp = ifc.ifc_req;
-    ifp_end = ifp + ifc.ifc_len / sizeof(ifc);
+    ifp_end = ifp + (ifc.ifc_len / sizeof(ifc));
 
     while (ifp != ifp_end) {
         if (strcmp(ifp->ifr_name, iface) == 0) {
@@ -87,10 +99,13 @@ int macgonuts_get_mac_from_iface(char *mac_buf, const size_t max_mac_buf_size, c
                 goto macgonuts_get_mac_from_iface_epilogue;
             }
             snprintf(mac_buf,
-                     max_mac_buf_size - 1, "%.2x:%.2x:%.2x"
-                                           "%.2x:%.2x:%.2x", ifr.ifr_hwaddr.sa_data[0], ifr.ifr_hwaddr.sa_data[1],
-                                                             ifr.ifr_hwaddr.sa_data[2], ifr.ifr_hwaddr.sa_data[3],
-                                                             ifr.ifr_hwaddr.sa_data[4], ifr.ifr_hwaddr.sa_data[5]);
+                     max_mac_buf_size - 1, "%.2x:%.2x:%.2x:"
+                                           "%.2x:%.2x:%.2x", (unsigned char)ifr.ifr_hwaddr.sa_data[0],
+                                                             (unsigned char)ifr.ifr_hwaddr.sa_data[1],
+                                                             (unsigned char)ifr.ifr_hwaddr.sa_data[2],
+                                                             (unsigned char)ifr.ifr_hwaddr.sa_data[3],
+                                                             (unsigned char)ifr.ifr_hwaddr.sa_data[4],
+                                                             (unsigned char)ifr.ifr_hwaddr.sa_data[5]);
             err = EXIT_SUCCESS;
             break;
         }
@@ -129,4 +144,29 @@ static int get_iface_index(const char *iface) {
     }
     close(sockfd);
     return ifr.ifr_ifindex;
+}
+
+static int set_iface_promisc_flag(const int on, const char *iface) {
+    int sockfd = -1;
+    struct ifreq ifr = { 0 };
+    int err = EFAULT;
+    if (iface == NULL) {
+        return EINVAL;
+    }
+    sockfd = socket(AF_INET, SOCK_PACKET, IPPROTO_IP);
+    if (sockfd == -1) {
+        return errno;
+    }
+    strncpy((char *)ifr.ifr_name, iface, strlen(iface));
+    if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) != 0) {
+        return errno;
+    }
+    if (on) {
+        ifr.ifr_flags |= IFF_PROMISC;
+    } else {
+        ifr.ifr_flags &= (~IFF_PROMISC);
+    }
+    err = ioctl(sockfd, SIOCSIFFLAGS, &ifr);
+    close(sockfd);
+    return err;
 }

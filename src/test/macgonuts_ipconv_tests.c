@@ -116,6 +116,7 @@ CUTE_TEST_CASE(macgonuts_get_raw_ip_addr_tests)
         { "127.0.0.1", (uint8_t *)"\x7F\x00\x00\x01", 4 },
         { "192.30.70.3", (uint8_t *)"\xC0\x1E\x46\x03", 4 },
         { "255.255.255.255", (uint8_t *) "\xFF\xFF\xFF\xFF", 4 },
+        { "10.0.2.15", (uint8_t *)"\x0A\x00\x02\x0F", 4 },
         { "1.2.1.2", (uint8_t *) "\x01\x02\x01\x02", 4 },
         { "CA:FE:CA:FE:CA:FE:CA:FE:"
           "CA:FE:CA:FE:CA:FE:CA:FE", (uint8_t *)"\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE"

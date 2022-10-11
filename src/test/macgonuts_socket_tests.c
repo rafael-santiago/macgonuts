@@ -29,17 +29,23 @@ static int get_iface_addr4(char *addr, const size_t max_addr_size, const char *i
 
 static int get_iface_addr6(char *addr, const size_t max_addr_size, const char *iface);
 
+static int get_iface_mac(char *mac, const size_t max_mac_size, const char *iface);
+
+static int check_promisc_mode_on(const char *iface);
+
+static int check_promisc_mode_off(const char *iface);
+
 CUTE_TEST_CASE(macgonuts_create_release_socket_tests)
     macgonuts_socket_t rsk = -1;
-    rsk = macgonuts_create_socket("unk0");
+    rsk = macgonuts_create_socket("unk0", 0);
     CUTE_ASSERT(rsk == -1);
-    rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE);
+    rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
     CUTE_ASSERT(rsk > -1);
     macgonuts_release_socket(rsk);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_sendpkt_tests)
-    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE);
+    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
     char buf[] = "you're good for me.";
     CUTE_ASSERT(rsk > -1);
     CUTE_ASSERT(macgonuts_sendpkt(rsk, buf, strlen(buf)) == strlen(buf));
@@ -50,7 +56,7 @@ CUTE_TEST_CASE(macgonuts_recvpkt_tests)
     // INFO(Rafael): Pthread stuff tends to leak a lot of resources due to performance issues.
     //               Let's ignore those leaks.
     int leak_chk_status = g_cute_leak_check;
-    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE);
+    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
     ssize_t sz = 0;
     int version = 4;
     pthread_t p0, p1;
@@ -90,6 +96,30 @@ CUTE_TEST_CASE(macgonuts_get_addr_from_iface_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_get_mac_from_iface_tests)
+    char mac[20] = "";
+    char expected_mac[20] = "";
+#if defined(__linux__)
+    char *iface = "eth0";
+#else
+# error Some code wanted.
+#endif
+    CUTE_ASSERT(get_iface_mac(expected_mac, sizeof(expected_mac), iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_mac_from_iface(mac, sizeof(mac), iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(strcmp(mac, expected_mac) == 0);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_set_iface_promisc_on_off_tests)
+#if defined(__linux__)
+    char *iface = "eth0";
+#else
+# error Some code wanted.
+#endif
+    CUTE_ASSERT(macgonuts_set_iface_promisc_on(NULL) == EINVAL);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_on(iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(check_promisc_mode_on(iface) == 1);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_off(NULL) == EINVAL);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_off(iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(check_promisc_mode_off(iface) == 1);
 CUTE_TEST_CASE_END
 
 static void *get_pkt(void *args) {
@@ -133,6 +163,34 @@ static int get_iface_addr6(char *addr, const size_t max_addr_size, const char *i
     fread(addr, 1, max_addr_size, proc);
     pclose(proc);
     return EXIT_SUCCESS;
+}
+
+static int get_iface_mac(char *mac, const size_t max_mac_size, const char *iface) {
+    FILE *proc = NULL;
+    char cmdline[1<<10];
+    snprintf(cmdline, sizeof(cmdline) - 1,
+             "ifconfig %s | grep \"ether.\\+\" | sed 's/.*ether.//;s/ \\+.*$//' | tr -d '\n'", iface);
+    proc = popen(cmdline, "r");
+    if (proc == NULL) {
+        return EFAULT;
+    }
+    fread(mac, 1, max_mac_size, proc);
+    pclose(proc);
+    return EXIT_SUCCESS;
+}
+
+static int check_promisc_mode_on(const char *iface) {
+    char cmdline[1<<10];
+    snprintf(cmdline, sizeof(cmdline) - 1,
+             "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
+    return (system(cmdline) == 0);
+}
+
+static int check_promisc_mode_off(const char *iface) {
+    char cmdline[1<<10];
+    snprintf(cmdline, sizeof(cmdline) - 1,
+             "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
+    return (system(cmdline) != 0);
 }
 
 
