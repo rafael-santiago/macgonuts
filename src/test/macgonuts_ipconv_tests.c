@@ -125,6 +125,8 @@ CUTE_TEST_CASE(macgonuts_get_raw_ip_addr_tests)
           "CAFE:CAFE:CAFE:CAFE", (uint8_t *)"\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE"
                                             "\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE", 16 },
         { "2001::CAFE:0:3", (uint8_t *)"\x20\x01\x00\x00\x00\x00\x00\x00\x00\x00\xCA\xFE\x00\x00\x00\x03", 16 },
+        { "2001:db8:0:f101::3", (uint8_t *)"\x20\x01\x0D\xB8\x00\x00\xF1\x01\x00\x00\x00\x00\x00\x00\x00\x03", 16 },
+        { "2001:d:0:f101::3", (uint8_t *)"\x20\x01\x00\x0D\x00\x00\xF1\x01\x00\x00\x00\x00\x00\x00\x00\x03", 16 },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     uint8_t raw[16] = { 0 };
     CUTE_ASSERT(macgonuts_get_raw_ip_addr(NULL, 4, test->addr, strlen(test->addr)) == EINVAL);

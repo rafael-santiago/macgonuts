@@ -190,11 +190,12 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
     struct macgonuts_ndp_nsna_hdr_ctx ndp_ns_hdr = { 0 }, ndp_na_hdr = { 0 };
     struct macgonuts_ip6_pseudo_hdr_ctx ip6phdr_req = { 0 };
     unsigned char *ns_pkt = NULL;
-    size_t ns_pkt_size = 0;
+    size_t ns_pkt_size = 0, icmp_pkt_size = 0;
     int done = 0;
     int ntry = 10;
     unsigned char na_pkt[1<<10] = { 0 };
     ssize_t na_pkt_size = 0;
+    uint8_t unicast_dest_addr[16] = { 0 };
 
     err = macgonuts_get_mac_from_iface(src_hw_addr, sizeof(src_hw_addr), iface);
     if (err != EXIT_SUCCESS) {
@@ -206,9 +207,8 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
         goto get_ethaddr_ip6_epilogue;
     }
 
-    // INFO(Rafael): According to IANA the multicast MAC must start with '0x3333'.
-    err = macgonuts_get_raw_ether_addr(ethfrm_req.dest_hw_addr, sizeof(ethfrm_req.dest_hw_addr),
-                                       "33:33:00:00:00:03", 17);
+    err = macgonuts_get_raw_ip6_mcast_ether_addr(ethfrm_req.dest_hw_addr, sizeof(ethfrm_req.dest_hw_addr),
+                                                 layer3addr, layer3addr_size);
     if (err != EXIT_SUCCESS) {
         goto get_ethaddr_ip6_epilogue;
     }
@@ -241,6 +241,12 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
         goto get_ethaddr_ip6_epilogue;
     }
 
+    err = macgonuts_get_raw_ip_addr(&unicast_dest_addr[0], sizeof(unicast_dest_addr),
+                                    layer3addr, layer3addr_size);
+    if (err != EXIT_SUCCESS) {
+        goto get_ethaddr_ip6_epilogue;
+    }
+
     icmphdr_req.type = kNDPMsgTypeNeighborSolicitation;
     icmphdr_req.code = 0;
     icmphdr_req.chsum = 0;
@@ -269,18 +275,21 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
 
     memcpy(&ip6phdr_req.src_addr[0], &ip6hdr_req.src_addr[0], sizeof(ip6phdr_req.src_addr));
     memcpy(&ip6phdr_req.dest_addr[0], &ip6hdr_req.dest_addr[0], sizeof(ip6phdr_req.dest_addr));
-    ip6phdr_req.upper_layer_pkt_len[0] = (icmphdr_req.payload_size >> 24) & 0xFF;
-    ip6phdr_req.upper_layer_pkt_len[1] = (icmphdr_req.payload_size >> 16) & 0xFF;
-    ip6phdr_req.upper_layer_pkt_len[2] = (icmphdr_req.payload_size >>  8) & 0xFF;
-    ip6phdr_req.upper_layer_pkt_len[3] = icmphdr_req.payload_size & 0xFF;
+    // INFO(Rafael): Base size of icmp (type, code, checksum and what it carries, in this case our ICMPv6[NDP/NS])
+    icmp_pkt_size = 4 + icmphdr_req.payload_size;
+    ip6phdr_req.upper_layer_pkt_len[0] = (icmp_pkt_size >> 24) & 0xFF;
+    ip6phdr_req.upper_layer_pkt_len[1] = (icmp_pkt_size >> 16) & 0xFF;
+    ip6phdr_req.upper_layer_pkt_len[2] = (icmp_pkt_size >>  8) & 0xFF;
+    ip6phdr_req.upper_layer_pkt_len[3] = icmp_pkt_size & 0xFF;
     ip6phdr_req.next_header[3] = ip6hdr_req.next_header;
 
     ip6hdr_req.payload = (uint8_t *)macgonuts_make_icmp_pkt(&icmphdr_req,
-                                                            (size_t *)&ip6hdr_req.payload_length, &ip6phdr_req);
+                                                            &icmp_pkt_size, &ip6phdr_req);
     if (ip6hdr_req.payload == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip6_epilogue;
     }
+    ip6hdr_req.payload_length = icmp_pkt_size & 0xFFFF;
 
     ethfrm_req.data = (uint8_t *)macgonuts_make_ip6_pkt(&ip6hdr_req, &ethfrm_req.data_size);
     if (ethfrm_req.data == NULL) {
@@ -299,7 +308,8 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
             err = errno;
             continue;
         }
-        if (macgonuts_recvpkt(rsk, na_pkt, na_pkt_size) == -1) {
+        na_pkt_size = macgonuts_recvpkt(rsk, na_pkt, sizeof(na_pkt));
+        if (na_pkt_size == -1) {
             err = errno;
             continue;
         }
@@ -309,14 +319,14 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
         macgonuts_release_ethfrm(&ethfrm_rep);
         err = macgonuts_read_ethernet_frm(&ethfrm_rep, na_pkt, na_pkt_size);
         if (err != EXIT_SUCCESS
-            || ethfrm_req.ether_type != MACGONUTS_ETHER_TYPE_IP6
+            || ethfrm_rep.ether_type != MACGONUTS_ETHER_TYPE_IP6
             || memcmp(ethfrm_rep.dest_hw_addr, ethfrm_req.src_hw_addr, sizeof(ethfrm_rep.dest_hw_addr)) != 0) {
             continue;
         }
         err = macgonuts_read_ip6_pkt(&ip6hdr_rep, ethfrm_rep.data, ethfrm_rep.data_size);
         if (err != EXIT_SUCCESS
-            || memcmp(ip6hdr_rep.src_addr, ip6hdr_req.dest_addr, sizeof(ip6hdr_rep.src_addr)) != 0
-            || memcmp(ip6hdr_rep.dest_addr, ndp_ns_hdr.target_addr, sizeof(ip6hdr_rep.dest_addr)) != 0) {
+            || memcmp(ip6hdr_rep.src_addr, unicast_dest_addr, sizeof(ip6hdr_rep.src_addr)) != 0
+            || memcmp(ip6hdr_rep.dest_addr, ip6hdr_req.src_addr, sizeof(ip6hdr_rep.dest_addr)) != 0) {
             continue;
         }
         err = macgonuts_read_icmp_pkt(&icmphdr_rep, ip6hdr_rep.payload, (size_t)ip6hdr_rep.payload_length);
@@ -327,20 +337,25 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
         }
         err = macgonuts_read_ndp_nsna_pkt(&ndp_na_hdr, icmphdr_rep.payload, icmphdr_rep.payload_size);
         if (err != EXIT_SUCCESS
-            || (ndp_na_hdr.reserv << 3) == 0
+            || (ndp_na_hdr.reserv & 0x2) != 0
             || memcmp(ndp_na_hdr.target_addr, ndp_ns_hdr.target_addr, sizeof(ndp_na_hdr.target_addr)) != 0
             || ndp_na_hdr.options == NULL
             || ndp_na_hdr.options_size != 8
-            || ndp_na_hdr.options[1] != 0x01
-            || ndp_na_hdr.options[2] != 0x01) {
+            || ndp_na_hdr.options[0] != 0x02
+            || ndp_na_hdr.options[1] != 0x01) {
             continue;
         }
-        memcpy(hw_addr, &ndp_na_hdr.options[3], 6);
+        memcpy(hw_addr, &ndp_na_hdr.options[2], 6);
         err = EXIT_SUCCESS;
         done = 1;
     } while (!done && ntry-- > 0);
 
 get_ethaddr_ip6_epilogue:
+
+    if (ns_pkt != NULL) {
+        free(ns_pkt);
+        ns_pkt = NULL;
+    }
 
     macgonuts_release_ndp_nsna_hdr(&ndp_ns_hdr);
     macgonuts_release_icmphdr(&icmphdr_req);

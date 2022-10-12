@@ -48,7 +48,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_recvpkt_tests);
     CUTE_RUN_TEST(macgonuts_get_addr_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_mac_from_iface_tests);
-    //CUTE_RUN_TEST(macgonuts_get_ethaddr_tests);
+    //CUTE_RUN_TEST(macgonuts_get_ethaddr_ip6_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(macgonuts_static_lib_tests);

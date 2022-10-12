@@ -10,32 +10,33 @@
 
 CUTE_TEST_CASE(macgonuts_get_multicast_addr_tests)
     struct test_ctx {
-        uint8_t addr[16];
+        char *addr;
         uint8_t mcast[16];
     } test_vector[] = {
         {
-            { 0x20, 0x01, 0xCA, 0xFE, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02 },
+            "2001:CAFE::2",
             { 0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x01, 0xFF, 0x00, 0x00, 0x02 },
         },
         {
-            { 0x20, 0x01, 0xCA, 0xFE, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03 },
+            "2001:cafe::3",
             { 0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x01, 0xFF, 0x00, 0x00, 0x03 },
         },
         {
-            { 0xCA, 0xFE, 0xFE, 0xD1, 0xD0, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00, 0xDE, 0xFE, 0xCA },
+            "CAFE:FED1:D000::00DE:FECA",
             { 0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
               0x00, 0x00, 0x00, 0x01, 0xFF, 0xDE, 0xFE, 0xCA }
         },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
-    uint8_t mcast[16];
+    uint8_t mcast[16] = { 0 };
+    CUTE_ASSERT(macgonuts_get_multicast_addr(NULL, sizeof(mcast), test->addr, strlen(test->addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_multicast_addr(mcast, 0, test->addr, strlen(test->addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_multicast_addr(mcast, sizeof(mcast), NULL, strlen(test->addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_multicast_addr(mcast, sizeof(mcast), test->addr, 0) == EINVAL);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_get_multicast_addr(mcast, sizeof(mcast),
-                                                 test->addr, sizeof(test->addr)) == EXIT_SUCCESS);
+                                                 test->addr, strlen(test->addr)) == EXIT_SUCCESS);
         CUTE_ASSERT(memcmp(&mcast[0], &test->mcast[0], sizeof(mcast)) == 0);
         test++;
     }

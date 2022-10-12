@@ -11,7 +11,7 @@
 #include <macgonuts_types.h>
 
 int macgonuts_get_multicast_addr(uint8_t *mcast, const size_t mcast_size,
-                                 const uint8_t *haddr, const size_t haddr_size);
+                                 const char *ip6, const size_t ip6_size);
 
 int macgonuts_get_unsolicited_multicast_addr(uint8_t *mcast, const size_t mcast_size);
 

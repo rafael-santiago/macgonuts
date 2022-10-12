@@ -10,6 +10,8 @@
 
 #include <cutest.h>
 
-CUTE_DECLARE_TEST_CASE(macgonuts_get_ethaddr_tests);
+CUTE_DECLARE_TEST_CASE(macgonuts_get_ethaddr_ip4_tests);
+
+CUTE_DECLARE_TEST_CASE(macgonuts_get_ethaddr_ip6_tests);
 
 #endif // MACGONUTS_TEST_MACGONUTS_GET_ETHADDR_TESTS_H

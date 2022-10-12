@@ -12,7 +12,7 @@
 
 #define MACGONUTS_ETHER_TYPE_ARP  0x0806
 #define MACGONUTS_ETHER_TYPE_IP4  0x0800
-#define MACGONUTS_ETHER_TYPE_IP6  0x08DD
+#define MACGONUTS_ETHER_TYPE_IP6  0x86DD
 
 struct macgonuts_ethfrm_ctx {
     uint8_t dest_hw_addr[6];

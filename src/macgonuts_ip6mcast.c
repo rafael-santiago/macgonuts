@@ -6,11 +6,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_ip6mcast.h>
+#include <macgonuts_ipconv.h>
 
 int macgonuts_get_multicast_addr(uint8_t *mcast, const size_t mcast_size,
-                                  const uint8_t *haddr, const size_t haddr_size) {
-    if (mcast == NULL || haddr == NULL || mcast_size != 16 || haddr_size != 16) {
+                                  const char *ip6, const size_t ip6_size) {
+    uint8_t addr[16] = { 0 };
+    int err = EFAULT;
+    if (mcast == NULL || ip6 == NULL || mcast_size != 16 || ip6_size == 0) {
         return EINVAL;
+    }
+    err = macgonuts_get_raw_ip_addr(&addr[0], sizeof(addr), ip6, ip6_size);
+    if (err != EXIT_SUCCESS) {
+        return err;
     }
     mcast[ 0] = 0xFF;
     mcast[ 1] = 0x02;
@@ -25,7 +32,7 @@ int macgonuts_get_multicast_addr(uint8_t *mcast, const size_t mcast_size,
     mcast[10] = 0x00;
     mcast[11] = 0x01;
     mcast[12] = 0xFF;
-    memcpy(&mcast[13], &haddr[13], 3);
+    memcpy(&mcast[13], &addr[13], 3);
     return EXIT_SUCCESS;
 }
 
