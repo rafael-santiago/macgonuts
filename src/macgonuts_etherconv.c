@@ -6,12 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_etherconv.h>
-//#include <fcntl.h>
-//#include <unistd.h>
-//#include <errno.h>
-//#include <ctype.h>
-//#include <stdio.h>
-//#include <stdlib.h>
+#include <macgonuts_ipconv.h>
 
 int macgonuts_check_ether_addr(const char *ether, const size_t ether_size) {
     const char *ep = ether, *lp = ep;
@@ -81,5 +76,59 @@ int macgonuts_get_raw_ether_addr(uint8_t *raw, const size_t max_raw_size,
         ep += 3;
         rp++;
     }
+    return EXIT_SUCCESS;
+}
+
+int macgonuts_get_raw_ip6_mcast_ether_addr(uint8_t *raw, const size_t max_raw_size,
+                                           const char *ip6_addr, const size_t ip6_addr_size) {
+    int err = EFAULT;
+    uint8_t raw_ip6[16] = { 0 };
+    if (raw == NULL || ip6_addr == NULL) {
+        return EINVAL;
+    }
+
+    if (max_raw_size < 6) {
+        return ERANGE;
+    }
+
+    err = macgonuts_get_raw_ip_addr(raw_ip6, sizeof(raw_ip6), ip6_addr, ip6_addr_size);
+    if (err != EXIT_SUCCESS) {
+        return err;
+    }
+
+    raw[0] = 0x33;
+    raw[1] = 0x33;
+    raw[2] = 0xFF;
+    raw[3] = raw_ip6[13];
+    raw[4] = raw_ip6[14];
+    raw[5] = raw_ip6[15];
+
+    return EXIT_SUCCESS;
+}
+
+int macgonuts_get_raw_ip6_unsolicited_mcast_ether_addr(uint8_t *raw, const size_t max_raw_size,
+                                                       const char *ip6_addr, const size_t ip6_addr_size) {
+    int err = EFAULT;
+    uint8_t raw_ip6[16] = { 0 };
+    if (raw == NULL || ip6_addr == NULL) {
+        return EINVAL;
+    }
+
+    if (max_raw_size < 6) {
+        return ERANGE;
+    }
+
+    err = macgonuts_get_raw_ip_addr(raw_ip6, sizeof(raw_ip6), ip6_addr, ip6_addr_size);
+    if (err != EXIT_SUCCESS) {
+        return err;
+    }
+
+    raw[0] = 0x33;
+    raw[1] = 0x33;
+    raw[2] = raw_ip6[12];
+    raw[3] = raw_ip6[13];
+    raw[4] = raw_ip6[14];
+    raw[5] = raw_ip6[15];
+
     return EXIT_SUCCESS;
 }

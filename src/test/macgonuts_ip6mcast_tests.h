@@ -12,4 +12,6 @@
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_multicast_addr_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_unsolicited_multicast_addr_tests);
+
 #endif

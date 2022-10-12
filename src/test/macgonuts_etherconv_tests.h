@@ -16,5 +16,9 @@ CUTE_DECLARE_TEST_CASE(macgonuts_getrandom_ether_addr_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_raw_ether_addr_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_raw_ip6_mcast_ether_addr_tests);
+
+CUTE_DECLARE_TEST_CASE(macgonuts_get_raw_ip6_unsolicited_mcast_ether_addr_tests);
+
 #endif // MACGONUTS_MACGONUTS_ETHERCONV_TESTS_H
 

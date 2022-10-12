@@ -25,7 +25,11 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_ip_version_tests);
     CUTE_RUN_TEST(macgonuts_check_ip_cidr_tests);
     CUTE_RUN_TEST(macgonuts_get_multicast_addr_tests);
+    CUTE_RUN_TEST(macgonuts_get_unsolicited_multicast_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_raw_ip_addr_tests);
+    // INFO(Rafael): Those two ethernet conveniences depends on correctness of ip convenience module.
+    CUTE_RUN_TEST(macgonuts_get_raw_ip6_mcast_ether_addr_tests);
+    CUTE_RUN_TEST(macgonuts_get_raw_ip6_unsolicited_mcast_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_eval_ipchsum_tests);
     CUTE_RUN_TEST(macgonuts_read_ethernet_frm_tests);
     CUTE_RUN_TEST(macgonuts_make_ethernet_frm_tests);

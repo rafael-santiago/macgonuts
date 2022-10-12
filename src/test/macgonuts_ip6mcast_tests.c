@@ -40,3 +40,12 @@ CUTE_TEST_CASE(macgonuts_get_multicast_addr_tests)
         test++;
     }
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_unsolicited_multicast_addr_tests)
+    uint8_t usmcast_addr[16] = { 0 };
+    CUTE_ASSERT(macgonuts_get_unsolicited_multicast_addr(NULL, sizeof(usmcast_addr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_unsolicited_multicast_addr(usmcast_addr, 17) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_unsolicited_multicast_addr(usmcast_addr, sizeof(usmcast_addr)) == EXIT_SUCCESS);
+    CUTE_ASSERT(memcmp(&usmcast_addr[0],
+                       "\xFF\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01", sizeof(usmcast_addr)) == 0);
+CUTE_TEST_CASE_END
