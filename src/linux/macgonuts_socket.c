@@ -155,11 +155,13 @@ static int set_iface_promisc_flag(const int on, const char *iface) {
     }
     sockfd = socket(AF_INET, SOCK_PACKET, IPPROTO_IP);
     if (sockfd == -1) {
-        return errno;
+        err = errno;
+        goto set_iface_promisc_flag_epilogue;
     }
     strncpy((char *)ifr.ifr_name, iface, strlen(iface));
     if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) != 0) {
-        return errno;
+        err = errno;
+        goto set_iface_promisc_flag_epilogue;
     }
     if (on) {
         ifr.ifr_flags |= IFF_PROMISC;
@@ -167,6 +169,9 @@ static int set_iface_promisc_flag(const int on, const char *iface) {
         ifr.ifr_flags &= (~IFF_PROMISC);
     }
     err = ioctl(sockfd, SIOCSIFFLAGS, &ifr);
-    close(sockfd);
+set_iface_promisc_flag_epilogue:
+    if (sockfd != -1) {
+        close(sockfd);
+    }
     return err;
 }
