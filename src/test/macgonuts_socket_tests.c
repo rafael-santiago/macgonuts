@@ -131,7 +131,7 @@ static void *get_pkt(void *args) {
 
 static void *ping_pkt(void *args) {
     int *version = (int *)args;
-    system((*version == 4) ? "ping 8.8.8.8 -c 5" : (*version == 6) ? "ping6 8.8.8.8 -c 5" : "echo unknown ip version.");
+    system((*version == 4) ? "ping 8.8.8.8 -c 1" : (*version == 6) ? "ping6 8.8.8.8 -c 1" : "echo unknown ip version.");
     return NULL;
 }
 

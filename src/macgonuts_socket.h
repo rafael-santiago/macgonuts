@@ -14,9 +14,9 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
 
 void macgonuts_release_socket(const macgonuts_socket_t sockfd);
 
-ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, const size_t buf_size);
+__attribute__((weak)) ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, const size_t buf_size);
 
-ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size);
+__attribute__((weak)) ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size);
 
 int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
                                   const int addr_version, const char *iface);
@@ -28,4 +28,3 @@ int macgonuts_set_iface_promisc_on(const char *iface);
 int macgonuts_set_iface_promisc_off(const char *iface);
 
 #endif // MACGONUTS_SOCKET_H
-
