@@ -120,8 +120,8 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
         goto get_ethaddr_ip4_epilogue;
     }
     assert(arp_req_hdr.hlen == sizeof(ethfrm.src_hw_addr));
-    memcpy(arp_req_hdr.sha, ethfrm.src_hw_addr, sizeof(arp_req_hdr.sha));
-    memset(arp_req_hdr.tha, 0, sizeof(arp_req_hdr.tha));
+    memcpy(arp_req_hdr.sha, ethfrm.src_hw_addr, arp_req_hdr.hlen);
+    memset(arp_req_hdr.tha, 0, arp_req_hdr.hlen);
     // INFO(Rafael): Finally, crafting the whole ethernet frame and sending it.
     ethfrm.data = (uint8_t *)macgonuts_make_arp_pkt(&arp_req_hdr, &ethfrm.data_size);
     if (ethfrm.data == NULL) {
@@ -373,6 +373,6 @@ get_ethaddr_ip6_epilogue:
 static int get_ethaddr_unk(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
                            macgonuts_socket_t rsk, const char *iface) {
-    fprintf(stderr, "error: layer3 address '%s' does not seem with a valid ipv4 or ipv6 address.\n");
+    fprintf(stderr, "error: layer3 address '%s' does not seem with a valid ipv4 or ipv6 address.\n", layer3addr);
     return EINVAL;
 }

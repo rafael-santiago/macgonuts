@@ -269,7 +269,7 @@ static int get_raw_ip6(uint8_t *raw, const size_t raw_max_size, const char *ip, 
 #define nib2num(n) ( isdigit((n)) ? ((n) - 48) : (toupper((n)) - 55) )
                 u16 = (u16 << 4) | nib2num(i[0]);
                 nibbles_nr++;
-                if ((i + 1) < i_end && i[-1] == ':' && i[1] == ':' || (i + 1) == i_end
+                if (((i + 1) < i_end && i[-1] == ':' && i[1] == ':') || (i + 1) == i_end
                     || ((i + 1) < i_end && i[1] == ':' && (i + 2) != i_end && i[2] != ':' && nibbles_nr > 2)) {
                     nibbles_nr = 4;
                 }
