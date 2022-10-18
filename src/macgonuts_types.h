@@ -26,9 +26,56 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <ifaddrs.h>
+#include <pthread.h>
 
 #define MACGONUTS_VERSION "v1"
 
+#define MACGONUTS_METAINFO_NR 16
+
 typedef int macgonuts_socket_t;
+
+typedef pthread_t macgonuts_thread_t;
+
+typedef pthread_mutex_t macgonuts_mutex_t;
+
+struct macgonuts_spoofing_guidance_ctx;
+
+typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
+                                   const void *, const size_t);
+
+struct macgonuts_spoofing_guidance_ctx {
+    struct {
+        macgonuts_mutex_t lock;
+        macgonuts_thread_t thread;
+        macgonuts_socket_t wire;
+    }handles;
+
+    struct {
+        uint8_t lo_mac_addr[6];
+        uint8_t tg_mac_addr[6];
+        uint8_t proto_addr_version;
+        uint8_t proto_addr_size;
+        uint8_t lo_proto_addr[16];
+        uint8_t tg_proto_addr[16];
+    }protocols;
+
+    struct {
+        int64_t total;
+        uint64_t timeout;
+        uint8_t abort;
+    }spoofing;
+
+    struct {
+        macgonuts_hook_func init;
+        macgonuts_hook_func deinit;
+        macgonuts_hook_func done;
+        macgonuts_hook_func redirect;
+        macgonuts_hook_func capture;
+    }hooks;
+
+    struct {
+        void *arg[MACGONUTS_METAINFO_NR];
+    }metainfo;
+};
 
 #endif // MACGONUTS_TYPES_H

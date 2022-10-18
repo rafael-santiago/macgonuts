@@ -6,12 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "macgonuts_get_ethaddr_tests.h"
+#include "macgonuts_mocks.h"
 #include <macgonuts_get_ethaddr.h>
 #include <macgonuts_socket.h>
 #include <string.h>
 #include <stdio.h>
-
-static int g_IPv = 4;
 
 static uint8_t g_FullARPReply[] = {
     0x08, 0x00, 0x27, 0xE5,
@@ -61,7 +60,9 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip4_tests)
     uint8_t expected_hw_addr[6] = { 0x08, 0x00, 0x27, 0x97, 0x64, 0x91 };
     const char *ip = "10.0.2.13";
     macgonuts_socket_t rsk = -1;
-    g_IPv = 4;
+    mock_set_expected_ip_version(4);
+    mock_set_expected_ip4_addr("10.0.2.11");
+    mock_set_recv_buf(g_FullARPReply, sizeof(g_FullARPReply));
     rsk = macgonuts_create_socket("eth1", 1);
     CUTE_ASSERT(rsk != -1);
     CUTE_ASSERT(macgonuts_set_iface_promisc_on("eth1") == EXIT_SUCCESS);
@@ -76,7 +77,9 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip6_tests)
     uint8_t expected_hw_addr[6] = { 0x08, 0x00, 0x27, 0x97, 0x64, 0x91 };
     const char *ip = "2001:db8:0:f101::3";
     macgonuts_socket_t rsk = -1;
-    g_IPv = 6;
+    mock_set_expected_ip_version(6);
+    mock_set_expected_ip6_addr("2001:db8:0:f101::2");
+    mock_set_recv_buf(g_FullNDPNAReply, sizeof(g_FullNDPNAReply));
     rsk = macgonuts_create_socket("eth1", 1);
     CUTE_ASSERT(rsk != -1);
     CUTE_ASSERT(macgonuts_set_iface_promisc_on("eth1") == EXIT_SUCCESS);
@@ -86,26 +89,3 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip6_tests)
     CUTE_ASSERT(memcmp(hw_addr, expected_hw_addr, sizeof(hw_addr)) == 0);
 CUTE_TEST_CASE_END
 
-ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, const size_t buf_size) {
-    return buf_size; // INFO(Rafael): Always ok.
-}
-
-ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size) {
-    ssize_t bytes_nr = -1;
-    switch (g_IPv) {
-        case 4:
-            bytes_nr = sizeof(g_FullARPReply) / sizeof(g_FullARPReply[0]);
-            memcpy(buf, g_FullARPReply, bytes_nr);
-            break;
-
-        case 6:
-            bytes_nr = sizeof(g_FullNDPNAReply) / sizeof(g_FullNDPNAReply[0]);
-            memcpy(buf, g_FullNDPNAReply, bytes_nr);
-            break;
-
-        default:
-            fprintf(stderr, "test setup error: You must set g_IPv to 4 or 6.\n");
-            break;
-    }
-    return bytes_nr;
-}
