@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -43,6 +44,18 @@ struct macgonuts_spoofing_guidance_ctx;
 typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
                                    const void *, const size_t);
 
+struct macgonuts_spoof_on_layers_ctx {
+    uint8_t lo_hw_addr[6];
+    uint8_t tg_hw_addr[6];
+    uint8_t proto_addr_version;
+    uint8_t proto_addr_size;
+    uint8_t lo_proto_addr[16];
+    uint8_t tg_proto_addr[16];
+    uint8_t spoof_proto_addr[16];
+    unsigned char *spoof_frm;
+    size_t spoof_frm_size;
+};
+
 struct macgonuts_spoofing_guidance_ctx {
     struct {
         macgonuts_mutex_t lock;
@@ -50,14 +63,7 @@ struct macgonuts_spoofing_guidance_ctx {
         macgonuts_socket_t wire;
     }handles;
 
-    struct {
-        uint8_t lo_mac_addr[6];
-        uint8_t tg_mac_addr[6];
-        uint8_t proto_addr_version;
-        uint8_t proto_addr_size;
-        uint8_t lo_proto_addr[16];
-        uint8_t tg_proto_addr[16];
-    }protocols;
+    struct macgonuts_spoof_on_layers_ctx layers;
 
     struct {
         int64_t total;
