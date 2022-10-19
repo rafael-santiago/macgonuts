@@ -47,6 +47,7 @@ typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
 struct macgonuts_spoof_on_layers_ctx {
     uint8_t lo_hw_addr[6];
     uint8_t tg_hw_addr[6];
+    uint8_t spoof_hw_addr[6];
     uint8_t proto_addr_version;
     uint8_t proto_addr_size;
     uint8_t lo_proto_addr[16];

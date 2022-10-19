@@ -19,23 +19,23 @@
 
 typedef int (*get_ethaddr_handler_func)(uint8_t *hw_addr, const size_t hw_addr_size,
                                         const char *layer3addr, const size_t layer3addr_size,
-                                        macgonuts_socket_t rsk, const char *iface);
+                                        const macgonuts_socket_t rsk, const char *iface);
 
 static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk, const char *iface);
+                           const macgonuts_socket_t rsk, const char *iface);
 
 static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk, const char *iface);
+                           const macgonuts_socket_t rsk, const char *iface);
 
 static int get_ethaddr_unk(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk, const char *iface);
+                           const macgonuts_socket_t rsk, const char *iface);
 
 int macgonuts_get_ethaddr(uint8_t *hw_addr, const size_t hw_addr_size,
                           const char *layer3addr, const size_t layer3addr_size,
-                          macgonuts_socket_t rsk, const char *iface) {
+                          const macgonuts_socket_t rsk, const char *iface) {
     get_ethaddr_handler_func get_ethaddr = NULL;
     int l3addr_version = 0;
 
@@ -55,7 +55,7 @@ int macgonuts_get_ethaddr(uint8_t *hw_addr, const size_t hw_addr_size,
 
 static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk, const char *iface) {
+                           const macgonuts_socket_t rsk, const char *iface) {
     int err = EFAULT;
     struct macgonuts_ethfrm_ctx ethfrm = { 0 };
     struct macgonuts_arphdr_ctx arp_req_hdr = { 0 }, arp_rep_hdr = { 0 };
@@ -180,7 +180,7 @@ get_ethaddr_ip4_epilogue:
 
 static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk, const char *iface) {
+                           const macgonuts_socket_t rsk, const char *iface) {
     char src_hw_addr[20] = { 0 };
     char src_ip_addr[50] = { 0 };
     int err = EFAULT;
@@ -372,7 +372,7 @@ get_ethaddr_ip6_epilogue:
 
 static int get_ethaddr_unk(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
-                           macgonuts_socket_t rsk, const char *iface) {
+                           const macgonuts_socket_t rsk, const char *iface) {
     fprintf(stderr, "error: layer3 address '%s' does not seem with a valid ipv4 or ipv6 address.\n", layer3addr);
     return EINVAL;
 }

@@ -12,7 +12,7 @@
 
 int macgonuts_get_ethaddr(uint8_t *hw_addr, const size_t hw_addr_size,
                           const char *layer3addr, const size_t layer3addr_size,
-                          macgonuts_socket_t rsk, const char *iface);
+                          const macgonuts_socket_t rsk, const char *iface);
 
 
 #endif // MACGONUTS_GET_ETHADDR_H

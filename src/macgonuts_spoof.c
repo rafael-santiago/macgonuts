@@ -15,6 +15,8 @@
 #include <macgonuts_ip6mcast.h>
 #include <macgonuts_etherconv.h>
 #include <macgonuts_socket.h>
+#include <macgonuts_get_ethaddr.h>
+#include <macgonuts_ipconv.h>
 
 static int macgonuts_spoof4(const macgonuts_socket_t rsk,
                             struct macgonuts_spoof_on_layers_ctx *spf_layers);
@@ -55,6 +57,111 @@ void macgonuts_release_spoof_on_layers_ctx(struct macgonuts_spoof_on_layers_ctx 
     free(spf_layers->spoof_frm);
     spf_layers->spoof_frm_size = 0;
 }
+
+int macgonuts_get_spoof_on_layers_info(const macgonuts_socket_t rsk,
+                                       struct macgonuts_spoof_on_layers_ctx *spf_layers,
+                                       const char *target_addr, const size_t target_addr_size,
+                                       const char *address2spoof, const size_t address2spoof_size,
+                                       const char *lo_iface) {
+    char mac_buf[256] = "";
+    char addr_buf[256] = "";
+    int err = EFAULT;
+    int ip_v[2] = { -1, -1 };
+
+    if (spf_layers == NULL
+        || target_addr == NULL || target_addr_size == 0
+        || address2spoof == NULL || address2spoof_size == 0
+        || lo_iface == NULL
+        || rsk == -1) {
+        return EINVAL;
+    }
+
+    spf_layers->spoof_frm = NULL;
+    spf_layers->spoof_frm_size = 0;
+
+    ip_v[0] = macgonuts_get_ip_version(target_addr, target_addr_size);
+    ip_v[1] = macgonuts_get_ip_version(address2spoof, address2spoof_size);
+
+    if (ip_v[0] == -1 || ip_v[1] == -1 || ip_v[0] != ip_v[1]) {
+        fprintf(stderr, "error: network protocol version mismatch.\n");
+        err = EPROTO;
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    spf_layers->proto_addr_version = ip_v[0];
+
+    spf_layers->proto_addr_size = (ip_v[0] == 4) ? 4
+                                                 : 16;
+
+    err = macgonuts_get_mac_from_iface(mac_buf, sizeof(mac_buf) - 1, lo_iface);
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_raw_ether_addr(&spf_layers->lo_hw_addr[0],
+                                       sizeof(spf_layers->lo_hw_addr),
+                                       mac_buf, strlen(mac_buf));
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_addr_from_iface(addr_buf,
+                                        sizeof(addr_buf) - 1,
+                                        ip_v[0], lo_iface);
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_raw_ip_addr(spf_layers->lo_proto_addr,
+                                    spf_layers->proto_addr_size,
+                                    addr_buf, strlen(addr_buf));
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_raw_ip_addr(spf_layers->tg_proto_addr,
+                                    spf_layers->proto_addr_size,
+                                    target_addr, target_addr_size);
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_raw_ip_addr(spf_layers->spoof_proto_addr,
+                                    spf_layers->proto_addr_size,
+                                    address2spoof, address2spoof_size);
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_ethaddr(&spf_layers->tg_hw_addr[0],
+                                sizeof(spf_layers->tg_hw_addr),
+                                target_addr, target_addr_size,
+                                rsk, lo_iface);
+
+    if (err != EXIT_SUCCESS) {
+        goto macgonuts_get_spoof_on_layers_info_epilogue;
+    }
+
+    err = macgonuts_get_ethaddr(&spf_layers->spoof_hw_addr[0],
+                                sizeof(spf_layers->spoof_hw_addr),
+                                address2spoof, address2spoof_size,
+                                rsk, lo_iface);
+
+macgonuts_get_spoof_on_layers_info_epilogue:
+
+    if (err != EXIT_SUCCESS && spf_layers != NULL) {
+        memset(spf_layers, 0, sizeof(struct macgonuts_spoof_on_layers_ctx));
+    }
+
+    return err;
+}
+
 
 static int macgonuts_spoof4(const macgonuts_socket_t rsk,
                             struct macgonuts_spoof_on_layers_ctx *spf_layers) {
@@ -203,4 +310,3 @@ static int macgonuts_spoof_err(const macgonuts_socket_t rsk,
     fprintf(stderr, "error: no spoofing support for the supplied addresses, check them and try again.\n");
     return ENOTSUP;
 }
-
