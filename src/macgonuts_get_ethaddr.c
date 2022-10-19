@@ -68,26 +68,33 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
     size_t arp_req_pkt_size = 0;
     unsigned char arp_rep_pkt[1<<10] = { 0 };
     size_t arp_rep_pkt_size = 0;
+
     // INFO(Rafael): Crafting ethernet frame.
     err = macgonuts_get_raw_ether_addr(ethfrm.dest_hw_addr, sizeof(ethfrm.dest_hw_addr),
                                        "FF:FF:FF:FF:FF:FF", 17);
+
     if (err != EXIT_SUCCESS) {
         goto get_ethaddr_ip4_epilogue;
     }
+
     err = macgonuts_get_mac_from_iface(src_hw_addr, sizeof(src_hw_addr), iface);
     if (err != EXIT_SUCCESS) {
         goto get_ethaddr_ip4_epilogue;
     }
+
     err = macgonuts_get_addr_from_iface(src_ip_addr, sizeof(src_ip_addr), 4, iface);
     if (err != EXIT_SUCCESS) {
         goto get_ethaddr_ip4_epilogue;
     }
+
     err = macgonuts_get_raw_ether_addr(ethfrm.src_hw_addr, sizeof(ethfrm.src_hw_addr),
                                        src_hw_addr, strlen(src_hw_addr));
     if (err != EXIT_SUCCESS) {
         goto get_ethaddr_ip4_epilogue;
     }
+
     ethfrm.ether_type = MACGONUTS_ETHER_TYPE_ARP;
+
     // INFO(Rafael): Now crafting out our ARP request header.
     arp_req_hdr.htype = MACGONUTS_ARP_HW_TYPE_ETHERNET;
     arp_req_hdr.ptype = MACGONUTS_ETHER_TYPE_IP4;
@@ -95,62 +102,77 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
     arp_req_hdr.plen = sizeof(uint32_t);
     arp_req_hdr.oper = kARPOperRequest;
     arp_req_hdr.sha = (uint8_t *)malloc(arp_req_hdr.hlen);
+
     if (arp_req_hdr.sha == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip4_epilogue;
     }
+
     arp_req_hdr.spa = (uint8_t *)malloc(arp_req_hdr.plen);
     if (arp_req_hdr.spa == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip4_epilogue;
     }
+
     arp_req_hdr.tha = (uint8_t *)malloc(arp_req_hdr.hlen);
     if (arp_req_hdr.tha == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip4_epilogue;
     }
+
     arp_req_hdr.tpa = (uint8_t *)malloc(arp_req_hdr.plen);
     if (arp_req_hdr.tpa == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip4_epilogue;
     }
+
     if (macgonuts_get_raw_ip_addr(arp_req_hdr.spa, arp_req_hdr.plen, src_ip_addr, strlen(src_ip_addr)) != EXIT_SUCCESS
         || macgonuts_get_raw_ip_addr(arp_req_hdr.tpa, arp_req_hdr.plen, layer3addr, layer3addr_size) != EXIT_SUCCESS) {
         err = EINVAL;
         goto get_ethaddr_ip4_epilogue;
     }
+
     assert(arp_req_hdr.hlen == sizeof(ethfrm.src_hw_addr));
+
     memcpy(arp_req_hdr.sha, ethfrm.src_hw_addr, arp_req_hdr.hlen);
     memset(arp_req_hdr.tha, 0, arp_req_hdr.hlen);
+
     // INFO(Rafael): Finally, crafting the whole ethernet frame and sending it.
     ethfrm.data = (uint8_t *)macgonuts_make_arp_pkt(&arp_req_hdr, &ethfrm.data_size);
     if (ethfrm.data == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip4_epilogue;
     }
+
     arp_req_pkt = macgonuts_make_ethernet_frm(&ethfrm, &arp_req_pkt_size);
     if (arp_req_pkt == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip4_epilogue;
     }
+
     err = EFAULT;
+
     do {
         bytes_nr = macgonuts_sendpkt(rsk, arp_req_pkt, arp_req_pkt_size);
         if (bytes_nr == -1) {
             err = errno;
             continue;
         }
+
         bytes_nr = macgonuts_recvpkt(rsk, arp_rep_pkt, sizeof(arp_rep_pkt));
         if (bytes_nr == -1) {
             continue;
         }
+
         macgonuts_release_arphdr(&arp_rep_hdr);
         macgonuts_release_ethfrm(&ethfrm);
+
         err = macgonuts_read_ethernet_frm(&ethfrm, arp_rep_pkt, bytes_nr);
         if (err != EXIT_SUCCESS
             || ethfrm.ether_type != MACGONUTS_ETHER_TYPE_ARP) {
             continue;
         }
+
         err = macgonuts_read_arp_pkt(&arp_rep_hdr, ethfrm.data, ethfrm.data_size);
         if (err != EXIT_SUCCESS
             || arp_rep_hdr.oper != kARPOperReply
@@ -158,23 +180,29 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
             || memcmp(arp_rep_hdr.tpa, arp_req_hdr.spa, arp_rep_hdr.plen) != 0) {
             continue;
         }
+
         if (hw_addr_size < arp_rep_hdr.hlen) {
             err = ERANGE;
             goto get_ethaddr_ip4_epilogue;
         }
+
         memcpy(hw_addr, arp_rep_hdr.sha, arp_rep_hdr.hlen);
         err = EXIT_SUCCESS;
         done = 1;
     } while (!done && ntry-- > 0);
+
 get_ethaddr_ip4_epilogue:
+
     macgonuts_release_arphdr(&arp_req_hdr);
     macgonuts_release_arphdr(&arp_rep_hdr);
     macgonuts_release_ethfrm(&ethfrm);
+
     if (arp_req_pkt != NULL) {
         free(arp_req_pkt);
         arp_req_pkt = NULL;
         arp_req_pkt_size = 0;
     }
+
     return err;
 }
 
@@ -308,33 +336,39 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
             err = errno;
             continue;
         }
+
         na_pkt_size = macgonuts_recvpkt(rsk, na_pkt, sizeof(na_pkt));
         if (na_pkt_size == -1) {
             err = errno;
             continue;
         }
+
         macgonuts_release_ndp_nsna_hdr(&ndp_na_hdr);
         macgonuts_release_icmphdr(&icmphdr_rep);
         macgonuts_release_ip6hdr(&ip6hdr_rep);
         macgonuts_release_ethfrm(&ethfrm_rep);
+
         err = macgonuts_read_ethernet_frm(&ethfrm_rep, na_pkt, na_pkt_size);
         if (err != EXIT_SUCCESS
             || ethfrm_rep.ether_type != MACGONUTS_ETHER_TYPE_IP6
             || memcmp(ethfrm_rep.dest_hw_addr, ethfrm_req.src_hw_addr, sizeof(ethfrm_rep.dest_hw_addr)) != 0) {
             continue;
         }
+
         err = macgonuts_read_ip6_pkt(&ip6hdr_rep, ethfrm_rep.data, ethfrm_rep.data_size);
         if (err != EXIT_SUCCESS
             || memcmp(ip6hdr_rep.src_addr, unicast_dest_addr, sizeof(ip6hdr_rep.src_addr)) != 0
             || memcmp(ip6hdr_rep.dest_addr, ip6hdr_req.src_addr, sizeof(ip6hdr_rep.dest_addr)) != 0) {
             continue;
         }
+
         err = macgonuts_read_icmp_pkt(&icmphdr_rep, ip6hdr_rep.payload, (size_t)ip6hdr_rep.payload_length);
         if (err != EXIT_SUCCESS
             || icmphdr_rep.type != kNDPMsgTypeNeighborAdvertisement
             || icmphdr_rep.code != 0) {
             continue;
         }
+
         err = macgonuts_read_ndp_nsna_pkt(&ndp_na_hdr, icmphdr_rep.payload, icmphdr_rep.payload_size);
         if (err != EXIT_SUCCESS
             || (ndp_na_hdr.reserv & 0x2) != 0
@@ -345,6 +379,7 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
             || ndp_na_hdr.options[1] != 0x01) {
             continue;
         }
+
         memcpy(hw_addr, &ndp_na_hdr.options[2], 6);
         err = EXIT_SUCCESS;
         done = 1;
