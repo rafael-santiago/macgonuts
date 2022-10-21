@@ -7,6 +7,7 @@
  */
 #include <macgonuts_etherconv.h>
 #include <macgonuts_ipconv.h>
+#include <macgonuts_status_info.h>
 
 int macgonuts_check_ether_addr(const char *ether, const size_t ether_size) {
     const char *ep = ether, *lp = ep;
@@ -39,7 +40,7 @@ int macgonuts_getrandom_ether_addr(char *ether, const size_t max_ether_size) {
     }
     urandom = open("/dev/urandom", O_RDONLY);
     if (urandom == -1) {
-        fprintf(stderr, "error: unable to read /dev/urandom.\n");
+        macgonuts_si_error("unable to read /dev/urandom.\n");
         return EXIT_FAILURE;
     }
     ep = ether;

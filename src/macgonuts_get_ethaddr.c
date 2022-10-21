@@ -15,7 +15,7 @@
 #include <macgonuts_etherconv.h>
 #include <macgonuts_ip6mcast.h>
 #include <macgonuts_socket.h>
-#include <assert.h>
+#include <macgonuts_status_info.h>
 
 typedef int (*get_ethaddr_handler_func)(uint8_t *hw_addr, const size_t hw_addr_size,
                                         const char *layer3addr, const size_t layer3addr_size,
@@ -408,6 +408,6 @@ get_ethaddr_ip6_epilogue:
 static int get_ethaddr_unk(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
                            const macgonuts_socket_t rsk, const char *iface) {
-    fprintf(stderr, "error: layer3 address '%s' does not seem with a valid ipv4 or ipv6 address.\n", layer3addr);
+    macgonuts_si_error("layer3 address '%s' does not seem with a valid ipv4 or ipv6 address.\n", layer3addr);
     return EINVAL;
 }

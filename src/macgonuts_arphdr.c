@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_arphdr.h>
+#include <macgonuts_status_info.h>
 
 #define ARP_HDR_BASE_SIZE(ctx) (sizeof(ctx->htype) + sizeof(ctx->ptype) +\
                                 sizeof(ctx->hlen) + sizeof(ctx->plen) +\
@@ -24,7 +25,7 @@ unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr,
     *pkt_size = ARP_HDR_BASE_SIZE(arphdr) + ((arphdr->hlen + arphdr->plen) << 1);
     pkt = (unsigned char *)malloc(*pkt_size);
     if (pkt == NULL) {
-        perror("malloc()");
+        macgonuts_si_error("%s", strerror(errno));
         *pkt_size = 0;
         return NULL;
     }

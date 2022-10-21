@@ -25,6 +25,9 @@ macgonuts-static-lib.preloading() {
 
 macgonuts-static-lib.prologue() {
     set_rootdir(".");
+    if (build("accacia") != 0) {
+        hefesto.project.abort(1);
+    }
 
     $includes = hefesto.sys.get_option("includes");
     $cflags = hefesto.sys.get_option("cflags");
@@ -39,6 +42,14 @@ macgonuts-static-lib.prologue() {
     if (hefesto.sys.cd($platform)) {
         $dirlist.add_item(hefesto.sys.pwd());
         hefesto.sys.cd("..");
+    }
+
+    if ($platform == "linux"
+        || $platform == "freebsd") {
+        if (hefesto.sys.cd("unix")) {
+            $dirlist.add_item(hefesto.sys.pwd());
+            hefesto.sys.cd("..");
+        }
     }
 
     $sources = get_codes($dirlist, $dependency_chain);

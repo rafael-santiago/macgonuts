@@ -28,6 +28,11 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <pthread.h>
+#include <stdarg.h>
+
+#if defined(__unix__)
+# define MACGONUTS_DEFAULT_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
+#endif // defined(__unix__)
 
 #define MACGONUTS_VERSION "v1"
 
@@ -44,7 +49,7 @@ struct macgonuts_spoofing_guidance_ctx;
 typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
                                    const void *, const size_t);
 
-struct macgonuts_spoof_on_layers_ctx {
+struct macgonuts_spoof_layers_ctx {
     uint8_t lo_hw_addr[6];
     uint8_t tg_hw_addr[6];
     uint8_t spoof_hw_addr[6];
@@ -64,7 +69,7 @@ struct macgonuts_spoofing_guidance_ctx {
         macgonuts_socket_t wire;
     }handles;
 
-    struct macgonuts_spoof_on_layers_ctx layers;
+    struct macgonuts_spoof_layers_ctx layers;
 
     struct {
         int64_t total;

@@ -1,3 +1,6 @@
 [submodule "src/libs/cutest"]
 	path = src/libs/cutest
 	url = https://github.com/rafael-santiago/cutest
+[submodule "src/libs/accacia"]
+	path = src/libs/accacia
+	url = https://github.com/rafael-santiago/accacia

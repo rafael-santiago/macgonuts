@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_socket.h>
+#include <macgonuts_status_info.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -36,16 +37,14 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
     struct sockaddr_ll sll = { 0 };
     sockfd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
     if (sockfd == -1) {
-        perror("socket()");
-        fprintf(stderr, "error: unable to create raw socket.\n");
+        macgonuts_si_error("unable to create raw socket : '%s'\n", strerror(errno));
         return -1;
     }
     sll.sll_family = AF_PACKET;
     sll.sll_protocol = htons(ETH_P_ALL);
     sll.sll_ifindex = get_iface_index(iface);
     if (bind(sockfd, (struct sockaddr *)&sll, sizeof(sll)) != 0) {
-        perror("bind()");
-        fprintf(stderr, "error: cannot bind raw socket.\n");
+        macgonuts_si_error("cannot bind raw socket : '%s'\n", strerror(errno));
         macgonuts_release_socket(sockfd);
         return -1;
     }
@@ -135,8 +134,7 @@ static int get_iface_index(const char *iface) {
     strncpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name) - 1);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
-        perror("socket()");
-        fprintf(stderr, "error: unable to create temporary socket.\n");
+        macgonuts_si_error("unable to create temporary socket : '%s'\n", strerror(errno));
         return -1;
     }
     if (ioctl(sockfd, SIOCGIFINDEX, &ifr) != 0) {

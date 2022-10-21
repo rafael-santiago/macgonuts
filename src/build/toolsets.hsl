@@ -106,6 +106,24 @@ function build(dep type string) : result type int {
     result hefesto.sys.call_func_addr($build_task);
 }
 
+local function build_accacia() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    var exit_code type int;
+    $exit_code = 1;
+    var accacia_src_dir type string;
+    $accacia_src_dir = hefesto.sys.make_path(get_rootdir(), "libs/accacia/src");
+    if (hefesto.sys.cd($accacia_src_dir)) {
+        if (isfile("../lib/libaccacia.a") == 0) {
+            $exit_code = hefesto.sys.run("hefesto --toolset=" + get_lib_toolset());
+        } else {
+            $exit_code = 0;
+        }
+    }
+    hefesto.sys.cd($oldcwd);
+    result $exit_code;
+}
+
 local function build_cutest() : result type int {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();

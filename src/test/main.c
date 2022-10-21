@@ -17,8 +17,20 @@
 #include "macgonuts_ndphdr_tests.h"
 #include "macgonuts_ipchsum_tests.h"
 #include "macgonuts_get_ethaddr_tests.h"
+#include "macgonuts_status_info_tests.h"
+#include "macgonuts_thread_tests.h"
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
+    // INFO(Rafael): Since all working modules can call some status info module convenience
+    //               let's poke it first.
+    CUTE_RUN_TEST(macgonuts_si_error_tests);
+    CUTE_RUN_TEST(macgonuts_si_warn_tests);
+    CUTE_RUN_TEST(macgonuts_si_info_tests);
+    CUTE_RUN_TEST(macgonuts_si_set_outmode_tests);
+    CUTE_RUN_TEST(macgonuts_si_get_last_info_tests);
+    CUTE_RUN_TEST(macgonuts_mutex_lock_unlock_tests);
+    CUTE_RUN_TEST(macgonuts_mutex_trylock_tests);
+    CUTE_RUN_TEST(macgonuts_create_join_thread_tests);
     CUTE_RUN_TEST(macgonuts_check_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_raw_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_check_ip_addr_tests);
