@@ -42,6 +42,10 @@ void macgonuts_si_warn(const char *message, ...) {
     SI_IMPL_TEMPLATE("warn: ");
 }
 
+void macgonuts_si_print(const char *message, ...) {
+    SI_IMPL_TEMPLATE(NULL);
+}
+
 int macgonuts_si_get_last_info(char *si_buf, const size_t max_si_buf) {
     if (si_buf == NULL || max_si_buf == 0) {
         return ERANGE;

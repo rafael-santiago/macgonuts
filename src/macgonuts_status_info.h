@@ -23,6 +23,8 @@ void macgonuts_si_info(const char *message, ...);
 
 void macgonuts_si_warn(const char *message, ...);
 
+void macgonuts_si_print(const char *message, ...);
+
 void macgonuts_si_set_outmode(const macgonuts_si_outmode_t otype);
 
 int macgonuts_si_get_last_info(char *si_buf, const size_t max_si_buf);

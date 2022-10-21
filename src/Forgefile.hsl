@@ -52,6 +52,11 @@ macgonuts-static-lib.prologue() {
         }
     }
 
+    if (hefesto.sys.cd("hooks")) {
+        $dirlist.add_item(hefesto.sys.pwd());
+        hefesto.sys.cd("..");
+    }
+
     $sources = get_codes($dirlist, $dependency_chain);
 }
 

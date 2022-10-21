@@ -72,6 +72,15 @@ struct macgonuts_spoofing_guidance_ctx {
     struct macgonuts_spoof_layers_ctx layers;
 
     struct {
+        const char *lo_iface;
+        const char *tg_address;
+        const char *spoof_address;
+        const char *lo_mac_address;
+        const char *tg_mac_address;
+        const char *spoof_mac_address;
+    }usrinfo;
+
+    struct {
         int64_t total;
         uint64_t timeout;
         uint8_t abort;
