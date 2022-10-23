@@ -29,4 +29,8 @@ void macgonuts_si_set_outmode(const macgonuts_si_outmode_t otype);
 
 int macgonuts_si_get_last_info(char *si_buf, const size_t max_si_buf);
 
+void macgonuts_si_mode_enter_announce(const char *mode_name);
+
+void macgonuts_si_mode_leave_announce(const char *mode_name);
+
 #endif // MACGONUTS_STATUS_INFO

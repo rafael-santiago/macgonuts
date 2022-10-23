@@ -45,3 +45,15 @@ CUTE_TEST_CASE(macgonuts_si_get_last_info_tests)
     CUTE_ASSERT(strcmp(out, "info: i.\nwarn: ii.\nerror: iii.\n") == 0);
     macgonuts_si_set_outmode(kMacgonutsSiSys|kMacgonutsSiColored);
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_si_print_tests)
+    macgonuts_si_print("this is a print call and nothing can explode.\n");
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_si_mode_enter_announce_tests)
+    macgonuts_si_mode_enter_announce("test");
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_si_mode_leave_announce_tests)
+    macgonuts_si_mode_leave_announce("test");
+CUTE_TEST_CASE_END

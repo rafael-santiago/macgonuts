@@ -22,6 +22,8 @@ int macgonuts_spoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
            && spfgd->usrinfo.tg_mac_address != NULL
            && spfgd->usrinfo.spoof_mac_address);
 
+    macgonuts_si_mode_enter_announce("spoof");
+
     snprintf(info, sizeof(info) - 1,
              ">>> Spoofing context\n"
              "\t* local interface [ %20s ]\n"

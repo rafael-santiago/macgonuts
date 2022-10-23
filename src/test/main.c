@@ -28,6 +28,9 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_si_info_tests);
     CUTE_RUN_TEST(macgonuts_si_set_outmode_tests);
     CUTE_RUN_TEST(macgonuts_si_get_last_info_tests);
+    CUTE_RUN_TEST(macgonuts_si_print_tests);
+    CUTE_RUN_TEST(macgonuts_si_mode_enter_announce_tests);
+    CUTE_RUN_TEST(macgonuts_si_mode_leave_announce_tests);
     CUTE_RUN_TEST(macgonuts_mutex_lock_unlock_tests);
     CUTE_RUN_TEST(macgonuts_mutex_trylock_tests);
     CUTE_RUN_TEST(macgonuts_create_join_thread_tests);

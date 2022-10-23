@@ -13,4 +13,10 @@ CUTE_DECLARE_TEST_CASE(macgonuts_si_set_outmode_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_si_get_last_info_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_si_print_tests);
+
+CUTE_DECLARE_TEST_CASE(macgonuts_si_mode_enter_announce_tests);
+
+CUTE_DECLARE_TEST_CASE(macgonuts_si_mode_leave_announce_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_STATUS_INFO_TESTS
