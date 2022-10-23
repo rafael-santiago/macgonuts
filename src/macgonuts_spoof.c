@@ -203,10 +203,15 @@ static int macgonuts_spoof4(const macgonuts_socket_t rsk,
         macgonuts_release_ethfrm(&ethfrm);
     }
 
-    return ((spf_layers->spoof_frm) != NULL) ? macgonuts_sendpkt(rsk,
-                                                                 spf_layers->spoof_frm,
-                                                                 spf_layers->spoof_frm_size)
-                                             : ENOMEM;
+    if (spf_layers->spoof_frm == NULL) {
+        return ENOMEM;
+    }
+
+    if (macgonuts_sendpkt(rsk, spf_layers->spoof_frm, spf_layers->spoof_frm_size) != spf_layers->spoof_frm_size) {
+        return EFAULT;
+    }
+
+    return EXIT_SUCCESS;
 }
 
 static int macgonuts_spoof6(const macgonuts_socket_t rsk,
@@ -289,10 +294,16 @@ static int macgonuts_spoof6(const macgonuts_socket_t rsk,
         spf_layers->spoof_frm = macgonuts_make_ethernet_frm(&ethfrm, &spf_layers->spoof_frm_size);
     }
 
-    err = ((spf_layers->spoof_frm) != NULL) ? macgonuts_sendpkt(rsk,
-                                                                spf_layers->spoof_frm,
-                                                                spf_layers->spoof_frm_size)
-                                            : ENOMEM;
+    if (spf_layers->spoof_frm == NULL) {
+        err = ENOMEM;
+        goto macgonuts_spoof6_epilogue;
+    }
+
+    if (macgonuts_sendpkt(rsk, spf_layers->spoof_frm, spf_layers->spoof_frm_size) == spf_layers->spoof_frm_size) {
+        err = EXIT_SUCCESS;
+    } else {
+        err = EFAULT;
+    }
 
 macgonuts_spoof6_epilogue:
 
