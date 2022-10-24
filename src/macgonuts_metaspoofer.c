@@ -41,12 +41,14 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
             macgonuts_si_error("mutex exception when trying to hold spoofing guidance context's giant lock.\n");
             continue;
         }
-        // INFO(Rafael): All hooks are executed into a well-synchronized context.
+
         err = macgonuts_spoof(spfgd->handles.wire, &spfgd->layers);
         if (err != EXIT_SUCCESS) {
             macgonuts_si_warn("unable to inject the spoofed packet in the network, retrying...\n");
             goto macgonuts_run_metaspoofer_endloop;
         }
+
+        // INFO(Rafael): All hooks are executed into a well-synchronized context.
 
         if (spfgd->hooks.done != NULL) {
             err = spfgd->hooks.done(spfgd, NULL, 0);
