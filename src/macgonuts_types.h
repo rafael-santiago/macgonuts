@@ -47,7 +47,7 @@ typedef pthread_mutex_t macgonuts_mutex_t;
 struct macgonuts_spoofing_guidance_ctx;
 
 typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
-                                   const void *, const size_t);
+                                   const unsigned char *, const size_t);
 
 struct macgonuts_spoof_layers_ctx {
     uint8_t lo_hw_addr[6];

@@ -22,6 +22,8 @@ struct macgonuts_ip4hdr_ctx {
     uint16_t chsum;
     uint32_t src_addr;
     uint32_t dest_addr;
+    uint8_t *options;
+    size_t options_size;
     uint8_t *payload;
     size_t payload_size;
 };

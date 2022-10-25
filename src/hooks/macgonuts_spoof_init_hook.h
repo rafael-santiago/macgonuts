@@ -11,7 +11,7 @@
 #include <macgonuts_types.h>
 
 int macgonuts_spoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
-                              const void *ethfrm, const size_t ethfrm_size);
+                              const unsigned char *ethfrm, const size_t ethfrm_size);
 
 #endif // MACGONUTS_SPOOF_INIT_HOOK_H
 

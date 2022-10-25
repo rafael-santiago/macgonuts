@@ -11,7 +11,7 @@
 #include <macgonuts_etherconv.h>
 
 int macgonuts_spoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
-                              const void *ethfrm, const size_t ethfrm_size) {
+                              const unsigned char *ethfrm, const size_t ethfrm_size) {
     char info[8<<10] = "";
 
     assert(spfgd != NULL

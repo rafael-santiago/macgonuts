@@ -9,7 +9,7 @@
 #include <macgonuts_status_info.h>
 
 int macgonuts_spoof_deinit_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
-                                const void *ethfrm, const size_t ethfrm_size) {
+                                const unsigned char *ethfrm, const size_t ethfrm_size) {
     macgonuts_si_mode_leave_announce("spoof");
     return EXIT_SUCCESS;
 }

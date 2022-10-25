@@ -9,7 +9,7 @@
 #include <macgonuts_status_info.h>
 
 int macgonuts_spoof_done_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
-                              const void *ethfrm, const size_t ethfrm_size) {
+                              const unsigned char *ethfrm, const size_t ethfrm_size) {
     assert(spfgd != NULL
            && spfgd->usrinfo.tg_address != NULL
            && spfgd->usrinfo.lo_mac_address != NULL
