@@ -6,13 +6,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_ip4hdr.h>
+#include <macgonuts_ipchsum.h>
 
-#define IP4_HDR_BASE_SIZE(c) (2 + sizeof((c)->tos) + sizeof((c)->tlen) + sizeof((c)->id) +\
+#define IP4_HDR_BASE_SIZE(c) (1 + sizeof((c)->tos) + sizeof((c)->tlen) + sizeof((c)->id) +\
                               sizeof((c)->flag_off) + sizeof((c)->ttl) + sizeof((c)->proto) +\
                               sizeof((c)->chsum) + sizeof((c)->src_addr) + sizeof((c)->dest_addr))
 
-unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr, size_t *pkt_size) {
+unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr, size_t *pkt_size,
+                                      const int compute_checksum) {
     unsigned char *pkt = NULL;
+    uint16_t chsum = 0;
 
     if (ip4hdr == NULL || pkt_size == NULL) {
         return NULL;
@@ -34,8 +37,10 @@ unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr,
     pkt[ 7] = ip4hdr->flag_off & 0xFF;
     pkt[ 8] = ip4hdr->ttl;
     pkt[ 9] = ip4hdr->proto;
-    pkt[10] = (ip4hdr->chsum >> 8) & 0xFF;
-    pkt[11] = ip4hdr->chsum & 0xFF;
+    if (!compute_checksum) {
+        pkt[10] = (ip4hdr->chsum >> 8) & 0xFF;
+        pkt[11] = ip4hdr->chsum & 0xFF;
+    }
     pkt[12] = (ip4hdr->src_addr >> 24) & 0xFF;
     pkt[13] = (ip4hdr->src_addr >> 16) & 0xFF;
     pkt[14] = (ip4hdr->src_addr >>  8) & 0xFF;
@@ -44,6 +49,14 @@ unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr,
     pkt[17] = (ip4hdr->dest_addr >> 16) & 0xFF;
     pkt[18] = (ip4hdr->dest_addr >>  8) & 0xFF;
     pkt[19] = ip4hdr->dest_addr & 0xFF;
+
+    if (compute_checksum) {
+        pkt[10] = 0;
+        pkt[11] = 0;
+        chsum = macgonuts_eval_ipchsum(&pkt[0], 20, NULL, 0);
+        pkt[10] = (chsum >> 8) & 0xFF;
+        pkt[11] = chsum & 0xFF;
+    }
 
     if (ip4hdr->options != NULL && ip4hdr->options_size > 0) {
         memcpy(&pkt[IP4_HDR_BASE_SIZE(ip4hdr)], ip4hdr->options, ip4hdr->options_size);
@@ -86,7 +99,7 @@ int macgonuts_read_ip4_pkt(struct macgonuts_ip4hdr_ctx *ip4hdr, const unsigned c
             ip4hdr->options_size = 0;
             return ENOMEM;
         }
-        memcpy(ip4hdr->options, &ip4buf[IP4_HDR_BASE_SIZE(ip4hdr)], ip4buf_size - IP4_HDR_BASE_SIZE(ip4hdr));
+        memcpy(&ip4hdr->options[0], &ip4buf[IP4_HDR_BASE_SIZE(ip4hdr)], ip4buf_size - IP4_HDR_BASE_SIZE(ip4hdr));
     }
 
     ip4hdr->payload_size = ip4buf_size - IP4_HDR_BASE_SIZE(ip4hdr) - ip4hdr->options_size;
@@ -96,7 +109,7 @@ int macgonuts_read_ip4_pkt(struct macgonuts_ip4hdr_ctx *ip4hdr, const unsigned c
             macgonuts_release_ip4hdr(ip4hdr);
             return ENOMEM;
         }
-        memcpy(ip4hdr->payload, &ip4buf[IP4_HDR_BASE_SIZE(ip4hdr) + ip4hdr->options_size], ip4hdr->payload_size);
+        memcpy(&ip4hdr->payload[0], &ip4buf[IP4_HDR_BASE_SIZE(ip4hdr) + ip4hdr->options_size], ip4hdr->payload_size);
     }
 
     return EXIT_SUCCESS;

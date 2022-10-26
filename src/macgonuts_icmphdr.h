@@ -20,7 +20,7 @@ struct macgonuts_icmphdr_ctx {
 };
 
 unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmphdr, size_t *pkt_size,
-                                       const struct macgonuts_ip6_pseudo_hdr_ctx *ip6phdr);
+                                       const void *pheader, const size_t pheader_size);
 
 int macgonuts_read_icmp_pkt(struct macgonuts_icmphdr_ctx *icmphdr, const unsigned char *icmpbuf, const size_t icmpbuf_size);
 

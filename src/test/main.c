@@ -12,9 +12,12 @@
 #include "macgonuts_ip6mcast_tests.h"
 #include "macgonuts_ethfrm_tests.h"
 #include "macgonuts_arphdr_tests.h"
+#include "macgonuts_ip4hdr_tests.h"
 #include "macgonuts_ip6hdr_tests.h"
 #include "macgonuts_icmphdr_tests.h"
+#include "macgonuts_udphdr_tests.h"
 #include "macgonuts_ndphdr_tests.h"
+#include "macgonuts_tcphdr_tests.h"
 #include "macgonuts_ipchsum_tests.h"
 #include "macgonuts_get_ethaddr_tests.h"
 #include "macgonuts_status_info_tests.h"
@@ -50,12 +53,18 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_make_ethernet_frm_tests);
     CUTE_RUN_TEST(macgonuts_read_arp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_arp_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_read_ip4_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_make_ip4_pkt_tests);
     CUTE_RUN_TEST(macgonuts_read_ip6_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_ip6_pkt_tests);
     CUTE_RUN_TEST(macgonuts_read_icmp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_icmp_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_read_udp_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_make_udp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_read_ndp_nsna_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_ndp_nsna_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_read_tcp_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_make_tcp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_getrandom_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_create_release_socket_tests);
     CUTE_RUN_TEST(macgonuts_set_iface_promisc_on_off_tests);

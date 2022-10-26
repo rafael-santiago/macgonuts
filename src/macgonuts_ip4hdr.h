@@ -28,7 +28,14 @@ struct macgonuts_ip4hdr_ctx {
     size_t payload_size;
 };
 
-unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr, size_t *pkt_size);
+struct macgonuts_ip4_pseudo_hdr_ctx {
+    uint32_t src_addr;
+    uint32_t dest_addr;
+    uint32_t zprotolen;
+};
+
+unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr, size_t *pkt_size,
+                                      const int compute_checksum);
 
 int macgonuts_read_ip4_pkt(struct macgonuts_ip4hdr_ctx *ip4hdr, const unsigned char *ip4buf, const size_t ip4buf_size);
 

@@ -277,7 +277,7 @@ static int macgonuts_spoof6(const macgonuts_socket_t rsk,
         ip6phdr.upper_layer_pkt_len[3] = icmp_pkt_size & 0xFF;
         ip6phdr.next_header[3] = ip6hdr.next_header;
 
-        ip6hdr.payload = (uint8_t *)macgonuts_make_icmp_pkt(&icmphdr, &icmp_pkt_size, &ip6phdr);
+        ip6hdr.payload = (uint8_t *)macgonuts_make_icmp_pkt(&icmphdr, &icmp_pkt_size, &ip6phdr, sizeof(ip6hdr));
         if (ip6hdr.payload == NULL) {
             err = ENOMEM;
             goto macgonuts_spoof6_epilogue;

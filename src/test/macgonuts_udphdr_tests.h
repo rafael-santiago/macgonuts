@@ -1,0 +1,10 @@
+#ifndef MACGONUTS_TEST_MACGONUTS_UDPHDR_TESTS_H
+#define MACGONUTS_TEST_MACGONUTS_UDPHDR_TESTS_H 1
+
+#include <cutest.h>
+
+CUTE_DECLARE_TEST_CASE(macgonuts_read_udp_pkt_tests);
+
+CUTE_DECLARE_TEST_CASE(macgonuts_make_udp_pkt_tests);
+
+#endif // MACGONUTS_TEST_MACGONUTS_UDPHDR_TESTS_H

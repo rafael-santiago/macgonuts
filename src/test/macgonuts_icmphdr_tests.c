@@ -44,10 +44,10 @@ CUTE_TEST_CASE(macgonuts_make_icmp_pkt_tests)
     unsigned char *pkt = NULL;
     struct macgonuts_ip6_pseudo_hdr_ctx ip6phdr = { 0 };
     size_t pkt_size = 0;
-    CUTE_ASSERT(macgonuts_make_icmp_pkt(NULL, &pkt_size, NULL) == NULL);
-    CUTE_ASSERT(macgonuts_make_icmp_pkt(&icmphdr, NULL, NULL) == NULL);
+    CUTE_ASSERT(macgonuts_make_icmp_pkt(NULL, &pkt_size, NULL, 0) == NULL);
+    CUTE_ASSERT(macgonuts_make_icmp_pkt(&icmphdr, NULL, NULL, 0) == NULL);
     CUTE_ASSERT(macgonuts_read_icmp_pkt(&icmphdr, datagram_from_wire, datagram_from_wire_size) == EXIT_SUCCESS);
-    pkt = macgonuts_make_icmp_pkt(&icmphdr, &pkt_size, NULL);
+    pkt = macgonuts_make_icmp_pkt(&icmphdr, &pkt_size, NULL, 0);
     CUTE_ASSERT(pkt != NULL);
     CUTE_ASSERT(pkt_size == datagram_from_wire_size);
     CUTE_ASSERT(memcmp(pkt, datagram_from_wire, pkt_size) == 0);
@@ -60,7 +60,7 @@ CUTE_TEST_CASE(macgonuts_make_icmp_pkt_tests)
     memcpy(ip6phdr.upper_layer_pkt_len, (const unsigned char *)"\x00\x00\x00\x20", sizeof(ip6phdr.next_header));
     memcpy(ip6phdr.next_header, (const unsigned char *)"\x00\x00\x00\x3A", sizeof(ip6phdr.next_header));
     icmphdr.chsum = 0xCAFE;
-    pkt = macgonuts_make_icmp_pkt(&icmphdr, &pkt_size, &ip6phdr);
+    pkt = macgonuts_make_icmp_pkt(&icmphdr, &pkt_size, &ip6phdr, sizeof(ip6phdr));
     CUTE_ASSERT(pkt != NULL);
     CUTE_ASSERT(pkt_size == datagram_from_wire_size);
     CUTE_ASSERT(memcmp(pkt, datagram_from_wire, pkt_size) == 0);

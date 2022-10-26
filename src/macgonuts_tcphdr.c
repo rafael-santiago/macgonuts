@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_tcphdr.h>
+#include <macgonuts_ipchsum.h>
 
 #define TCP_HDR_BASE_SIZE(c) ( sizeof((c)->src_port) +\
                                sizeof((c)->dest_port) +\
@@ -16,8 +17,10 @@
                                sizeof((c)->chsum) +\
                                sizeof((c)->urgptr) )
 
-unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr, size_t *pkt_size) {
+unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr, size_t *pkt_size,
+                                      const void *pheader, const size_t pheader_size) {
     unsigned char *pkt = NULL;
+    uint16_t chsum = 0;
 
     if (tcphdr == NULL || pkt_size == NULL) {
         return NULL;
@@ -46,8 +49,10 @@ unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr,
     pkt[13] = tcphdr->doff_reserv_flags & 0xFF;
     pkt[14] = (tcphdr->window >> 8) & 0xFF;
     pkt[15] = tcphdr->window & 0xFF;
-    pkt[16] = (tcphdr->chsum >> 8) & 0xFF;
-    pkt[17] = tcphdr->chsum & 0xFF;
+    if (pheader == NULL) {
+        pkt[16] = (tcphdr->chsum >> 8) & 0xFF;
+        pkt[17] = tcphdr->chsum & 0xFF;
+    }
     pkt[18] = (tcphdr->urgptr >> 8) & 0xFF;
     pkt[19] = tcphdr->urgptr & 0xFF;
 
@@ -57,6 +62,12 @@ unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr,
 
     if (tcphdr->payload != NULL && tcphdr->payload_size > 0) {
         memcpy(&pkt[TCP_HDR_BASE_SIZE(tcphdr) + tcphdr->options_size], tcphdr->payload, tcphdr->payload_size);
+    }
+
+    if (pheader != NULL) {
+        pkt[16] = 0;
+        pkt[17] = 0;
+        chsum = macgonuts_eval_ipchsum(&pkt[0], *pkt_size, pheader, pheader_size);
     }
 
     return pkt;
@@ -90,7 +101,7 @@ int macgonuts_read_tcp_pkt(struct macgonuts_tcphdr_ctx *tcphdr, const unsigned c
         if (tcphdr->options == NULL) {
             return ENOMEM;
         }
-        memcpy(tcphdr->options, &tcpbuf[TCP_HDR_BASE_SIZE(tcphdr)], tcphdr->options_size);
+        memcpy(&tcphdr->options[0], &tcpbuf[TCP_HDR_BASE_SIZE(tcphdr)], tcphdr->options_size);
     }
 
     if ((tcpbuf + TCP_HDR_BASE_SIZE(tcphdr) + tcphdr->options_size) != (tcpbuf + tcpbuf_size)) {
@@ -100,7 +111,7 @@ int macgonuts_read_tcp_pkt(struct macgonuts_tcphdr_ctx *tcphdr, const unsigned c
             macgonuts_release_tcphdr(tcphdr);
             return ENOMEM;
         }
-        memcpy(tcphdr->payload,
+        memcpy(&tcphdr->payload[0],
                &tcpbuf[TCP_HDR_BASE_SIZE(tcphdr) + tcphdr->options_size],
                tcphdr->payload_size);
     } else {

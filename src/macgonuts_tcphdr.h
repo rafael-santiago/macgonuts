@@ -25,7 +25,8 @@ struct macgonuts_tcphdr_ctx {
     size_t payload_size;
 };
 
-unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr, size_t *pkt_size);
+unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr, size_t *pkt_size,
+                                      const void *pheader, const size_t pheader_size);
 
 int macgonuts_read_tcp_pkt(struct macgonuts_tcphdr_ctx *tcphdr, const unsigned char *tcpbuf, const size_t tcpbuf_size);
 

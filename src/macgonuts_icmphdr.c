@@ -11,9 +11,9 @@
 #define ICMP_BASE_HDR_SIZE(ctx) (sizeof(ctx->type) + sizeof(ctx->code) + sizeof(ctx->chsum))
 
 unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmphdr, size_t *pkt_size,
-                                       const struct macgonuts_ip6_pseudo_hdr_ctx *ip6phdr) {
+                                       const void *pheader, const size_t pheader_size) {
     unsigned char *pkt = NULL;
-    uint16_t chsum;
+    uint16_t chsum = 0;
 
     if (icmphdr == NULL || pkt_size == NULL) {
         return NULL;
@@ -31,13 +31,13 @@ unsigned char *macgonuts_make_icmp_pkt(const struct macgonuts_icmphdr_ctx *icmph
     if (icmphdr->payload_size > 0 && icmphdr->payload != NULL) {
         memcpy(&pkt[4], icmphdr->payload, icmphdr->payload_size);
     }
-    if (ip6phdr == NULL) {
+    if (pheader == NULL) {
         pkt[2] = (icmphdr->chsum >> 8) & 0xFF;
         pkt[3] = icmphdr->chsum & 0xFF;
     } else {
         pkt[2] = 0;
         pkt[3] = 0;
-        chsum = macgonuts_eval_ipchsum(pkt, *pkt_size, ip6phdr, sizeof(struct macgonuts_ip6_pseudo_hdr_ctx));
+        chsum = macgonuts_eval_ipchsum(pkt, *pkt_size, pheader, pheader_size);
         pkt[2] = (chsum >> 8) & 0xFF;
         pkt[3] = chsum & 0xFF;
     }

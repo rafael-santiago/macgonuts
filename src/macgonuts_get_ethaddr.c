@@ -312,7 +312,7 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
     ip6phdr_req.next_header[3] = ip6hdr_req.next_header;
 
     ip6hdr_req.payload = (uint8_t *)macgonuts_make_icmp_pkt(&icmphdr_req,
-                                                            &icmp_pkt_size, &ip6phdr_req);
+                                                            &icmp_pkt_size, &ip6phdr_req, sizeof(ip6phdr_req));
     if (ip6hdr_req.payload == NULL) {
         err = ENOMEM;
         goto get_ethaddr_ip6_epilogue;
