@@ -67,7 +67,9 @@ unsigned char *macgonuts_make_tcp_pkt(const struct macgonuts_tcphdr_ctx *tcphdr,
     if (pheader != NULL) {
         pkt[16] = 0;
         pkt[17] = 0;
-        chsum = macgonuts_eval_ipchsum(&pkt[0], *pkt_size, pheader, pheader_size);
+        chsum = macgonuts_eval_ipchsum(pkt, *pkt_size, pheader, pheader_size);
+        pkt[16] = (chsum >> 8) & 0xFF;
+        pkt[17] = chsum & 0xFF;
     }
 
     return pkt;

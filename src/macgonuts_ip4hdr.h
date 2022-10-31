@@ -29,9 +29,9 @@ struct macgonuts_ip4hdr_ctx {
 };
 
 struct macgonuts_ip4_pseudo_hdr_ctx {
-    uint32_t src_addr;
-    uint32_t dest_addr;
-    uint32_t zprotolen;
+    uint8_t src_addr[4];
+    uint8_t dest_addr[4];
+    uint8_t zprotolen[4];
 };
 
 unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr, size_t *pkt_size,

@@ -47,7 +47,7 @@ unsigned char *macgonuts_make_udp_pkt(const struct macgonuts_udphdr_ctx *udphdr,
     if (pheader != NULL) {
         pkt[6] = 0;
         pkt[7] = 0;
-        chsum = macgonuts_eval_ipchsum(&pkt[0], *pkt_size, pheader, pheader_size);
+        chsum = macgonuts_eval_ipchsum(&pkt[0], *pkt_size, (unsigned char *)pheader, pheader_size);
         pkt[6] = (chsum >> 8) & 0xFF;
         pkt[7] = chsum & 0xFF;
     }

@@ -18,13 +18,19 @@ uint16_t macgonuts_eval_ipchsum(const void *data, const size_t data_size,
         return 0;
     }
 
-    bp[0] = (const uint8_t *)data;
-    bp_end[0] = bp[0] + data_size;
+    // INFO(Rafael): Since pseudo-headers must have no padding, summing them up first
+    //               makes all process simpler, because we will not need to mind about
+    //               alignment issues.
+    bp[0] = (const uint8_t *)pseudo_header;
+    bp_end[0] = bp[0] + pseudo_header_size;
 
-    bp[1] = (const uint8_t *)pseudo_header;
-    bp_end[1] = bp[1] + pseudo_header_size;
+    bp[1] = (const uint8_t *)data;
+    bp_end[1] = bp[1] + data_size;
 
-    for (b = 0; bp[b] != NULL && b < 2; b++) {
+    for (b = 0; b < 2; b++) {
+        if (bp[b] == NULL) {
+            continue;
+        }
         while (bp[b] < bp_end[b]) {
             sum += (uint16_t)bp[b][0] << 8 | (uint16_t)(((bp[b] + 1) != bp_end[b]) ? bp[b][1] : 0);
             bp[b] += 2;
