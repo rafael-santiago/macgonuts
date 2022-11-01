@@ -19,6 +19,6 @@ int macgonuts_get_spoof_on_layers_info(const macgonuts_socket_t rsk,
                                        const char *address2spoof, const size_t address2spoof_size,
                                        const char *lo_iface);
 
-void macgonuts_release_spoof_on_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_layers);
+void macgonuts_release_spoof_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_layers);
 
 #endif // MACGONUTS_SPOOF_H

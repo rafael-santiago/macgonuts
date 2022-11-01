@@ -51,7 +51,7 @@ int macgonuts_spoof(const macgonuts_socket_t rsk,
     return do_spoof(rsk, spf_layers);
 }
 
-void macgonuts_release_spoof_on_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_layers) {
+void macgonuts_release_spoof_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_layers) {
     if (spf_layers == NULL || spf_layers->spoof_frm == NULL) {
         return;
     }
@@ -194,7 +194,6 @@ static int macgonuts_spoof4(const macgonuts_socket_t rsk,
         }
 
         spf_layers->spoof_frm = macgonuts_make_ethernet_frm(&ethfrm, &spf_layers->spoof_frm_size);
-
         arphdr.sha = NULL;
         arphdr.spa = NULL;
         arphdr.tha = NULL;

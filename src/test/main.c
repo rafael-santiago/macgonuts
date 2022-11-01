@@ -22,6 +22,7 @@
 #include "macgonuts_get_ethaddr_tests.h"
 #include "macgonuts_status_info_tests.h"
 #include "macgonuts_thread_tests.h"
+#include "macgonuts_spoof_tests.h"
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
     // INFO(Rafael): Since all working modules can call some status info module convenience
@@ -74,6 +75,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_mac_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_ethaddr_ip4_tests);
     CUTE_RUN_TEST(macgonuts_get_ethaddr_ip6_tests);
+    CUTE_RUN_TEST(macgonuts_spoof_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(macgonuts_static_lib_tests);

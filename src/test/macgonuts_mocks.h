@@ -21,4 +21,6 @@ void mock_set_expected_ip6_addr(const char *addr);
 
 void mock_set_recv_buf(const unsigned char *buf, const size_t buf_size);
 
+unsigned char *mock_get_send_buf(size_t *buf_size);
+
 #endif

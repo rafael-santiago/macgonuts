@@ -17,6 +17,10 @@ static unsigned char g_RecvBuf[64<<10];
 
 static ssize_t g_RecvBufSize = -1;
 
+static unsigned char g_SendBuf[64<<10];
+
+static ssize_t g_SendBufSize = -1;
+
 void mock_set_expected_ip_version(const int version) {
     g_IPv = version;
 }
@@ -34,8 +38,15 @@ void mock_set_recv_buf(const unsigned char *buf, const size_t buf_size) {
     memcpy(g_RecvBuf, buf, g_RecvBufSize);
 }
 
+unsigned char *mock_get_send_buf(size_t *buf_size) {
+    *buf_size = g_SendBufSize;
+    return &g_SendBuf[0];
+}
+
 ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, const size_t buf_size) {
-    return buf_size; // INFO(Rafael): Always ok.
+    g_SendBufSize = buf_size % (sizeof(g_SendBuf) / sizeof(g_SendBuf[0]));
+    memcpy(g_SendBuf, buf, g_SendBufSize);
+    return g_SendBufSize; // INFO(Rafael): Always ok.
 }
 
 ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size) {
