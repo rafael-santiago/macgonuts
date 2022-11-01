@@ -56,6 +56,7 @@ void macgonuts_release_spoof_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_l
         return;
     }
     free(spf_layers->spoof_frm);
+    spf_layers->spoof_frm = NULL;
     spf_layers->spoof_frm_size = 0;
 }
 
