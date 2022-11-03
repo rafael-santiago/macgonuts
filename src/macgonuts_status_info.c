@@ -126,7 +126,7 @@ static void sync_si_print(const char *info_label, const char *message, va_list a
         out_buf = g_StatusInfoBufferHead + info_label_size;
         out_buf_size = sizeof(g_StatusInfoBuffer) - (out_buf - &g_StatusInfoBuffer[0]);
     } else {
-        out_buf_size = strlen(message) << 2;
+        out_buf_size = strlen(message) * 65535;
         out_buf = (char *)malloc(out_buf_size);
         if (out_buf == NULL) {
             return;

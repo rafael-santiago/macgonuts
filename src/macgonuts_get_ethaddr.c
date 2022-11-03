@@ -191,6 +191,10 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
         done = 1;
     } while (!done && ntry-- > 0);
 
+    if (!done) {
+        err = EFAULT;
+    }
+
 get_ethaddr_ip4_epilogue:
 
     macgonuts_release_arphdr(&arp_req_hdr);
@@ -384,6 +388,10 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
         err = EXIT_SUCCESS;
         done = 1;
     } while (!done && ntry-- > 0);
+
+    if (!done) {
+        err = EFAULT;
+    }
 
 get_ethaddr_ip6_epilogue:
 

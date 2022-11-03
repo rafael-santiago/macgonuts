@@ -17,7 +17,7 @@ static int should_abort(struct macgonuts_spoofing_guidance_ctx *spfgd);
 
 int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
     int err = EFAULT;
-    size_t total = 0;
+    size_t total = 1;
     int do_pktcap = 0;
     unsigned char *ethcapbuf = NULL;
     size_t ethcapbuf_size = 0;
@@ -95,9 +95,8 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
         }
 
 macgonuts_run_metaspoofer_endloop:
-        if (err == EXIT_SUCCESS
-            && spfgd->spoofing.timeout > 0) {
-            usleep(spfgd->spoofing.timeout);
+        if (spfgd->spoofing.timeout > 0) {
+            usleep(spfgd->spoofing.timeout * 1000);
         }
 
         macgonuts_mutex_unlock(&spfgd->handles.lock);

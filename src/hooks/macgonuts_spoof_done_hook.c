@@ -15,7 +15,7 @@ int macgonuts_spoof_done_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
            && spfgd->usrinfo.lo_mac_address != NULL
            && spfgd->usrinfo.spoof_mac_address);
 
-    macgonuts_si_info("a spoofed %s packet was sent to `%s`, it shall override `%s` with `%s` on `%s`.\n",
+    macgonuts_si_info("%s packet -> `%s`, MAC `%s` will override `%s` at `%s`.\n",
                       ((spfgd->layers.proto_addr_version == 4) ? "ARP" : "NDP"),
                       spfgd->usrinfo.tg_address,
                       spfgd->usrinfo.spoof_mac_address,

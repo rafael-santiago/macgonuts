@@ -12,4 +12,6 @@
 
 CUTE_DECLARE_TEST_CASE(macgonuts_spoof_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_spoof_on_layers_info_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_SPOOF_TESTS_H
