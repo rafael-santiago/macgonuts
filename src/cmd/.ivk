@@ -1,0 +1,1 @@
+--forgefiles=Forgefile.hsl --Forgefile-projects=macgonuts-cmdtool --includes=..,.,../libs/accacia/src --libraries=../libs/accacia/lib,../../lib --ldflags=-lmacgonuts,-laccacia,-lpthread --obj-output-dir=.o --bin-output-dir=../../bin

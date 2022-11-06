@@ -1,0 +1,43 @@
+#
+# Copyright (c) 2022, Rafael Santiago
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+include ../build/toolsets.hsl
+
+local var sources type list;
+local var includes type list;
+local var cflags type list;
+local var libraries type list;
+local var ldflags type list;
+local var dependency_chain type string;
+local var current_toolset type string;
+
+project macgonuts-cmdtool : toolset $current_toolset :
+                                dependencies $dependency_chain :
+                                    $sources, $includes, $cflags, $libraries, $ldflags, "macgonuts";
+
+macgonuts-cmdtool.preloading() {
+    $current_toolset = get_app_toolset();
+}
+
+macgonuts-cmdtool.prologue() {
+    set_rootdir("..");
+    $includes = hefesto.sys.get_option("includes");
+    $cflags = hefesto.sys.get_option("cflags");
+    $libraries = hefesto.sys.get_option("libraries");
+    $ldflags = hefesto.sys.get_option("ldflags");
+    var dirlist type list;
+    $dirlist.add_item(hefesto.sys.pwd());
+    $dirlist.add_item(hefesto.sys.make_path(hefesto.sys.pwd(), "hooks"));
+    $sources = get_codes($dirlist, $dependency_chain);
+}
+
+macgonuts-cmdtool.epilogue() {
+    if (hefesto.sys.last_forge_result() == 0) {
+        if (build("test") != 0) {
+            hefesto.project.abort(1);
+        }
+    }
+}

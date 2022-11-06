@@ -62,8 +62,13 @@ macgonuts-static-lib.prologue() {
 
 macgonuts-static-lib.epilogue() {
     if (hefesto.sys.last_forge_result() == 0) {
-        if (build("tests") == 0) {
+        var subprojects type list;
+        $subprojects.add_item("test");
+        $subprojects.add_item("cmd");
+        if (build_projects($subprojects) == 0) {
             hefesto.sys.echo("INFO: Done.\n");
+        } else {
+            hefesto.project.abort(1);
         }
     }
 }

@@ -7,9 +7,9 @@
  */
 #include "macgonuts_metaspoofer_tests.h"
 #include <macgonuts_metaspoofer.h>
-#include <hooks/macgonuts_spoof_init_hook.h>
-#include <hooks/macgonuts_spoof_deinit_hook.h>
-#include <hooks/macgonuts_spoof_done_hook.h>
+//#include <hooks/macgonuts_spoof_init_hook.h>
+//#include <hooks/macgonuts_spoof_deinit_hook.h>
+//#include <hooks/macgonuts_spoof_done_hook.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_thread.h>
 
@@ -25,15 +25,16 @@ void *gohome(void *args) {
     macgonuts_mutex_lock(&gd->handles.lock);
     gd->spoofing.abort = 1;
     macgonuts_mutex_unlock(&gd->handles.lock);
+    return NULL;
 }
 
 CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     struct macgonuts_spoofing_guidance_ctx spfgd = { 0 };
     macgonuts_thread_t td;
     CUTE_ASSERT(macgonuts_run_metaspoofer(NULL) == EINVAL);
-    spfgd.hooks.init = macgonuts_spoof_init_hook;
-    spfgd.hooks.deinit = macgonuts_spoof_deinit_hook;
-    spfgd.hooks.done = macgonuts_spoof_done_hook;
+    //spfgd.hooks.init = macgonuts_spoof_init_hook;
+    //spfgd.hooks.deinit = macgonuts_spoof_deinit_hook;
+    //spfgd.hooks.done = macgonuts_spoof_done_hook;
     spfgd.usrinfo.lo_iface = DEFAULT_TEST_IFACE;
     spfgd.spoofing.total = 1000;
     spfgd.spoofing.timeout = 10;

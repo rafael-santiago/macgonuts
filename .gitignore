@@ -1,5 +1,4 @@
-lib/*
-src/.Forgefile-*
-src/.o/*
-src/test/.o/*
-src/test/bin/*
+**/lib/*
+**/bin/*
+*.Forgefile-*
+*.o/

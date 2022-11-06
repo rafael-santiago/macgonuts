@@ -11,6 +11,28 @@ include ~/toolsets/clang/clang-lib.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
 include ~/fsutil.hsl
 
+function build_projects(projects type list) : result type int {
+    if ($projects.count() == 0) {
+        hefesto.sys.echo("ERROR: No projects to build.\n");
+        result 1;
+    }
+
+    var p type int;
+    var exit_code type int;
+
+    $exit_code = 0;
+    $p = 0;
+
+    while ($p < $projects.count() && $exit_code == 0) {
+        var curr_subproj type string;
+        $curr_subproj = $projects.item($p);
+        $exit_code = build($curr_subproj);
+        $p = $p + 1;
+    }
+
+    result $exit_code;
+}
+
 function runtests(binary type string, args type string) : result type none {
     if (hefesto.sys.run($binary + " " + $args) != 0) {
         hefesto.project.abort(1);
@@ -20,9 +42,11 @@ function runtests(binary type string, args type string) : result type none {
 function set_rootdir(change_to type string) : result type none {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
+
     if ($change_to.len() > 0) {
         hefesto.sys.cd($change_to);
     }
+
     hefesto.sys.setenv("MACGONUTS_ROOT_DIR", hefesto.sys.pwd());
     hefesto.sys.cd($oldcwd);
 }
@@ -53,12 +77,15 @@ function get_toolset() : result type string {
     if ($option.count() > 0) {
         result $option.item(0);
     }
+
     if (has_gcc()) {
         result "gcc";
     }
+
     if (has_clang()) {
         result "clang";
     }
+
     result "";
 }
 
@@ -99,18 +126,22 @@ function get_codes(dirlist type list, deps type string) : result type list {
 function build(dep type string) : result type int {
     var build_task type int;
     $build_task = hefesto.sys.get_func_addr("build_" + $dep);
+
     if ($build_task == 0) {
         hefesto.sys.echo("ERROR: Unable to find build task for " + $dep + ".\n");
         result 1;
     }
+
     result hefesto.sys.call_func_addr($build_task);
 }
 
 local function build_accacia() : result type int {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
+
     var exit_code type int;
     $exit_code = 1;
+
     var accacia_src_dir type string;
     $accacia_src_dir = hefesto.sys.make_path(get_rootdir(), "libs/accacia/src");
     if (hefesto.sys.cd($accacia_src_dir)) {
@@ -120,15 +151,45 @@ local function build_accacia() : result type int {
             $exit_code = 0;
         }
     }
+
     hefesto.sys.cd($oldcwd);
+
+    result $exit_code;
+}
+
+local function build_submodule(subdir type string) : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+
+    if (hefesto.sys.cd($subdir) == 0) {
+        hefesto.sys.echo("ERROR: " + $subdir + " directory not found.\n");
+        result 1;
+    }
+
+    var build_options type string;
+    $build_options = hefesto.project.cmdline();
+    $build_options.replace("--bin-output-dir=.* ", "");
+    $build_options.replace("--obj-output-dir=.* ", "");
+    $build_options.replace("--includes=.* ", "");
+    $build_options.replace("--cflags=.* ", "");
+    $build_options.replace("--libraries=.* ", "");
+    $build_options.replace("--ldflags=.* ", "");
+
+    var exit_code type int;
+    $exit_code = hefesto.sys.run("hefesto " + $build_options);
+
+    hefesto.sys.cd($oldcwd);
+
     result $exit_code;
 }
 
 local function build_cutest() : result type int {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
+
     var exit_code type int;
     $exit_code = 1;
+
     var cutest_src_dir type string;
     $cutest_src_dir = hefesto.sys.make_path(get_rootdir(), "libs/cutest/src");
     if (hefesto.sys.cd($cutest_src_dir)) {
@@ -138,19 +199,16 @@ local function build_cutest() : result type int {
             $exit_code = 0;
         }
     }
+
     hefesto.sys.cd($oldcwd);
+
     result $exit_code;
 }
 
-local function build_tests() : result type int {
-    var oldcwd type string;
-    $oldcwd = hefesto.sys.pwd();
-    if (hefesto.sys.cd("test") == 0) {
-        hefesto.sys.echo("ERROR: test directory not found.\n");
-        result 1;
-    }
-    var exit_code type int;
-    $exit_code = hefesto.sys.run("hefesto --toolset=" + get_toolset());
-    hefesto.sys.cd($oldcwd);
-    result $exit_code;
+local function build_test() : result type int {
+    result build_submodule("test");
+}
+
+local function build_cmd() : result type int {
+    result build_submodule("cmd");
 }
