@@ -6,8 +6,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <cutest.h>
+#include "macgonuts_option_tests.h"
 
 CUTE_TEST_CASE(macgonuts_cmdtool_tests)
+    CUTE_RUN_TEST(macgonuts_get_command_option_tests);
+    CUTE_RUN_TEST(macgonuts_get_raw_option_tests);
+    CUTE_RUN_TEST(macgonuts_get_option_tests);
+    CUTE_RUN_TEST(macgonuts_get_bool_option_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(macgonuts_cmdtool_tests)

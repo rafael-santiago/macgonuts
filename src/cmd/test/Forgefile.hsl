@@ -32,10 +32,43 @@ macgonuts-cmdtool-tests.prologue() {
     }
     $sources.ls(".*\\.c$");
     $appname = "macgonuts-cmdtool-tests";
+    get_cmd_objs($ldflags);
 }
 
 macgonuts-cmdtool-tests.epilogue() {
     if (hefesto.sys.last_forge_result() == 0) {
         runtests(hefesto.sys.make_path("bin", $appname), "--cutest-leak-check=yes");
     }
+}
+
+local function get_cmd_objs(ldflags type list) : result type none {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+    if (hefesto.sys.cd("../.o")) {
+        var objs type list;
+        $objs.ls(".*\\.o$");
+        var o type int;
+        $o = 0;
+        while ($o < $objs.count()) {
+            var obj type string;
+            $obj = $objs.item($o);
+            if ($obj.match("main\\.o$") == 1) {
+                $objs.del_index($o);
+                break;
+            }
+            $o = $o + 1;
+        }
+        $o = 0;
+        while ($o < $ldflags.count()) {
+            $objs.add_item($ldflags.item($o));
+            $o = $o + 1;
+        }
+        $ldflags = cplist($objs);
+        hefesto.sys.byref($ldflags);
+        hefesto.sys.cd($oldcwd);
+    }
+}
+
+local function cplist(l type list) : result type list {
+    result $l;
 }
