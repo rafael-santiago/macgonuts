@@ -7,9 +7,6 @@
  */
 #include "macgonuts_metaspoofer_tests.h"
 #include <macgonuts_metaspoofer.h>
-//#include <hooks/macgonuts_spoof_init_hook.h>
-//#include <hooks/macgonuts_spoof_deinit_hook.h>
-//#include <hooks/macgonuts_spoof_done_hook.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_thread.h>
 
@@ -18,6 +15,12 @@
 #else
 # error Some code wanted.
 #endif
+
+static int test_init(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size);
+
+static int test_deinit(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size);
+
+static int test_done(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size);
 
 void *gohome(void *args) {
     struct macgonuts_spoofing_guidance_ctx *gd = (struct macgonuts_spoofing_guidance_ctx *)args;
@@ -31,13 +34,14 @@ void *gohome(void *args) {
 CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     struct macgonuts_spoofing_guidance_ctx spfgd = { 0 };
     macgonuts_thread_t td;
+    int hooks = 0;
     CUTE_ASSERT(macgonuts_run_metaspoofer(NULL) == EINVAL);
-    //spfgd.hooks.init = macgonuts_spoof_init_hook;
-    //spfgd.hooks.deinit = macgonuts_spoof_deinit_hook;
-    //spfgd.hooks.done = macgonuts_spoof_done_hook;
+    spfgd.hooks.init = test_init;
+    spfgd.hooks.deinit = test_deinit;
+    spfgd.hooks.done = test_done;
     spfgd.usrinfo.lo_iface = DEFAULT_TEST_IFACE;
     spfgd.spoofing.total = 1000;
-    spfgd.spoofing.timeout = 10;
+    spfgd.spoofing.timeout = 20;
     spfgd.usrinfo.tg_address = "10.0.2.15";
     spfgd.usrinfo.spoof_address = "10.0.2.13";
     spfgd.usrinfo.lo_mac_address = "AA:BB:DD:CC:DD:FF";
@@ -46,6 +50,7 @@ CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     spfgd.layers.proto_addr_version = 4;
     spfgd.layers.proto_addr_version = 4;
     spfgd.layers.proto_addr_size = 4;
+    spfgd.metainfo.arg[0] = &hooks;
     memcpy(&spfgd.layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spfgd.layers.lo_hw_addr));
     memcpy(&spfgd.layers.lo_proto_addr[0], "\x7F\x00\x00\x01", sizeof(spfgd.layers.lo_proto_addr));
     memcpy(&spfgd.layers.tg_proto_addr[0], "\x7F\x00\x00\x02", sizeof(spfgd.layers.tg_proto_addr));
@@ -56,4 +61,27 @@ CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     CUTE_ASSERT(macgonuts_run_metaspoofer(&spfgd) == EXIT_SUCCESS);
     CUTE_ASSERT(macgonuts_thread_join(&td, NULL) == EXIT_SUCCESS);
     macgonuts_release_spoof_layers_ctx(&spfgd.layers);
+    CUTE_ASSERT(hooks == 7);
 CUTE_TEST_CASE_END
+
+static int test_init(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size) {
+    int *flag = (int *)gdc->metainfo.arg[0];
+    *flag |= 1;
+    fprintf(stdout, "[test init hook]\n");
+    return EXIT_SUCCESS;
+}
+
+static int test_deinit(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size) {
+    int *flag = (int *)gdc->metainfo.arg[0];
+    *flag |= 2;
+    fprintf(stdout, "[test deinit hook]\n");
+    return EXIT_SUCCESS;
+}
+
+static int test_done(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size) {
+    int *flag = (int *)gdc->metainfo.arg[0];
+    *flag |= 4;
+    usleep(gdc->spoofing.timeout);
+    fprintf(stdout, "[test done hook]\n");
+    return EXIT_SUCCESS;
+}
