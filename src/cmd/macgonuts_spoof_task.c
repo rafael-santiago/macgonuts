@@ -13,6 +13,7 @@
 #include <cmd/macgonuts_option.h>
 #include <macgonuts_socket.h>
 #include <macgonuts_spoof.h>
+#include <macgonuts_metaspoofer.h>
 #include <macgonuts_status_info.h>
 
 static struct macgonuts_spoofing_guidance_ctx g_Spfgd = { 0 };
@@ -88,7 +89,7 @@ int macgonuts_spoof_task(void) {
     signal(SIGTERM, sigint_watchdog);
 
     if (err == EXIT_SUCCESS) {
-        err = macgonuts_spoof(g_Spfgd.handles.wire, &g_Spfgd.layers);
+        err = macgonuts_run_metaspoofer(&g_Spfgd);
     }
 
     macgonuts_release_socket(g_Spfgd.handles.wire);
@@ -97,8 +98,9 @@ int macgonuts_spoof_task(void) {
 }
 
 int macgonuts_spoof_task_help(void) {
-    macgonuts_si_print("use: macgonuts spoof --lo-iface=<local-interface> "
-                       "--target-addr=<addr> --addr2spoof=<addr> [--fake-pkts-amount=<n> --timeout=<n> --redirect]\n");
+    macgonuts_si_print("use: macgonuts spoof --lo-iface=<label>\n"
+                       "                     --target-addr=<ip4|ip6> --addr2spoof=<ip4|ip6>\n"
+                       "                    [--fake-pkts-amount=<n> --timeout=<ms> --redirect]\n");
     return EXIT_SUCCESS;
 }
 

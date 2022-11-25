@@ -17,10 +17,31 @@ int macgonuts_spoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
     assert(spfgd != NULL
            && spfgd->usrinfo.lo_iface != NULL
            && spfgd->usrinfo.tg_address != NULL
-           && spfgd->usrinfo.spoof_address != NULL
-           && spfgd->usrinfo.lo_mac_address != NULL
-           && spfgd->usrinfo.tg_mac_address != NULL
-           && spfgd->usrinfo.spoof_mac_address);
+           && spfgd->usrinfo.spoof_address != NULL);
+
+    snprintf(spfgd->usrinfo.lo_mac_address, sizeof(spfgd->usrinfo.lo_mac_address),
+             "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", spfgd->layers.lo_hw_addr[0],
+                                              spfgd->layers.lo_hw_addr[1],
+                                              spfgd->layers.lo_hw_addr[2],
+                                              spfgd->layers.lo_hw_addr[3],
+                                              spfgd->layers.lo_hw_addr[4],
+                                              spfgd->layers.lo_hw_addr[5]);
+
+    snprintf(spfgd->usrinfo.tg_mac_address, sizeof(spfgd->usrinfo.tg_mac_address),
+             "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", spfgd->layers.tg_hw_addr[0],
+                                              spfgd->layers.tg_hw_addr[1],
+                                              spfgd->layers.tg_hw_addr[2],
+                                              spfgd->layers.tg_hw_addr[3],
+                                              spfgd->layers.tg_hw_addr[4],
+                                              spfgd->layers.tg_hw_addr[5]);
+
+    snprintf(spfgd->usrinfo.spoof_mac_address, sizeof(spfgd->usrinfo.spoof_mac_address),
+             "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", spfgd->layers.spoof_hw_addr[0],
+                                              spfgd->layers.spoof_hw_addr[1],
+                                              spfgd->layers.spoof_hw_addr[2],
+                                              spfgd->layers.spoof_hw_addr[3],
+                                              spfgd->layers.spoof_hw_addr[4],
+                                              spfgd->layers.spoof_hw_addr[5]);
 
     macgonuts_si_mode_enter_announce("spoof");
 

@@ -10,10 +10,7 @@
 
 int macgonuts_spoof_done_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                               const unsigned char *ethfrm, const size_t ethfrm_size) {
-    assert(spfgd != NULL
-           && spfgd->usrinfo.tg_address != NULL
-           && spfgd->usrinfo.lo_mac_address != NULL
-           && spfgd->usrinfo.spoof_mac_address);
+    assert(spfgd != NULL);
 
     macgonuts_si_info("%s -> `%s`, MAC `%s` will override `%s` at `%s`.\n",
                       ((spfgd->layers.proto_addr_version == 4) ? "ARP reply" : "Neighbor advertisement"),

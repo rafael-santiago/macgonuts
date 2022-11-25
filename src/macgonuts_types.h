@@ -76,9 +76,10 @@ struct macgonuts_spoofing_guidance_ctx {
         const char *lo_iface;
         const char *tg_address;
         const char *spoof_address;
-        const char *lo_mac_address;
-        const char *tg_mac_address;
-        const char *spoof_mac_address;
+        // WARN(Rafael): Deprecated.
+        char lo_mac_address[18];
+        char tg_mac_address[18];
+        char spoof_mac_address[18];
     }usrinfo;
 
     struct {

@@ -44,9 +44,9 @@ CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     spfgd.spoofing.timeout = 20;
     spfgd.usrinfo.tg_address = "10.0.2.15";
     spfgd.usrinfo.spoof_address = "10.0.2.13";
-    spfgd.usrinfo.lo_mac_address = "AA:BB:DD:CC:DD:FF";
-    spfgd.usrinfo.tg_mac_address = "00:11:22:33:44:55";
-    spfgd.usrinfo.spoof_mac_address = "AA:11:DD:33:DD:55";
+    //spfgd.usrinfo.lo_mac_address = "AA:BB:DD:CC:DD:FF";
+    //spfgd.usrinfo.tg_mac_address = "00:11:22:33:44:55";
+    //spfgd.usrinfo.spoof_mac_address = "AA:11:DD:33:DD:55";
     spfgd.layers.proto_addr_version = 4;
     spfgd.layers.proto_addr_version = 4;
     spfgd.layers.proto_addr_size = 4;
