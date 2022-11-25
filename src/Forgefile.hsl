@@ -62,6 +62,10 @@ macgonuts-static-lib.prologue() {
 
 macgonuts-static-lib.epilogue() {
     if (hefesto.sys.last_forge_result() == 0) {
+        if (build("macgonuts_socket") != 0) {
+            hefesto.sys.echo("ERROR: Unable to build `libmacgonutssock.a`.\n");
+            hefesto.project.abort(1);
+        }
         var subprojects type list;
         $subprojects.add_item("test");
         $subprojects.add_item("cmd");

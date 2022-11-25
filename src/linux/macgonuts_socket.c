@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_socket.h>
+#include <macgonuts_socket_common.h>
 #include <macgonuts_status_info.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -28,6 +29,11 @@ int macgonuts_set_iface_promisc_on(const char *iface) {
 
 int macgonuts_set_iface_promisc_off(const char *iface) {
     return set_iface_promisc_flag(0, iface);
+}
+
+int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
+                                  const int addr_version, const char *iface) {
+    return macgonuts_get_addr_from_iface_unix(addr_buf, max_addr_buf_size, addr_version, iface);
 }
 
 macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_timeo) {

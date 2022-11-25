@@ -8,6 +8,7 @@
 #include "macgonuts_socket_tests.h"
 #include "macgonuts_mocks.h"
 #include <macgonuts_socket.h>
+#include <macgonuts_socket_common.h>
 #include <string.h>
 #include <pthread.h>
 

@@ -18,13 +18,13 @@ __attribute__((weak)) ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd,
 
 __attribute__((weak)) ssize_t macgonuts_recvpkt(const macgonuts_socket_t sockfd, void *buf, const size_t buf_size);
 
-__attribute__((weak)) int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
-                                                        const int addr_version, const char *iface);
-
 int macgonuts_get_mac_from_iface(char *mac_buf, const size_t max_mac_buf_size, const char *iface);
 
 int macgonuts_set_iface_promisc_on(const char *iface);
 
 int macgonuts_set_iface_promisc_off(const char *iface);
+
+__attribute__((weak)) int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
+                                                        const int addr_version, const char *iface);
 
 #endif // MACGONUTS_SOCKET_H

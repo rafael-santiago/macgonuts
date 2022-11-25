@@ -29,6 +29,7 @@
 #include <ifaddrs.h>
 #include <pthread.h>
 #include <stdarg.h>
+#include <signal.h>
 
 #if defined(__unix__)
 # define MACGONUTS_DEFAULT_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER

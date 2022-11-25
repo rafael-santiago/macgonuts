@@ -5,7 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include <macgonuts_socket.h>
+#include <macgonuts_socket_common.h>
 #include <string.h>
 
 typedef int (*get_addr_from_iface_func)(char *, const size_t, const char *);
@@ -14,8 +14,8 @@ static int get_addr4_from_iface(char *addr_buf, const size_t max_addr_buf_size, 
 
 static int get_addr6_from_iface(char *addr_buf, const size_t max_addr_buf_size, const char *iface);
 
-int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
-                                  const int addr_version, const char *iface) {
+int macgonuts_get_addr_from_iface_unix(char *addr_buf, const size_t max_addr_buf_size,
+                                       const int addr_version, const char *iface) {
     get_addr_from_iface_func get_addr_from_iface = NULL;
     if (addr_buf == NULL
         || max_addr_buf_size == 0

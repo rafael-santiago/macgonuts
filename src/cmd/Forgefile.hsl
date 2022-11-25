@@ -28,6 +28,7 @@ macgonuts-cmdtool.prologue() {
     $cflags = hefesto.sys.get_option("cflags");
     $libraries = hefesto.sys.get_option("libraries");
     $ldflags = hefesto.sys.get_option("ldflags");
+    $ldflags.add_item("-lmacgonutssock");
     var dirlist type list;
     $dirlist.add_item(hefesto.sys.pwd());
     $dirlist.add_item(hefesto.sys.make_path(hefesto.sys.pwd(), "hooks"));

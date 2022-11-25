@@ -212,3 +212,24 @@ local function build_test() : result type int {
 local function build_cmd() : result type int {
     result build_submodule("cmd");
 }
+
+local function build_macgonuts_socket() : result type int {
+    var bin_output_dir type list;
+    $bin_output_dir = hefesto.sys.get_option("bin-output-dir");
+    var libpath type string;
+    if ($bin_output_dir.count() > 0) {
+        $libpath = hefesto.sys.make_path($bin_output_dir.item(0), "libmacgonutssock.a");
+    } else {
+        $libpath = "libmacgonutssock.a";
+    }
+    var socket_lib_objects type string;
+    var obj_output_dir type list;
+    $obj_output_dir = hefesto.sys.get_option("obj-output-dir");
+    if ($obj_output_dir.count() > 0) {
+        $socket_lib_objects = hefesto.sys.make_path($obj_output_dir.item(0), "macgonuts_socket.o") + " " +
+                              hefesto.sys.make_path($obj_output_dir.item(0), "macgonuts_socket_common.o");
+    } else {
+        $socket_lib_objects = "macgonuts_socket.o macgonuts_socket_common.o";
+    }
+    result hefesto.sys.run("ar -r " + $libpath + " " + $socket_lib_objects);
+}
