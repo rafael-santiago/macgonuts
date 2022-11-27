@@ -15,8 +15,8 @@ int macgonuts_spoof_done_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
     macgonuts_si_info("%s -> `%s`, MAC `%s` will override `%s` at `%s`.\n",
                       ((spfgd->layers.proto_addr_version == 4) ? "ARP reply" : "Neighbor advertisement"),
                       spfgd->usrinfo.tg_address,
-                      spfgd->usrinfo.spoof_mac_address,
                       spfgd->usrinfo.lo_mac_address,
+                      spfgd->usrinfo.spoof_mac_address,
                       spfgd->usrinfo.tg_address);
 
     return EXIT_SUCCESS;
