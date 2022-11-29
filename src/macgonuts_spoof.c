@@ -243,6 +243,7 @@ static int macgonuts_spoof6(const macgonuts_socket_t rsk,
         if (err != EXIT_SUCCESS) {
             return err;
         }
+        //memcpy(&ip6hdr.dest_addr[0], &spf_layers->tg_proto_addr[0], sizeof(ip6hdr.dest_addr));
 
         release_memory = 1;
 
@@ -250,7 +251,7 @@ static int macgonuts_spoof6(const macgonuts_socket_t rsk,
         icmphdr.code = 0;
         icmphdr.chsum = 0;
 
-        uns_na_hdr.reserv = 0x10000000;
+        uns_na_hdr.reserv = 0x20000000;
         memcpy(&uns_na_hdr.target_addr[0], &spf_layers->spoof_proto_addr[0], sizeof(uns_na_hdr.target_addr));
         uns_na_hdr.options_size = 2 + sizeof(spf_layers->lo_hw_addr);
         uns_na_hdr.options = (uint8_t *)malloc(uns_na_hdr.options_size);
@@ -258,7 +259,7 @@ static int macgonuts_spoof6(const macgonuts_socket_t rsk,
             err = ENOMEM;
             goto macgonuts_spoof6_epilogue;
         }
-        uns_na_hdr.options[0] = 0x01;
+        uns_na_hdr.options[0] = 0x02;
         uns_na_hdr.options[1] = 0x01;
         memcpy(&uns_na_hdr.options[2], &spf_layers->lo_hw_addr[0], sizeof(spf_layers->lo_hw_addr));
 
