@@ -39,7 +39,7 @@ int macgonuts_spoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
 
         case MACGONUTS_ETHER_TYPE_IP6:
             pkt_proto_addr = (uint8_t *)&ethfrm[14 + 24];
-            pkt_proto_addr_size = 6;
+            pkt_proto_addr_size = 16;
             err = EXIT_SUCCESS;
             break;
 
@@ -74,7 +74,6 @@ int macgonuts_spoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
            ethfrm_size - sizeof(spfgd->layers.spoof_hw_addr));
     err = (macgonuts_sendpkt(spfgd->handles.wire, patched_frm, ethfrm_size) == ethfrm_size) ? EXIT_SUCCESS
                                                                                             : errno;
-
 macgonuts_spoof_redirect_hook_epilogue:
 
     if (patched_frm != NULL) {
