@@ -8,6 +8,7 @@
 #include <macgonuts_metaspoofer.h>
 #include <macgonuts_thread.h>
 #include <macgonuts_spoof.h>
+#include <macgonuts_redirect.h>
 #include <macgonuts_socket.h>
 #include <macgonuts_status_info.h>
 
@@ -61,7 +62,7 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
         }
 
         do_pktcap = (err == EXIT_SUCCESS
-                     && (spfgd->hooks.capture != NULL || spfgd->hooks.redirect != NULL));
+                     && (spfgd->hooks.capture.printpkt != NULL || spfgd->hooks.redirect != NULL));
         if (!do_pktcap) {
             goto macgonuts_run_metaspoofer_endloop;
         }
@@ -79,6 +80,8 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
             goto macgonuts_run_metaspoofer_endloop;
         }
 
+        err = EINPROGRESS;
+
         // INFO(Rafael): The idea is: redirect asap, capture later.
         if (spfgd->hooks.redirect != NULL) {
             err = spfgd->hooks.redirect(spfgd, ethcapbuf, ethcapbuf_size);
@@ -87,8 +90,20 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
             }
         }
 
-        if (spfgd->hooks.capture != NULL) {
-            err = spfgd->hooks.capture(spfgd, ethcapbuf, ethcapbuf_size);
+        if (spfgd->hooks.capture.printpkt != NULL) {
+            if (err == EINPROGRESS) {
+                // INFO(Rafael): We do not have a redirect hook configured for this session so we need to explicitly call
+                //               should redirect from here to know if this packet should be redirect or not.
+                do_pktcap = macgonuts_should_redirect(ethcapbuf, ethcapbuf_size, &spfgd->layers);
+            } else {
+                // INFO(Rafael): We already call macgonuts_should_redirect() indirectly on redirect hook,
+                //               and, if it was redirected it does mean that this packet also should be captured.
+                do_pktcap = (err != ENODATA);
+            }
+            if (!do_pktcap) {
+                goto macgonuts_run_metaspoofer_endloop;
+            }
+            err = spfgd->hooks.capture.printpkt(spfgd->hooks.capture.pktout, ethcapbuf, ethcapbuf_size);
             if (err != EXIT_SUCCESS) {
                 macgonuts_si_warn("unable to handle the capture packet.\n");
             }

@@ -50,8 +50,8 @@ struct macgonuts_spoofing_guidance_ctx;
 typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
                                    const unsigned char *, const size_t);
 
-typedef void (*macgonuts_printpkt_func)(FILE *pktout,
-                                        const unsigned char *pkt, const size_t pkt_size);
+typedef int (*macgonuts_printpkt_func)(FILE *pktout,
+                                       const unsigned char *pkt, const size_t pkt_size);
 
 struct macgonuts_spoof_layers_ctx {
     uint8_t lo_hw_addr[6];
@@ -71,7 +71,7 @@ struct macgonuts_spoofing_guidance_ctx {
         macgonuts_mutex_t lock;
         macgonuts_thread_t thread;
         macgonuts_socket_t wire;
-    }handles;
+    } handles;
 
     struct macgonuts_spoof_layers_ctx layers;
 
@@ -83,30 +83,29 @@ struct macgonuts_spoofing_guidance_ctx {
         char lo_mac_address[18];
         char tg_mac_address[18];
         char spoof_mac_address[18];
-    }usrinfo;
+    } usrinfo;
 
     struct {
         int64_t total;
         uint64_t timeout;
         uint8_t abort;
-    }spoofing;
+    } spoofing;
 
     struct {
         macgonuts_hook_func init;
         macgonuts_hook_func deinit;
         macgonuts_hook_func done;
         macgonuts_hook_func redirect;
-        macgonuts_hook_func capture;
-    }hooks;
-
-    struct {
-        macgonuts_printpkt_func printpkt;
-        FILE *pktout;
-    }pktprinter;
+        //macgonuts_hook_func capture;
+        struct {
+            macgonuts_printpkt_func printpkt;
+            FILE *pktout;
+        } capture;
+    } hooks;
 
     struct {
         void *arg[MACGONUTS_METAINFO_NR];
-    }metainfo;
+    } metainfo;
 };
 
 #endif // MACGONUTS_TYPES_H
