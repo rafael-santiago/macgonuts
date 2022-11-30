@@ -51,6 +51,30 @@ int macgonuts_spoof(const macgonuts_socket_t rsk,
     return do_spoof(rsk, spf_layers);
 }
 
+int macgonuts_undo_spoof(const macgonuts_socket_t rsk,
+                         struct macgonuts_spoof_layers_ctx *spf_layers) {
+    int err = EFAULT;
+    unsigned char *swp_spoof_frm = NULL;
+    size_t swp_spoof_frm_size = 0;
+    uint8_t swp_hw_addr[6];
+    if (spf_layers == NULL) {
+        return EINVAL;
+    }
+    memcpy(&swp_hw_addr[0], &spf_layers->lo_hw_addr[0], sizeof(swp_hw_addr));
+    memcpy(&spf_layers->lo_hw_addr[0], &spf_layers->spoof_hw_addr[0], sizeof(spf_layers->lo_hw_addr));
+    swp_spoof_frm = spf_layers->spoof_frm;
+    swp_spoof_frm_size = spf_layers->spoof_frm_size;
+    spf_layers->spoof_frm = NULL;
+    spf_layers->spoof_frm_size = 0;
+    err = macgonuts_spoof(rsk, spf_layers);
+    memcpy(&spf_layers->lo_hw_addr[0], &swp_hw_addr[0], sizeof(spf_layers->lo_hw_addr));
+    spf_layers->spoof_frm = swp_spoof_frm;
+    spf_layers->spoof_frm_size = swp_spoof_frm_size;
+    swp_spoof_frm = NULL;
+    return err;
+}
+
+
 void macgonuts_release_spoof_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_layers) {
     if (spf_layers == NULL || spf_layers->spoof_frm == NULL) {
         return;

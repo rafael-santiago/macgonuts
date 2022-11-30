@@ -22,8 +22,6 @@ static int is_valid_number(const char *n);
 
 static void sigint_watchdog(int signo);
 
-static int undo_spoof(void);
-
 int macgonuts_spoof_task(void) {
     const char *n = NULL;
     int err = EFAULT;
@@ -99,7 +97,7 @@ int macgonuts_spoof_task(void) {
         signal(SIGTERM, sigint_watchdog);
         err = macgonuts_run_metaspoofer(&g_Spfgd);
         if (macgonuts_get_bool_option("undo-spoof", 0)) {
-            if (undo_spoof() == EXIT_SUCCESS) {
+            if (macgonuts_undo_spoof(g_Spfgd.handles.wire, &g_Spfgd.layers) == EXIT_SUCCESS) {
                 macgonuts_si_info("spoof was undone, you have some chances of staying incognito...\n"
                                   "      muauhauahuaha, muhauahuah... did you like my evil laugh?\n");
             } else {
@@ -136,23 +134,4 @@ static int is_valid_number(const char *n) {
 
 static void sigint_watchdog(int signo) {
     g_Spfgd.spoofing.abort = 1;
-}
-
-static int undo_spoof(void) {
-    int err = EFAULT;
-    unsigned char *swp_spoof_frm = NULL;
-    size_t swp_spoof_frm_size = 0;
-    uint8_t swp_hw_addr[6];
-    memcpy(&swp_hw_addr[0], &g_Spfgd.layers.lo_hw_addr[0], sizeof(swp_hw_addr));
-    memcpy(&g_Spfgd.layers.lo_hw_addr[0], &g_Spfgd.layers.spoof_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
-    swp_spoof_frm = g_Spfgd.layers.spoof_frm;
-    swp_spoof_frm_size = g_Spfgd.layers.spoof_frm_size;
-    g_Spfgd.layers.spoof_frm = NULL;
-    g_Spfgd.layers.spoof_frm_size = 0;
-    err = macgonuts_spoof(g_Spfgd.handles.wire, &g_Spfgd.layers);
-    memcpy(&g_Spfgd.layers.lo_hw_addr[0], &swp_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
-    g_Spfgd.layers.spoof_frm = swp_spoof_frm;
-    g_Spfgd.layers.spoof_frm_size = swp_spoof_frm_size;
-    swp_spoof_frm = NULL;
-    return err;
 }

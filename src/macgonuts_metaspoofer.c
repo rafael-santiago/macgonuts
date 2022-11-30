@@ -82,7 +82,7 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
         // INFO(Rafael): The idea is: redirect asap, capture later.
         if (spfgd->hooks.redirect != NULL) {
             err = spfgd->hooks.redirect(spfgd, ethcapbuf, ethcapbuf_size);
-            if (err != EXIT_SUCCESS) {
+            if (err != EXIT_SUCCESS && err != ENODATA) {
                 macgonuts_si_warn("unable to redirect the captured packet.\n");
             }
         }
