@@ -8,6 +8,7 @@
 #include <cmd/macgonuts_printpkt.h>
 
 void macgonuts_printpkt(FILE *pktout, const unsigned char *pkt, const size_t pkt_size) {
+    // TODO(Rafael): Make this function thread-safe.
     const char *p = pkt, *lp = pkt, *np = pkt;
     const char *p_end = p + pkt_size;
     size_t off = 0;

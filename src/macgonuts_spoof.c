@@ -74,7 +74,6 @@ int macgonuts_undo_spoof(const macgonuts_socket_t rsk,
     return err;
 }
 
-
 void macgonuts_release_spoof_layers_ctx(struct macgonuts_spoof_layers_ctx *spf_layers) {
     if (spf_layers == NULL || spf_layers->spoof_frm == NULL) {
         return;

@@ -25,6 +25,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <pthread.h>
@@ -79,7 +80,6 @@ struct macgonuts_spoofing_guidance_ctx {
         const char *lo_iface;
         const char *tg_address;
         const char *spoof_address;
-        // WARN(Rafael): Deprecated.
         char lo_mac_address[18];
         char tg_mac_address[18];
         char spoof_mac_address[18];
@@ -96,7 +96,6 @@ struct macgonuts_spoofing_guidance_ctx {
         macgonuts_hook_func deinit;
         macgonuts_hook_func done;
         macgonuts_hook_func redirect;
-        //macgonuts_hook_func capture;
         struct {
             macgonuts_printpkt_func printpkt;
             FILE *pktout;
