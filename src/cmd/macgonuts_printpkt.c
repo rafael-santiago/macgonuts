@@ -6,39 +6,81 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <cmd/macgonuts_printpkt.h>
+#include <macgonuts_pcap.h>
+#include <macgonuts_thread.h>
 
-void macgonuts_printpkt(FILE *pktout, const unsigned char *pkt, const size_t pkt_size) {
-    // TODO(Rafael): Make this function thread-safe.
-    const char *p = pkt, *lp = pkt, *np = pkt;
-    const char *p_end = p + pkt_size;
+static macgonuts_mutex_t g_PrintPktGiantLock = MACGONUTS_DEFAULT_MUTEX_INITIALIZER;
+
+int macgonuts_printpkt(FILE *pktout, const unsigned char *pkt, const size_t pkt_size) {
+    const unsigned char *p = pkt, *lp = pkt, *np = pkt;
+    const unsigned char *p_end = p + pkt_size;
     size_t off = 0;
     size_t o = 0;
+    int err = EFAULT;
+    macgonuts_mutex_lock(&g_PrintPktGiantLock);
     if (pkt == NULL || pkt_size == 0) {
-        return;
+        err = EINVAL;
+        goto macgonuts_printpkt_epilogue;
+    }
+    err = fprintf(pktout, "\n");
+    if (err < 0) {
+        return err;
     }
     while (p != p_end) {
-        fprintf(pktout, "0x%.4x:  ", off);
-        for (o = 0; o < 16; o++) {
+        err = fprintf(pktout, "0x%.4x:  ", off);
+        if (err < 0) {
+            goto macgonuts_printpkt_epilogue;
+        }
+        for (o = 0; o < 8; o++) {
             if (p != p_end) {
-                fprintf(pktout, "%.2x", *p++);
+                err = fprintf(pktout, "%.2x", *p++);
+                if (err < 0) {
+                    goto macgonuts_printpkt_epilogue;
+                }
                 if (p != p_end) {
-                    fprintf(pktout, "%.2x ", *p++);
+                    err = fprintf(pktout, "%.2x ", *p++);
+                    if (err < 0) {
+                        goto macgonuts_printpkt_epilogue;
+                    }
                 }
             } else {
-                fprintf(pktout, "     ");
+                err = fprintf(pktout, "     ");
+                if (err < 0) {
+                    goto macgonuts_printpkt_epilogue;
+                }
             }
-            if (o == 15) {
+            if (o == 7) {
                 np = p;
                 p = lp;
                 while (p != np) {
-                    fprintf(pktout, "%c", (isprint(*p)) ? *p : '.');
+                    err = fprintf(pktout, "%c", (isprint(*p)) ? *p : '.');
+                    if (err < 0) {
+                        goto macgonuts_printpkt_epilogue;
+                    }
                     p++;
                 }
                 lp = np;
             }
         }
-        fprintf(pktout, "\n");
+        err = fprintf(pktout, "\n");
+        if (err < 0) {
+            goto macgonuts_printpkt_epilogue;
+        }
         off += 16;
     }
+
+    err = fprintf(pktout, "_________________________________________________________________\n");
+
+macgonuts_printpkt_epilogue:
+    macgonuts_mutex_unlock(&g_PrintPktGiantLock);
+
+    return err;
 }
 
+int macgonuts_printpkt2pcap(FILE *pcapfile, const unsigned char *pkt, const size_t pkt_size) {
+    int err = EFAULT;
+    macgonuts_mutex_lock(&g_PrintPktGiantLock);
+    err = macgonuts_pcapfile_write(pcapfile, pkt, pkt_size);
+    macgonuts_mutex_unlock(&g_PrintPktGiantLock);
+    return err;
+}

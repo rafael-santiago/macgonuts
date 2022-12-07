@@ -10,6 +10,8 @@
 
 #include <macgonuts_types.h>
 
-void macgonuts_printpkt(FILE *pktout, const unsigned char *pkt, const size_t pkt_size);
+int macgonuts_printpkt(FILE *pktout, const unsigned char *pkt, const size_t pkt_size);
+
+int macgonuts_printpkt2pcap(FILE *pcapfile, const unsigned char *pkt, const size_t pkt_size);
 
 #endif // MACGONUTS_CMD_MACGONUTS_PRINTPKT_H

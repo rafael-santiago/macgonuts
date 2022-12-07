@@ -27,11 +27,9 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
         return EINVAL;
     }
 
-    assert(spfgd->hooks.init != NULL
-            && spfgd->hooks.done != NULL
-            && spfgd->hooks.deinit != NULL);
+    assert(spfgd->hooks.done != NULL);
 
-    err = spfgd->hooks.init(spfgd, NULL, 0);
+    err = (spfgd->hooks.init != NULL) ? spfgd->hooks.init(spfgd, NULL, 0) : EXIT_SUCCESS;
 
     if (err != EXIT_SUCCESS) {
         return err;
@@ -90,22 +88,14 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
             }
         }
 
-        if (spfgd->hooks.capture.printpkt != NULL) {
-            if (err == EINPROGRESS) {
-                // INFO(Rafael): We do not have a redirect hook configured for this session so we need to explicitly call
-                //               should redirect from here to know if this packet should be redirect or not.
-                do_pktcap = macgonuts_should_redirect(ethcapbuf, ethcapbuf_size, &spfgd->layers);
-            } else {
-                // INFO(Rafael): We already call macgonuts_should_redirect() indirectly on redirect hook,
-                //               and, if it was redirected it does mean that this packet also should be captured.
-                do_pktcap = (err != ENODATA);
-            }
-            if (!do_pktcap) {
-                goto macgonuts_run_metaspoofer_endloop;
-            }
-            err = spfgd->hooks.capture.printpkt(spfgd->hooks.capture.pktout, ethcapbuf, ethcapbuf_size);
-            if (err != EXIT_SUCCESS) {
-                macgonuts_si_warn("unable to handle the capture packet.\n");
+        if (err == EINPROGRESS && spfgd->hooks.capture.printpkt != NULL) {
+            // INFO(Rafael): We do not have a redirect hook configured for this session so we need to explicitly call
+            //               should redirect from here to know if this packet should be redirect or not.
+            if (macgonuts_should_redirect(ethcapbuf, ethcapbuf_size, &spfgd->layers)) {
+                err = spfgd->hooks.capture.printpkt(spfgd->hooks.capture.pktout, ethcapbuf, ethcapbuf_size);
+                if (err != EXIT_SUCCESS) {
+                    macgonuts_si_warn("unable to handle the capture packet.\n");
+                }
             }
         }
 
@@ -117,7 +107,7 @@ macgonuts_run_metaspoofer_endloop:
         macgonuts_mutex_unlock(&spfgd->handles.lock);
     }
 
-    err = spfgd->hooks.deinit(spfgd, NULL, 0);
+    err = (spfgd->hooks.deinit != NULL) ? spfgd->hooks.deinit(spfgd, NULL, 0) : EXIT_SUCCESS;
 
     if (ethcapbuf != NULL) {
         free(ethcapbuf);

@@ -8,6 +8,7 @@
 #include <cmd/macgonuts_exec.h>
 #include <cmd/macgonuts_option.h>
 #include <cmd/macgonuts_spoof_task.h>
+#include <cmd/macgonuts_eavesdrop_task.h>
 #include <macgonuts_status_info.h>
 
 typedef int (*macgonuts_task_func)(void);
@@ -28,6 +29,7 @@ struct macgonuts_task_ctx {
     macgonuts_task_func help;
 } gMacgonutsCmdTasks[] = {
     MACGONUTS_CMD_REGISTER_TASK(spoof),
+    MACGONUTS_CMD_REGISTER_TASK(eavesdrop),
     MACGONUTS_CMD_REGISTER_TASK(help),
 };
 

@@ -12,6 +12,10 @@
 
 typedef void *(*macgonuts_thread_func)(void *);
 
+int macgonuts_mutex_init(macgonuts_mutex_t *mtx);
+
+int macgonuts_mutex_destroy(macgonuts_mutex_t *mtx);
+
 int macgonuts_mutex_lock(macgonuts_mutex_t *mtx);
 
 int macgonuts_mutex_trylock(macgonuts_mutex_t *mtx);

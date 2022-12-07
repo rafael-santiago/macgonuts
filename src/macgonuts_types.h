@@ -51,8 +51,8 @@ struct macgonuts_spoofing_guidance_ctx;
 typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
                                    const unsigned char *, const size_t);
 
-typedef int (*macgonuts_printpkt_func)(FILE *pktout,
-                                       const unsigned char *pkt, const size_t pkt_size);
+typedef int (*macgonuts_printpkt_func)(FILE *,
+                                       const unsigned char *, const size_t);
 
 struct macgonuts_spoof_layers_ctx {
     uint8_t lo_hw_addr[6];

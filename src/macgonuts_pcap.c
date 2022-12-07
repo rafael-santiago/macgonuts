@@ -96,12 +96,24 @@ static void macgonuts_init_pcaphdr(struct macgonuts_pcap_header_ctx *pcaphdr) {
 }
 
 static int macgonuts_write_pcaprec(FILE *pcapfile, const struct macgonuts_pcap_pktrec_ctx *pcaprec) {
-    fwrite(&pcaprec->tmstamp_sec, sizeof(pcaprec->tmstamp_sec), 1, pcapfile);
-    fwrite(&pcaprec->tmstamp_un_secs, sizeof(pcaprec->tmstamp_un_secs), 1, pcapfile);
-    fwrite(&pcaprec->captured_pkt_len, sizeof(pcaprec->captured_pkt_len), 1, pcapfile);
-    fwrite(&pcaprec->original_pkt_len, sizeof(pcaprec->original_pkt_len), 1, pcapfile);
-    fwrite(&pcaprec->captured_pkt[0], pcaprec->captured_pkt_len, 1, pcapfile);
-    return EXIT_SUCCESS;
+    size_t written = fwrite(&pcaprec->tmstamp_sec, sizeof(pcaprec->tmstamp_sec), 1, pcapfile);
+    if (written != 1) {
+        return EXIT_FAILURE;
+    }
+    written = fwrite(&pcaprec->tmstamp_un_secs, sizeof(pcaprec->tmstamp_un_secs), 1, pcapfile);
+    if (written != 1) {
+        return EXIT_FAILURE;
+    }
+    written = fwrite(&pcaprec->captured_pkt_len, sizeof(pcaprec->captured_pkt_len), 1, pcapfile);
+    if (written != 1) {
+        return EXIT_FAILURE;
+    }
+    written = fwrite(&pcaprec->original_pkt_len, sizeof(pcaprec->original_pkt_len), 1, pcapfile);
+    if (written != 1) {
+        return EXIT_FAILURE;
+    }
+    written = fwrite(&pcaprec->captured_pkt[0], pcaprec->captured_pkt_len, 1, pcapfile);
+    return ((written == 1) ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 static void macgonuts_init_pcaprec(struct macgonuts_pcap_pktrec_ctx *pcaprec,

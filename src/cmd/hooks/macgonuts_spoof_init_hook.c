@@ -63,6 +63,7 @@ int macgonuts_spoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                     ((spfgd->layers.proto_addr_version == 4) ? "ARP" : "NDP"));
 
     macgonuts_si_print("%s", info);
+    macgonuts_si_info("hit Ctrl + C to exit.\n");
 
     return EXIT_SUCCESS;
 }

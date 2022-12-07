@@ -52,7 +52,8 @@ int macgonuts_should_redirect(const unsigned char *ethfrm, const size_t ethfrm_s
 
 int macgonuts_redirect(const macgonuts_socket_t rsk,
                        struct macgonuts_spoof_layers_ctx *spf_layers,
-                       const unsigned char *ethfrm, const size_t ethfrm_size) {
+                       const unsigned char *ethfrm, const size_t ethfrm_size,
+                       macgonuts_printpkt_func printpkt, FILE *pktout) {
     int err = EFAULT;
     unsigned char *patched_frm = NULL;
 
@@ -75,6 +76,11 @@ int macgonuts_redirect(const macgonuts_socket_t rsk,
            ethfrm_size - sizeof(spf_layers->spoof_hw_addr));
     err = (macgonuts_sendpkt(rsk, patched_frm, ethfrm_size) == ethfrm_size) ? EXIT_SUCCESS
                                                                             : errno;
+
+    if (printpkt != NULL && pktout != NULL) {
+        printpkt(pktout, patched_frm, ethfrm_size);
+    }
+
 macgonuts_redirect_epilogue:
 
     if (patched_frm != NULL) {

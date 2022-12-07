@@ -7,6 +7,20 @@
  */
 #include <macgonuts_thread.h>
 
+int macgonuts_mutex_init(macgonuts_mutex_t *mtx) {
+    if (mtx == NULL) {
+        return EINVAL;
+    }
+    return pthread_mutex_init(mtx, NULL);
+}
+
+int macgonuts_mutex_destroy(macgonuts_mutex_t *mtx) {
+    if (mtx == NULL) {
+        return EINVAL;
+    }
+    return pthread_mutex_destroy(mtx);
+}
+
 int macgonuts_mutex_lock(macgonuts_mutex_t *mtx) {
     if (mtx == NULL) {
         return EINVAL;

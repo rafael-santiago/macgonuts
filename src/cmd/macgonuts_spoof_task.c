@@ -13,6 +13,7 @@
 #include <cmd/macgonuts_option.h>
 #include <macgonuts_socket.h>
 #include <macgonuts_spoof.h>
+#include <macgonuts_thread.h>
 #include <macgonuts_metaspoofer.h>
 #include <macgonuts_status_info.h>
 
@@ -83,6 +84,11 @@ int macgonuts_spoof_task(void) {
         return EXIT_FAILURE;
     }
 
+    if (macgonuts_mutex_init(&g_Spfgd.handles.lock) != EXIT_SUCCESS) {
+        err = EXIT_FAILURE;
+        goto macgonuts_spoof_task_epilogue;
+    }
+
     err = macgonuts_get_spoof_on_layers_info(g_Spfgd.handles.wire,
                                              &g_Spfgd.layers,
                                              g_Spfgd.usrinfo.tg_address,
@@ -107,6 +113,10 @@ int macgonuts_spoof_task(void) {
     } else {
         macgonuts_si_error("unable to spoof, check on your conectivity besides target addresses.\n");
     }
+
+    macgonuts_mutex_destroy(&g_Spfgd.handles.lock);
+
+macgonuts_spoof_task_epilogue:
 
     macgonuts_release_socket(g_Spfgd.handles.wire);
 

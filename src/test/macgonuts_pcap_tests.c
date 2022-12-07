@@ -53,6 +53,7 @@ CUTE_TEST_CASE(macgonuts_pcap_tests)
     char *data = NULL, *next_data = NULL;
     struct stat st = { 0 };
     if (has_tcpdump()) {
+        remove("test.pcap");
         pcapfile = macgonuts_pcapfile_open("test.pcap");
         CUTE_ASSERT(pcapfile != NULL);
         CUTE_ASSERT(macgonuts_pcapfile_write(pcapfile, &frame_from_wire4[0], sizeof(frame_from_wire4)) == EXIT_SUCCESS);
