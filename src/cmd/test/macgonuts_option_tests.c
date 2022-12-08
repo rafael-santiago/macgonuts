@@ -134,6 +134,10 @@ CUTE_TEST_CASE(macgonuts_get_array_option_tests)
     CUTE_ASSERT(strcmp(array[5], "richie") == 0);
     CUTE_ASSERT(strcmp(array[6], "c.j") == 0);
     CUTE_ASSERT(strcmp(array[7], "clem") == 0);
+    // INFO(Rafael): Those broke calls cannot explode.
+    macgonuts_free_array_option_value(NULL, 0);
+    macgonuts_free_array_option_value(array, 0);
+    macgonuts_free_array_option_value(NULL, array_size);
     // INFO(Rafael): If it is broken the memory leak system will complain.
     macgonuts_free_array_option_value(array, array_size);
     array = macgonuts_get_array_option("we-are-motorhead-and-we-play-rock-n-roll", NULL, &array_size);
