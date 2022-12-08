@@ -18,4 +18,6 @@ CUTE_DECLARE_TEST_CASE(macgonuts_get_command_option_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_raw_option_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_array_option_tests);
+
 #endif // MACGONUTS_CMD_TEST_MACGONUTS_OPTION_TESTS_H
