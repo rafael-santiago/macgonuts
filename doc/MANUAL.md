@@ -7,9 +7,10 @@
 ## Topics
 
 - [What does ``macgonuts`` is for?](#what-does-macgonuts-is-for)
-- [Basic facts about the command line tool](#basic-facts-about-the-command-line-tool)]
+- [Basic facts about the command line tool](#basic-facts-about-the-command-line-tool)
 - [Commands](#commands)
     - [The spoof command](#the-spoof-command)
+    - [The eavesdrop command)(#the-eavesdrop-command)
 
 ## What does ``macgonuts`` is for?
 
@@ -142,3 +143,68 @@ explicit timeout, depending on how much of timeout you are intending between fak
 Congrats! Now you are a macgonuts spoofing master!
 
 [``Back``](#topics)
+
+### The eavesdrop commnad
+
+If you are wanting to do some active sniffing beetween two points this is the ``macgonuts`` command that you are
+looking for...
+
+With ``eavesdrop`` command you are able to simply watch the network traffic or log it to inspect later. You can
+also inform to ``macgonuts`` what content is relevant to be displayed/logged.
+
+When you ask for ``eavesdrop``'s help you will be presented to something like the following:
+
+```
+joshua@FarEastForTheTrees:~# macgonuts help eavesdrop
+use: macgonuts eavesdrop --lo-iface=<label>
+                         --alice-addr=<ip4|ip6> --bob-addr=<ip4|ip6>
+                        [--pcap-file=<path> --file=<path> --undo-spoof]
+```
+
+So... Story time!!!!!!
+
+Once upon time Alice and Bob they were communicating each other by using the local network but they were
+in different network segments! Connected through switches! In order to avoid Eve of doing passive sniffing, bad girl!
+
+Eve, after some evil laughs (``- MuHahuahuahuAH...``, ``- Muhahauahuahau...``) however, she was using ``macgonuts``
+that has btw her favorite command that is able to deceive bridged networks when sniffing (Well, I love puns,
+I have to admit).
+
+All Eve needed to do was:
+
+```
+eve@FarEastForTheTrees:~# macgonuts eavesdrop --lo-iface=eth1 \
+> --alice-addr=192.30.70.11 --bob-addr=192.30.70.12
+```
+
+After that all the two talked each other begun be displayed at Eve's screen. Bang!
+
+Nevertheless, in thruth, Eve was not the villain here, she was a sysadmin seeking to catch network abuses done by
+Alice and Bob. So Eve decided to log all them traffic to use it later as proofs:
+
+```
+eve-the-sysadmin-with-lasers@FarEastForTheTrees:~# macgonuts eavesdrop --lo-iface=eth1 \
+> --alice-addr=192.30.70.11 --bob-addr=192.30.70.12 --file=log-them-tender-log-them-switch.log
+```
+
+Now everything that would be dumped to screen was dumped to the indicated file path by her.
+
+Anyway, Eve want's to inspect more deeply those content with another tools later. So Eve decided
+to log all connection by using ``pcap`` format. Well understood through so many traffic analyzing tools:
+
+```
+eve-the-sysadmin-with-lasers@Tender:~# macgonuts eavesdrop --lo-iface=eth1 \
+> --alice-addr=192.30.70.11 --bob-addr=192.30.70.12 --pcap-file=log-them-tender-log-them-switch.pcap
+
+```
+
+Eve is a good professional he want to gather proofs of the abuse, give it to her superior and let
+she decided what to do, so by now she does not want to warn Alice neither Bob. In this way, she
+uses ``--undo-spoof`` to let them communicating each other even after her logging session has finished:
+
+```
+eve-the-sysadmin-with-lasers-and-very-silent@Tender:~# macgonuts eavesdrop --lo-iface=eth1 \
+> --alice-addr=192.30.70.11 --bob-addr=192.30.70.12 --pcap-file=log-them-tender-log-them-switch.pcap \
+> --undo-spoof
+
+```
