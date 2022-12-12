@@ -26,6 +26,7 @@
 #include "macgonuts_redirect_tests.h"
 #include "macgonuts_metaspoofer_tests.h"
 #include "macgonuts_pcap_tests.h"
+#include "macgonuts_filter_fmt_tests.h"
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
     // INFO(Rafael): Since all working modules can call some status info module convenience
@@ -83,6 +84,8 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_should_redirect_tests);
     CUTE_RUN_TEST(macgonuts_metaspoofer_tests);
     CUTE_RUN_TEST(macgonuts_pcap_tests);
+    CUTE_RUN_TEST(macgonuts_format_filter_tests);
+    CUTE_RUN_TEST(macgonuts_get_filter_glob_ctx_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(macgonuts_static_lib_tests);

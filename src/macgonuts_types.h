@@ -54,6 +54,14 @@ typedef int (*macgonuts_hook_func)(struct macgonuts_spoofing_guidance_ctx *,
 typedef int (*macgonuts_printpkt_func)(FILE *,
                                        const unsigned char *, const size_t);
 
+struct macgonuts_filter_glob_ctx {
+    unsigned char *glob;
+    size_t glob_size;
+};
+
+typedef int (*macgonuts_printpkt_if_func)(const unsigned char *, const size_t,
+                                          const struct macgonuts_filter_glob_ctx **, const size_t);
+
 struct macgonuts_spoof_layers_ctx {
     uint8_t lo_hw_addr[6];
     uint8_t tg_hw_addr[6];
@@ -99,6 +107,9 @@ struct macgonuts_spoofing_guidance_ctx {
         struct {
             macgonuts_printpkt_func printpkt;
             FILE *pktout;
+            macgonuts_printpkt_if_func printpkt_if;
+            const struct macgonuts_filter_glob_ctx **filter_globs;
+            size_t filters_globs_nr;
         } capture;
     } hooks;
 
