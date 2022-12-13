@@ -11,7 +11,7 @@
 #include <macgonuts_types.h>
 
 int macgonuts_printpkt_if(const unsigned char *ethfrm, const size_t ethfrm_size,
-                          const struct macgonuts_filter_glob_ctx **filter_globs,
+                          struct macgonuts_filter_glob_ctx **filter_globs,
                           const size_t filter_globs_nr);
 
 #endif // MACGONUTS_CMD_MACGONUTS_PRINTPKT_IF_H

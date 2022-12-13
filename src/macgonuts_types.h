@@ -60,13 +60,13 @@ struct macgonuts_filter_glob_ctx {
 };
 
 typedef int (*macgonuts_printpkt_if_func)(const unsigned char *, const size_t,
-                                          const struct macgonuts_filter_glob_ctx **, const size_t);
+                                          struct macgonuts_filter_glob_ctx **, const size_t);
 
 struct macgonuts_capture_ctx {
     macgonuts_printpkt_func printpkt;
     FILE *pktout;
     macgonuts_printpkt_if_func printpkt_if;
-    const struct macgonuts_filter_glob_ctx **filter_globs;
+    struct macgonuts_filter_glob_ctx **filter_globs;
     size_t filter_globs_nr;
 };
 

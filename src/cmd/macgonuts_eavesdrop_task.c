@@ -19,6 +19,7 @@
 #include <macgonuts_spoof.h>
 #include <macgonuts_metaspoofer.h>
 #include <macgonuts_pcap.h>
+#include <macgonuts_filter_fmt.h>
 
 static struct macgonuts_spoofing_guidance_ctx g_Spfgd[2] = { 0, 0 };
 
@@ -34,6 +35,8 @@ int macgonuts_eavesdrop_task(void) {
     struct macgonuts_spoofing_guidance_ctx *alice = &g_Spfgd[0];
     struct macgonuts_spoofing_guidance_ctx *bob = &g_Spfgd[1];
     const char *filepath = NULL;
+    char **filter_globs = NULL;
+    size_t filter_globs_nr = 0;
 
     alice->usrinfo.lo_iface = macgonuts_get_option("lo-iface", NULL);
     if (alice->usrinfo.lo_iface == NULL) {
@@ -116,6 +119,29 @@ int macgonuts_eavesdrop_task(void) {
         goto macgonuts_eavesdrop_task_epilogue;
     }
 
+    filter_globs = macgonuts_get_array_option("filter-globs", NULL, &filter_globs_nr);
+    if (filter_globs != NULL) {
+        alice->hooks.capture.filter_globs = macgonuts_get_filter_glob_ctx(filter_globs,
+                                                                          filter_globs_nr,
+                                                                          &alice->hooks.capture.filter_globs_nr);
+        if (alice->hooks.capture.filter_globs == NULL) {
+            macgonuts_si_error("while trying to process informed filter globs.\n");
+            err = EFAULT;
+            goto macgonuts_eavesdrop_task_epilogue;
+        }
+
+        bob->hooks.capture.filter_globs = macgonuts_get_filter_glob_ctx(filter_globs,
+                                                                        filter_globs_nr,
+                                                                        &bob->hooks.capture.filter_globs_nr);
+        if (bob->hooks.capture.filter_globs == NULL) {
+            macgonuts_si_error("while trying to process informed filter globs.\n");
+            err = EFAULT;
+            goto macgonuts_eavesdrop_task_epilogue;
+        }
+        macgonuts_free_array_option_value(filter_globs, filter_globs_nr);
+        filter_globs = NULL;
+    }
+
     err = macgonuts_get_spoof_layers_info(alice->handles.wire,
                                           &alice->layers,
                                           alice->usrinfo.tg_address,
@@ -189,13 +215,18 @@ macgonuts_eavesdrop_task_epilogue:
         macgonuts_release_socket(alice->handles.wire);
     }
 
+    if (filter_globs != NULL) {
+        macgonuts_free_array_option_value(filter_globs, filter_globs_nr);
+    }
+
     return err;
 }
 
 int macgonuts_eavesdrop_task_help(void) {
     macgonuts_si_print("use: macgonuts eavesdrop --lo-iface=<label>\n"
                        "                         --alice-addr=<ip4|ip6> --bob-addr=<ip4|ip6>\n"
-                       "                        [--pcap-file=<path> --file=<path> --undo-spoof]\n");
+                       "                        [--pcap-file=<path> --file=<path> --filter-globs=<glob_0,...,glob_n> "
+                       "--undo-spoof]\n");
     return EXIT_SUCCESS;
 }
 

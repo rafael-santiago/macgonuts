@@ -9,10 +9,10 @@
 #include <cmd/macgonuts_memglob.h>
 
 int macgonuts_printpkt_if(const unsigned char *ethfrm, const size_t ethfrm_size,
-                          const struct macgonuts_filter_glob_ctx **filter_globs,
+                          struct macgonuts_filter_glob_ctx **filter_globs,
                           const size_t filter_globs_nr) {
-    const struct macgonuts_filter_glob_ctx **curr_filter = NULL;
-    const struct macgonuts_filter_glob_ctx **filter_globs_end = NULL;
+    struct macgonuts_filter_glob_ctx **curr_filter = NULL;
+    struct macgonuts_filter_glob_ctx **filter_globs_end = NULL;
     int found = 0;
 
     if (ethfrm == NULL || ethfrm_size == 0 || filter_globs == NULL || filter_globs_nr == 0) {
