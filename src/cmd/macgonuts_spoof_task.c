@@ -89,13 +89,13 @@ int macgonuts_spoof_task(void) {
         goto macgonuts_spoof_task_epilogue;
     }
 
-    err = macgonuts_get_spoof_on_layers_info(g_Spfgd.handles.wire,
-                                             &g_Spfgd.layers,
-                                             g_Spfgd.usrinfo.tg_address,
-                                             strlen(g_Spfgd.usrinfo.tg_address),
-                                             g_Spfgd.usrinfo.spoof_address,
-                                             strlen(g_Spfgd.usrinfo.spoof_address),
-                                             g_Spfgd.usrinfo.lo_iface);
+    err = macgonuts_get_spoof_layers_info(g_Spfgd.handles.wire,
+                                          &g_Spfgd.layers,
+                                          g_Spfgd.usrinfo.tg_address,
+                                          strlen(g_Spfgd.usrinfo.tg_address),
+                                          g_Spfgd.usrinfo.spoof_address,
+                                          strlen(g_Spfgd.usrinfo.spoof_address),
+                                          g_Spfgd.usrinfo.lo_iface);
 
 
     if (err == EXIT_SUCCESS) {
@@ -110,6 +110,7 @@ int macgonuts_spoof_task(void) {
                 macgonuts_si_warn("unable to undo spoof, start thinking about some excuse.\n");
             }
         }
+        macgonuts_release_spoof_layers_ctx(&g_Spfgd.layers);
     } else {
         macgonuts_si_error("unable to spoof, check on your conectivity besides target addresses.\n");
     }

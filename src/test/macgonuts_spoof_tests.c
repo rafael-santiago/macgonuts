@@ -88,7 +88,7 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
     macgonuts_release_socket(rsk);
 CUTE_TEST_CASE_END
 
-CUTE_TEST_CASE(macgonuts_get_spoof_on_layers_info_tests)
+CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_tests)
     macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
     struct macgonuts_spoof_layers_ctx spf_layers = { 0 };
     char *target_addr = NULL;
@@ -97,46 +97,46 @@ CUTE_TEST_CASE(macgonuts_get_spoof_on_layers_info_tests)
     size_t addr2spoof_size = 4;
     uint8_t expected_hw_addr[6] = { 0x08, 0x00, 0x27, 0x97, 0x64, 0x91 };
     CUTE_ASSERT(rsk != -1);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(-1,
-                                                   &spf_layers,
-                                                   target_addr, target_addr_size,
-                                                   addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   NULL,
-                                                   target_addr, target_addr_size,
-                                                   addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   NULL, target_addr_size,
-                                                   addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   target_addr, 0,
-                                                   addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   target_addr, target_addr_size,
-                                                   NULL, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   target_addr, target_addr_size,
-                                                   addr2spoof, 0, DEFAULT_TEST_IFACE) == EINVAL);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   target_addr, target_addr_size,
-                                                   addr2spoof, addr2spoof_size, NULL) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(-1,
+                                                &spf_layers,
+                                                target_addr, target_addr_size,
+                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                NULL,
+                                                target_addr, target_addr_size,
+                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                NULL, target_addr_size,
+                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                target_addr, 0,
+                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                target_addr, target_addr_size,
+                                                NULL, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                target_addr, target_addr_size,
+                                                addr2spoof, 0, DEFAULT_TEST_IFACE) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                target_addr, target_addr_size,
+                                                addr2spoof, addr2spoof_size, NULL) == EINVAL);
     target_addr = "10.0.2.13";
     target_addr_size = strlen(target_addr);
     addr2spoof = "2001::1";
     addr2spoof_size = strlen(addr2spoof);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   target_addr, target_addr_size,
-                                                   addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EPROTO);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                target_addr, target_addr_size,
+                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EPROTO);
     addr2spoof = "10.0.2.11";
     addr2spoof_size = strlen(addr2spoof);
-    CUTE_ASSERT(macgonuts_get_spoof_on_layers_info(rsk,
-                                                   &spf_layers,
-                                                   target_addr, target_addr_size,
-                                                   addr2spoof, addr2spoof_size, "blau0") != EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
+                                                &spf_layers,
+                                                target_addr, target_addr_size,
+                                                addr2spoof, addr2spoof_size, "blau0") != EXIT_SUCCESS);
 CUTE_TEST_CASE_END

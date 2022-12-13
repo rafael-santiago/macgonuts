@@ -79,7 +79,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_mac_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_ethaddr_ip4_tests);
     CUTE_RUN_TEST(macgonuts_get_ethaddr_ip6_tests);
-    CUTE_RUN_TEST(macgonuts_get_spoof_on_layers_info_tests);
+    CUTE_RUN_TEST(macgonuts_get_spoof_layers_info_tests);
     CUTE_RUN_TEST(macgonuts_spoof_tests);
     CUTE_RUN_TEST(macgonuts_should_redirect_tests);
     CUTE_RUN_TEST(macgonuts_metaspoofer_tests);

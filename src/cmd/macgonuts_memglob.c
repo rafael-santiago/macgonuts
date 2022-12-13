@@ -41,7 +41,7 @@ int macgonuts_memglob(const unsigned char *data, const size_t data_size,
                     p = p_end;
                 }
 
-                goto macgonuts_strglob_epilogue;
+                goto macgonuts_memglob_epilogue;
 
             case '?':
                 matches = (d != d_end);
@@ -71,7 +71,7 @@ int macgonuts_memglob(const unsigned char *data, const size_t data_size,
         d++;
     }
 
-macgonuts_strglob_epilogue:
+macgonuts_memglob_epilogue:
     if (matches && d == d_end && p != p_end && *p == '*') {
         p++;
     }

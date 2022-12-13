@@ -116,13 +116,13 @@ int macgonuts_eavesdrop_task(void) {
         goto macgonuts_eavesdrop_task_epilogue;
     }
 
-    err = macgonuts_get_spoof_on_layers_info(alice->handles.wire,
-                                             &alice->layers,
-                                             alice->usrinfo.tg_address,
-                                             strlen(alice->usrinfo.tg_address),
-                                             alice->usrinfo.spoof_address,
-                                             strlen(alice->usrinfo.spoof_address),
-                                             alice->usrinfo.lo_iface);
+    err = macgonuts_get_spoof_layers_info(alice->handles.wire,
+                                          &alice->layers,
+                                          alice->usrinfo.tg_address,
+                                          strlen(alice->usrinfo.tg_address),
+                                          alice->usrinfo.spoof_address,
+                                          strlen(alice->usrinfo.spoof_address),
+                                          alice->usrinfo.lo_iface);
     if (err != EXIT_SUCCESS) {
         goto macgonuts_eavesdrop_task_epilogue;
     }
@@ -144,14 +144,15 @@ int macgonuts_eavesdrop_task(void) {
         goto macgonuts_eavesdrop_task_epilogue;
     }
 
-    err = macgonuts_get_spoof_on_layers_info(bob->handles.wire,
-                                             &bob->layers,
-                                             bob->usrinfo.tg_address,
-                                             strlen(bob->usrinfo.tg_address),
-                                             bob->usrinfo.spoof_address,
-                                             strlen(bob->usrinfo.spoof_address),
-                                             bob->usrinfo.lo_iface);
+    err = macgonuts_get_spoof_layers_info(bob->handles.wire,
+                                          &bob->layers,
+                                          bob->usrinfo.tg_address,
+                                          strlen(bob->usrinfo.tg_address),
+                                          bob->usrinfo.spoof_address,
+                                          strlen(bob->usrinfo.spoof_address),
+                                          bob->usrinfo.lo_iface);
     if (err != EXIT_SUCCESS) {
+        macgonuts_release_spoof_layers_ctx(&alice->layers);
         goto macgonuts_eavesdrop_task_epilogue;
     }
 
@@ -171,6 +172,9 @@ int macgonuts_eavesdrop_task(void) {
             macgonuts_si_warn("unable to undone spoofing at `%s`.\n", bob->usrinfo.tg_address);
         }
     }
+
+    macgonuts_release_spoof_layers_ctx(&alice->layers);
+    macgonuts_release_spoof_layers_ctx(&bob->layers);
 
     macgonuts_mutex_destroy(&alice->handles.lock);
     macgonuts_mutex_destroy(&bob->handles.lock);
