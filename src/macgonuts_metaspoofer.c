@@ -22,6 +22,7 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
     int do_pktcap = 0;
     unsigned char *ethcapbuf = NULL;
     size_t ethcapbuf_size = 0;
+    int should_capture = 0;
 
     if (spfgd == NULL) {
         return EINVAL;
@@ -91,7 +92,15 @@ int macgonuts_run_metaspoofer(struct macgonuts_spoofing_guidance_ctx *spfgd) {
         if (err == EINPROGRESS && spfgd->hooks.capture.printpkt != NULL) {
             // INFO(Rafael): We do not have a redirect hook configured for this session so we need to explicitly call
             //               should redirect from here to know if this packet should be redirect or not.
-            if (macgonuts_should_redirect(ethcapbuf, ethcapbuf_size, &spfgd->layers)) {
+            should_capture = macgonuts_should_redirect(ethcapbuf, ethcapbuf_size, &spfgd->layers)
+                             && (spfgd->hooks.capture.printpkt_if == NULL
+                                 || (spfgd->hooks.capture.printpkt_if != NULL
+                                     && spfgd->hooks.capture.filter_globs != NULL
+                                     && spfgd->hooks.capture.filter_globs_nr > 0
+                                     && spfgd->hooks.capture.printpkt_if(ethcapbuf, ethcapbuf_size,
+                                                                         spfgd->hooks.capture.filter_globs,
+                                                                         spfgd->hooks.capture.filter_globs_nr)));
+            if (should_capture) {
                 err = spfgd->hooks.capture.printpkt(spfgd->hooks.capture.pktout, ethcapbuf, ethcapbuf_size);
                 if (err != EXIT_SUCCESS) {
                     macgonuts_si_warn("unable to handle the capture packet.\n");

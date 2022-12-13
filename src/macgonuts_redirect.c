@@ -53,9 +53,10 @@ int macgonuts_should_redirect(const unsigned char *ethfrm, const size_t ethfrm_s
 int macgonuts_redirect(const macgonuts_socket_t rsk,
                        struct macgonuts_spoof_layers_ctx *spf_layers,
                        const unsigned char *ethfrm, const size_t ethfrm_size,
-                       macgonuts_printpkt_func printpkt, FILE *pktout) {
+                       struct macgonuts_capture_ctx *capture) {
     int err = EFAULT;
     unsigned char *patched_frm = NULL;
+    int should_capture = 0;
 
     assert(spf_layers != NULL && ethfrm != NULL && ethfrm_size > 14);
 
@@ -77,8 +78,17 @@ int macgonuts_redirect(const macgonuts_socket_t rsk,
     err = (macgonuts_sendpkt(rsk, patched_frm, ethfrm_size) == ethfrm_size) ? EXIT_SUCCESS
                                                                             : errno;
 
-    if (printpkt != NULL && pktout != NULL) {
-        printpkt(pktout, patched_frm, ethfrm_size);
+    should_capture = (capture != NULL && capture->printpkt != NULL && capture->pktout != NULL
+                      && capture->printpkt_if == NULL) ||
+                     (capture != NULL && capture->printpkt != NULL && capture->pktout != NULL
+                        && capture->printpkt_if != NULL && capture->filter_globs != NULL
+                        && capture->filter_globs_nr > 0
+                        && capture->printpkt_if(ethfrm, ethfrm_size,
+                                                capture->filter_globs,
+                                                capture->filter_globs_nr));
+
+    if (should_capture) {
+        capture->printpkt(capture->pktout, patched_frm, ethfrm_size);
     }
 
 macgonuts_redirect_epilogue:

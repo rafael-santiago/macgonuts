@@ -16,6 +16,6 @@ int macgonuts_should_redirect(const unsigned char *ethfrm, const size_t ethfrm_s
 int macgonuts_redirect(const macgonuts_socket_t rsk,
                        struct macgonuts_spoof_layers_ctx *spf_layers,
                        const unsigned char *ethfrm, const size_t ethfrm_size,
-                       macgonuts_printpkt_func printpkt, FILE *pktout);
+                       struct macgonuts_capture_ctx *capture);
 
 #endif // MACGONUTS_REDIRECT_H

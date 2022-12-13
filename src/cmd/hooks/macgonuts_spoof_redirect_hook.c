@@ -11,5 +11,5 @@
 int macgonuts_spoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                                   const unsigned char *ethfrm, const size_t ethfrm_size) {
     assert(spfgd != NULL && ethfrm != NULL && ethfrm_size > 14);
-    return macgonuts_redirect(spfgd->handles.wire, &spfgd->layers, ethfrm, ethfrm_size, NULL, NULL);
+    return macgonuts_redirect(spfgd->handles.wire, &spfgd->layers, ethfrm, ethfrm_size, NULL);
 }

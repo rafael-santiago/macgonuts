@@ -17,5 +17,5 @@ int macgonuts_eavesdrop_redirect_hook(struct macgonuts_spoofing_guidance_ctx *sp
            && spfgd->hooks.capture.pktout != NULL);
     // INFO(Rafael): Redirecting and capturing.
     return macgonuts_redirect(spfgd->handles.wire, &spfgd->layers, ethfrm, ethfrm_size,
-                              spfgd->hooks.capture.printpkt, spfgd->hooks.capture.pktout);
+                              &spfgd->hooks.capture);
 }
