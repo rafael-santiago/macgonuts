@@ -80,12 +80,12 @@ unsigned char *macgonuts_format_filter(const char *filter_str, const size_t filt
     return fmt_filter;
 }
 
-struct macgonuts_filter_glob_ctx **macgonuts_get_filter_glob_ctx(const char **filters, const size_t filters_nr,
+struct macgonuts_filter_glob_ctx **macgonuts_get_filter_glob_ctx(char **filters, const size_t filters_nr,
                                                                  size_t *filter_globs_nr) {
     struct macgonuts_filter_glob_ctx **filter_globs = NULL;
     struct macgonuts_filter_glob_ctx **curr_filter_glob = NULL;
-    const char **curr_filter = NULL;
-    const char **filters_end = NULL;
+    char **curr_filter = NULL;
+    char **filters_end = NULL;
 
     if (filters == NULL || filters_nr == 0 || filter_globs_nr == NULL) {
         return NULL;

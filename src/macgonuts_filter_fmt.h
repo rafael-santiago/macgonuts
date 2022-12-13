@@ -12,7 +12,7 @@
 
 unsigned char *macgonuts_format_filter(const char *filter_str, const size_t filter_str_size, size_t *fmt_filter_size);
 
-struct macgonuts_filter_glob_ctx **macgonuts_get_filter_glob_ctx(const char **filters, const size_t filters_nr,
+struct macgonuts_filter_glob_ctx **macgonuts_get_filter_glob_ctx(char **filters, const size_t filters_nr,
                                                                  size_t *filter_glob_nr);
 
 void macgonuts_release_filter_glob_ctx(struct macgonuts_filter_glob_ctx **filter_globs, const size_t filter_globs_nr);

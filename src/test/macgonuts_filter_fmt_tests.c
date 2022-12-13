@@ -38,7 +38,7 @@ CUTE_TEST_CASE_END
 CUTE_TEST_CASE(macgonuts_get_filter_glob_ctx_tests)
     struct macgonuts_filter_glob_ctx **filter_globs = NULL;
     size_t filter_globs_nr = 0;
-    const char *filters[] = {
+    char *filters[] = {
         "\xDE\xaD\xBe\xEf",
         "\\xDE\\xaD\\xBe\\xEf",
         "GET /echo HTTP/1.1\r\n",

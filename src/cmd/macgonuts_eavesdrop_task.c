@@ -215,6 +215,16 @@ macgonuts_eavesdrop_task_epilogue:
         macgonuts_release_socket(alice->handles.wire);
     }
 
+    if (alice->hooks.capture.filter_globs != NULL) {
+        macgonuts_release_filter_glob_ctx(alice->hooks.capture.filter_globs,
+                                          alice->hooks.capture.filter_globs_nr);
+    }
+
+    if (bob->hooks.capture.filter_globs != NULL) {
+        macgonuts_release_filter_glob_ctx(bob->hooks.capture.filter_globs,
+                                          bob->hooks.capture.filter_globs_nr);
+    }
+
     if (filter_globs != NULL) {
         macgonuts_free_array_option_value(filter_globs, filter_globs_nr);
     }
