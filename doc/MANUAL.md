@@ -10,7 +10,7 @@
 - [Basic facts about the command line tool](#basic-facts-about-the-command-line-tool)
 - [Commands](#commands)
     - [The spoof command](#the-spoof-command)
-    - [The eavesdrop command)(#the-eavesdrop-command)
+    - [The eavesdrop command](#the-eavesdrop-command)
 
 ## What does ``macgonuts`` is for?
 
@@ -28,7 +28,8 @@ my main goal was to have something to use the pun.
 3. It is based on commands.
 4. When you want a quick help about a command you run: ``macgonuts help <command>``.
 5. If you do not want to read this manual by preferring poke by yourself the tool: ``macgonuts help``.
-6. If you still do not understand try to go to 1.
+6. If you still do not understand try to go to 1 (repeat it some couple of times).
+7. Open an issue ask me about, thank you for helping me improve on the documentation!
 
 [``Back``](#topics)
 
@@ -146,7 +147,7 @@ Congrats! Now you are a macgonuts spoofing master!
 
 ### The eavesdrop commnad
 
-If you are wanting to do some active sniffing beetween two points this is the ``macgonuts`` command that you are
+If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
 looking for...
 
 With ``eavesdrop`` command you are able to simply watch the network traffic or log it to inspect later. You can
@@ -158,16 +159,16 @@ When you ask for ``eavesdrop``'s help you will be presented to something like th
 joshua@FarEastForTheTrees:~# macgonuts help eavesdrop
 use: macgonuts eavesdrop --lo-iface=<label>
                          --alice-addr=<ip4|ip6> --bob-addr=<ip4|ip6>
-                        [--pcap-file=<path> --file=<path> --undo-spoof]
+                        [--pcap-file=<path> --file=<path> --filter-globs=<glob_0,...,glob_n> --undo-spoof]
 ```
 
 So... Story time!!!!!!
 
-Once upon time Alice and Bob they were communicating each other by using the local network but they were
+Once upon time Alice and Bob, they were communicating each other by using the local network but they were
 in different network segments! Connected through switches! In order to avoid Eve of doing passive sniffing, bad girl!
 
 Eve, after some evil laughs (``- MuHahuahuahuAH...``, ``- Muhahauahuahau...``) however, she was using ``macgonuts``
-that has btw her favorite command that is able to deceive bridged networks when sniffing (Well, I love puns,
+that has btw her favorite command that is able to deceive bridged/segmented networks when sniffing (Well, I love puns,
 I have to admit).
 
 All Eve needed to do was:
@@ -177,20 +178,21 @@ eve@FarEastForTheTrees:~# macgonuts eavesdrop --lo-iface=eth1 \
 > --alice-addr=192.30.70.11 --bob-addr=192.30.70.12
 ```
 
-After that all the two talked each other begun be displayed at Eve's screen. Bang!
+After that, all what the two talked each other begun be displayed at Eve's screen. Bang!
 
-Nevertheless, in thruth, Eve was not the villain here, she was a sysadmin seeking to catch network abuses done by
-Alice and Bob. So Eve decided to log all them traffic to use it later as proofs:
+Nevertheless, in thruth, Eve was not the villain here, she was a ``sysadmin`` seeking to catch network abuses done by
+Alice and Bob. So, Eve decided to log all them traffic to use it later as proofs:
 
 ```
 eve-the-sysadmin-with-lasers@FarEastForTheTrees:~# macgonuts eavesdrop --lo-iface=eth1 \
 > --alice-addr=192.30.70.11 --bob-addr=192.30.70.12 --file=log-them-tender-log-them-switch.log
 ```
 
-Now everything that would be dumped to screen was dumped to the indicated file path by her.
+Now everything that would be dumped to screen was dumped to the indicated file path (if the file already existed
+it will be appended to it).
 
-Anyway, Eve want's to inspect more deeply those content with another tools later. So Eve decided
-to log all connection by using ``pcap`` format. Well understood through so many traffic analyzing tools:
+Anyway, Eve want's to inspect more deeply the packet contents with other tools of her choice. So Eve decided
+to log all traffic by using ``pcap`` format, a format well understood through so many traffic analyzing tools:
 
 ```
 eve-the-sysadmin-with-lasers@Tender:~# macgonuts eavesdrop --lo-iface=eth1 \
@@ -198,8 +200,8 @@ eve-the-sysadmin-with-lasers@Tender:~# macgonuts eavesdrop --lo-iface=eth1 \
 
 ```
 
-Eve is a good professional he want to gather proofs of the abuse, give it to her superior and let
-she decided what to do, so by now she does not want to warn Alice neither Bob. In this way, she
+Eve is a good professional, she wants to gather proofs of the abuse, give it to her superior and let
+she decided what to do. So, by now Eve does not want to warn Alice neither Bob. In this way, she
 uses ``--undo-spoof`` to let them communicating each other even after her logging session has finished:
 
 ```
@@ -208,3 +210,19 @@ eve-the-sysadmin-with-lasers-and-very-silent@Tender:~# macgonuts eavesdrop --lo-
 > --undo-spoof
 
 ```
+
+Opposingly what all folks tend to think, Eve respect privacy issues so she decided to use a filter to
+log only what should be abuses on her cooporative network environment:
+
+```
+eve-the-sysadmin-with-lasers-and-very-silent@Tender:~# macgonuts eavesdrop --lo-iface=eth1 \
+> --alice-addr=192.30.70.11 --bob-addr=192.30.70.12 --pcap-file=log-them-tender-log-them-switch.pcap \
+> --filter-globs=*xxx.org*,*\x03xxx\x3org*,*[Rr][Ii][Cc][Kk][Rr][Oo][Ll][Ll]* --undo-spoof
+
+```
+
+As you can see ``--filter-globs`` option supports extended asciis by passing its values as hexadecimal
+numbers in form ``\xXX``. The glob supports the classical wildcards: star (``*``), question (``?``) and
+groups (``[...]``).
+
+[``Back``](#topic)
