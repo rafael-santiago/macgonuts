@@ -145,7 +145,7 @@ Congrats! Now you are a macgonuts spoofing master!
 
 [``Back``](#topics)
 
-### The eavesdrop commnad
+### The eavesdrop command
 
 If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
 looking for...
@@ -225,4 +225,4 @@ As you can see ``--filter-globs`` option supports extended asciis by passing its
 numbers in form ``\xXX``. The glob supports the classical wildcards: star (``*``), question (``?``) and
 groups (``[...]``).
 
-[``Back``](#topic)
+[``Back``](#topics)
