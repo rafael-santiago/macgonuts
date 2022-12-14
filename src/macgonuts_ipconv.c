@@ -11,7 +11,8 @@ static int chk_ipv4_addr(const char *ip, const size_t ip_size);
 
 static int chk_ipv6_addr(const char *ip, const size_t ip_size);
 
-static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size, const char *bits, const size_t bits_size);
+static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size,
+                         const char *bits, const size_t bits_size);
 
 static int chk_ipv4_cidr(const char *addr, const size_t addr_size, const char *bits, const size_t bits_size);
 
@@ -22,6 +23,12 @@ static int is_int(const char *buf, const size_t buf_size);
 static int get_raw_ip4(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size);
 
 static int get_raw_ip6(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size);
+
+static int get_raw_cidr4(uint8_t *first_raw, uint8_t *last_raw,
+                         const char *ip, const size_t ip_size, size_t cidr_net_bitsize);
+
+static int get_raw_cidr6(uint8_t *first_raw, uint8_t *last_raw,
+                         const char *ip, const size_t ip_size, size_t cidr_net_bitsize);
 
 int macgonuts_get_raw_ip_addr(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size) {
     int version = 0;
@@ -78,6 +85,40 @@ int macgonuts_check_ip_cidr(const char *ip, const size_t ip_size) {
             break;
     }
     return is_valid;
+}
+
+int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *cidr, const size_t cidr_size) {
+    int err = EFAULT;
+    char *slash_p = NULL;
+    char cidr_addr[128] = { 0 };
+    size_t cidr_addr_size = 0;
+    size_t cidr_net_bitsize = 0;
+    if (first_addr == NULL
+        || last_addr == NULL
+        || cidr == NULL
+        || cidr_size == 0
+        || !macgonuts_check_ip_cidr(cidr, cidr_size)) {
+        return EINVAL;
+    }
+    slash_p = strstr(cidr, "/");
+    cidr_addr_size = slash_p - cidr;
+    memcpy(cidr_addr, cidr, cidr_addr_size);
+    cidr_net_bitsize = atoi(slash_p + 1);
+    switch (macgonuts_get_ip_version(cidr_addr, cidr_addr_size)) {
+        case 4:
+            err = get_raw_cidr4(first_addr, last_addr, cidr_addr, cidr_addr_size, cidr_net_bitsize);
+            break;
+
+        case 6:
+            err = get_raw_cidr6(first_addr, last_addr, cidr_addr, cidr_addr_size, cidr_net_bitsize);
+            break;
+
+        default:
+            err = EINVAL; // INFO(Rafael): It should never happen in normal conditions.
+            break;
+    }
+
+    return err;
 }
 
 static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
@@ -165,7 +206,8 @@ static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
     return (double_colon_nr < 2);
 }
 
-static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size, const char *bits, const size_t bits_size) {
+static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size,
+                         const char *bits, const size_t bits_size) {
     int cidr_bits = 0;
     int (*chk_ipvn_addr)(const char *, const size_t) = (n == 4) ? chk_ipv4_addr : chk_ipv6_addr;
     if (chk_ipvn_addr(addr, addr_size) == 0) {
@@ -286,4 +328,36 @@ static int get_raw_ip6(uint8_t *raw, const size_t raw_max_size, const char *ip, 
         i++;
     }
     return EXIT_SUCCESS;
+}
+
+static int get_raw_cidr4(uint8_t *first_raw, uint8_t *last_raw,
+                         const char *ip, const size_t ip_size, size_t cidr_net_bitsize) {
+    uint32_t mask = 0xFFFFFFFF >> cidr_net_bitsize;
+    uint8_t raw_ip[4] = { 0 };
+    uint32_t ip_addr = 0;
+    int err = macgonuts_get_raw_ip_addr(raw_ip, sizeof(raw_ip), ip, ip_size);
+    if (err != EXIT_SUCCESS) {
+        return err;
+    }
+    ip_addr = (uint32_t)raw_ip[0] << 24 |
+              (uint32_t)raw_ip[1] << 16 |
+              (uint32_t)raw_ip[2] <<  8 |
+              (uint32_t)raw_ip[3];
+    ip_addr = ip_addr & (~mask);
+    first_raw[0] = (ip_addr >> 24) & 0xFF;
+    first_raw[1] = (ip_addr >> 16) & 0xFF;
+    first_raw[2] = (ip_addr >>  8) & 0xFF;
+    first_raw[3] = ip_addr & 0xFF;
+    ip_addr = ip_addr | mask;
+    last_raw[0] = (ip_addr >> 24) & 0xFF;
+    last_raw[1] = (ip_addr >> 16) & 0xFF;
+    last_raw[2] = (ip_addr >>  8) & 0xFF;
+    last_raw[3] = ip_addr & 0xFF;
+    return EXIT_SUCCESS;
+}
+
+static int get_raw_cidr6(uint8_t *first_raw, uint8_t *last_raw,
+                         const char *ip, const size_t ip_size, size_t cidr_net_bitsize) {
+    // TODO(Rafael): Guess what?
+    return EXIT_FAILURE;
 }

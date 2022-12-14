@@ -139,3 +139,29 @@ CUTE_TEST_CASE(macgonuts_get_raw_ip_addr_tests)
         test++;
     }
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_raw_cidr_tests)
+    struct test_ctx {
+        const char *cidr;
+        const uint8_t *expected_first;
+        const uint8_t *expected_last;
+        const size_t expected_size;
+    } test_vector[] = {
+        { "192.0.0.0/24", (uint8_t *)"\xC0\x00\x00\x00", (uint8_t *)"\xC0\x00\x00\xFF", 4 },
+        { "10.0.0.0/23", (uint8_t *)"\x0A\x00\x00\x00", (uint8_t *)"\x0A\x00\x01\xFF", 4 },
+        { "192.30.70.10/16", (uint8_t *)"\xC0\x1E\x00\x00", (uint8_t *)"\xC0\x1E\xFF\xFF", 4 },
+        { "192.30.70.0/8", (uint8_t *)"\xC0\x00\x00\x00", (uint8_t *)"\xC0\xFF\xFF\xFF", 4 },
+        { "192.30.70.0/28", (uint8_t *)"\xC0\x1E\x46\x00", (uint8_t *)"\xC0\x1E\x46\x0F", 4 },
+        { "192.30.70.10/28", (uint8_t *)"\xC0\x1E\x46\x00", (uint8_t *)"\xC0\x1E\x46\x0F", 4 },
+        { "200.30.70.10/29", (uint8_t *)"\xC8\x1E\x46\x08", (uint8_t *)"\xC8\x1E\x46\x0F", 4 },
+        { "200.95.61.88/14", (uint8_t *)"\xC8\x5C\x00\x00", (uint8_t *)"\xC8\x5F\xFF\xFF", 4 },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    uint8_t first[16] = { 0 };
+    uint8_t last[16] = { 0 };
+    while (test != test_end) {
+        CUTE_ASSERT(macgonuts_get_raw_cidr(first, last, test->cidr, strlen(test->cidr)) == EXIT_SUCCESS);
+        CUTE_ASSERT(memcmp(first, test->expected_first, test->expected_size) == 0);
+        CUTE_ASSERT(memcmp(last, test->expected_last, test->expected_size) == 0);
+        test++;
+    }
+CUTE_TEST_CASE_END

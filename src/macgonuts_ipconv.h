@@ -18,5 +18,7 @@ int macgonuts_check_ip_cidr(const char *ip, const size_t ip_size);
 
 int macgonuts_get_raw_ip_addr(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size);
 
+int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *cidr, const size_t cidr_size);
+
 #endif // MACGONUTS_IPCONV_H
 
