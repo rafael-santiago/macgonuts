@@ -7,8 +7,8 @@
  */
 #include <hooks/macgonuts_spoof_init_hook.h>
 #include <macgonuts_status_info.h>
-#include <macgonuts_ipconv.h>
-#include <macgonuts_etherconv.h>
+//#include <macgonuts_ipconv.h>
+//#include <macgonuts_etherconv.h>
 
 int macgonuts_spoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                               const unsigned char *ethfrm, const size_t ethfrm_size) {

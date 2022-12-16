@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_spoof.h>
-#include <macgonuts_ipconv.h>
 #include <macgonuts_ethfrm.h>
 #include <macgonuts_arphdr.h>
 #include <macgonuts_ip6hdr.h>
@@ -14,9 +13,9 @@
 #include <macgonuts_ndphdr.h>
 #include <macgonuts_ip6mcast.h>
 #include <macgonuts_etherconv.h>
+#include <macgonuts_ipconv.h>
 #include <macgonuts_socket.h>
 #include <macgonuts_get_ethaddr.h>
-#include <macgonuts_ipconv.h>
 #include <macgonuts_status_info.h>
 
 static int macgonuts_spoof4(const macgonuts_socket_t rsk,
