@@ -22,10 +22,10 @@ int macgonuts_printpkt_if(const unsigned char *ethfrm, const size_t ethfrm_size,
     curr_filter = filter_globs;
     filter_globs_end = curr_filter + filter_globs_nr;
 
-    while (curr_filter != filter_globs_end && !found) {
+    do {
         found = (macgonuts_memglob(ethfrm, ethfrm_size, (*curr_filter)->glob, (*curr_filter)->glob_size) != 0);
         curr_filter++;
-    }
+    } while (curr_filter != filter_globs_end && !found);
 
     return found;
 }
