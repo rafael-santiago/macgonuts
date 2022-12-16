@@ -64,6 +64,10 @@ CUTE_TEST_CASE(macgonuts_check_ip_addr_tests)
         { "2001:db8:0:f101::2", 1                                  },
         { "2001:db8827:0:f101::2", 0                               },
         { "2001::cafe:0:3", 1                                      },
+        { "DEAD:BEEF::7E:1D", 1                                    },
+        { "2001:db8:0::f101::2", 0                                 },
+        { "::2001:db8:0:f101::2", 0                                },
+        { "2001::xafe:0:3", 0                                      },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_check_ip_addr(test->addr, strlen(test->addr)) == test->is_valid);
@@ -155,6 +159,27 @@ CUTE_TEST_CASE(macgonuts_get_raw_cidr_tests)
         { "192.30.70.10/28", (uint8_t *)"\xC0\x1E\x46\x00", (uint8_t *)"\xC0\x1E\x46\x0F", 4 },
         { "200.30.70.10/29", (uint8_t *)"\xC8\x1E\x46\x08", (uint8_t *)"\xC8\x1E\x46\x0F", 4 },
         { "200.95.61.88/14", (uint8_t *)"\xC8\x5C\x00\x00", (uint8_t *)"\xC8\x5F\xFF\xFF", 4 },
+        { "2001::1/64", (uint8_t *)"\x20\x01\x00\x00\x00\x00"
+                                   "\x00\x00\x00\x00\x00\x00"
+                                   "\x00\x00\x00\x00", (uint8_t *)"\x20\x01\x00\x00\x00\x00"
+                                                                  "\x00\x00\xFF\xFF\xFF\xFF"
+                                                                  "\xFF\xFF\xFF\xFF", 16 },
+        { "2001::1/24", (uint8_t *)"\x20\x01\x00\x00\x00\x00"
+                                   "\x00\x00\x00\x00\x00\x00"
+                                   "\x00\x00\x00\x00", (uint8_t *)"\x20\x01\x00\xFF\xFF\xFF"
+                                                                  "\xFF\xFF\xFF\xFF\xFF\xFF"
+                                                                  "\xFF\xFF\xFF\xFF" },
+        { "2001::1/37", (uint8_t *)"\x20\x01\x00\x00\x00\x00"
+                                   "\x00\x00\x00\x00\x00\x00"
+                                   "\x00\x00\x00\x00", (uint8_t *)"\x20\x01\x00\x00\x07\xFF"
+                                                                  "\xFF\xFF\xFF\xFF\xFF\xFF"
+                                                                  "\xFF\xFF\xFF\xFF" },
+        { "DEAD:BEEF::7E:1D/72", (uint8_t *)"\xDE\xAD\xBE\xEF"
+                                            "\x00\x00\x00\x00\x00"
+                                            "\x00\x00\x00\x00\x00"
+                                            "\x00\x00", (uint8_t *)"\xDE\xAD\xBE\xEF\x00\x00"
+                                                                   "\x00\x00\x00\xFF\xFF\xFF"
+                                                                   "\xFF\xFF\xFF\xFF" },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     uint8_t first[16] = { 0 };
     uint8_t last[16] = { 0 };

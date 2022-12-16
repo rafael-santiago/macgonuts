@@ -152,58 +152,80 @@ static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
 }
 
 static int chk_ipv6_addr(const char *ip, const size_t ip_size) {
-    const char *p = ip, *lp = p;
+    const char *p = ip;
     const char *p_end = p + ip_size;
-    char word[25] = { 0 };
-    size_t w;
-    long int u16_frac = 0;
-    int is_valid = 0;
+    const char *lp = NULL;
     int has_double_colon = 0;
-    int double_colon_nr = 0;
-    if (p == NULL) {
-        return 0;
-    }
-    if (strstr(ip, ".") != NULL) {
-        return 0;
-    }
+    char word[10] = { 0 };
+    long int u16_frac = 0;
+    int is_double_colon = 0;
+
     if (strstr(ip, ":") == NULL) {
         return 0;
     }
-    if (ip_size < 3 || (*p == ':' && p[1] != ':')) {
+
+    if (ip[0] == ':' && ip_size < 3) {
         return 0;
     }
-    while (p < p_end) {
-        if (*p == ':' || (p + 1) == p_end) {
-            double_colon_nr += ((p + 1) != p_end && p[1] == ':');
-            p += ((p + 1) == p_end);
-            if ((p - lp) > sizeof(word)) {
-                return 0;
-            }
-            p += (lp == p);
-            p += (isxdigit(*p) && (p + 1) < p_end && isxdigit(*(p + 1)));
-            memset(word, 0, sizeof(word));
-            memcpy(word, lp, p - lp);
-            is_valid = 1;
-            w = 0;
-            do {
-                is_valid = isxdigit(word[w++]);
-            } while (is_valid && word[w] != 0);
-            if(is_valid) {
+
+    if (ip[0] == ':' && ip_size > 3 && ip[1] != ':') {
+        return 0;
+    }
+
+    while (p != p_end) {
+        switch (*p) {
+            case ':':
+                is_double_colon = ((p + 1) < p_end && p[1] == ':');
+                if (is_double_colon && has_double_colon) {
+                    return 0;
+                } else if (is_double_colon) {
+                    has_double_colon = is_double_colon;
+                }
+                p += has_double_colon;
+                break;
+
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case 'A':
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'E':
+            case 'F':
+            case 'a':
+            case 'b':
+            case 'c':
+            case 'd':
+            case 'e':
+            case 'f':
+                lp = p;
+                while (isxdigit(*p) && p != p_end) {
+                    p++;
+                }
+                memset(word, 0, sizeof(word));
+                memcpy(word, lp, (p - lp) % sizeof(word));
                 u16_frac = strtol(word, NULL, 16);
                 if (u16_frac < 0 || u16_frac > 65535) {
                     return 0;
                 }
-            } else if (!is_valid && !has_double_colon) {
-                is_valid = has_double_colon = (strstr(word, ":") == &word[0]);
-            }
-            if (!is_valid) {
+                p--;
+                break;
+
+            default:
                 return 0;
-            }
-            lp = p + 1;
         }
         p++;
     }
-    return (double_colon_nr < 2);
+
+    return 1;
 }
 
 static int chk_ipvn_cidr(const size_t n, const char *addr, const size_t addr_size,
@@ -356,8 +378,87 @@ static int get_raw_cidr4(uint8_t *first_raw, uint8_t *last_raw,
     return EXIT_SUCCESS;
 }
 
+static void shiftr128b(uint32_t *value, const size_t n) {
+    unsigned char b0 = 0;
+    unsigned char b1 = 0;
+    size_t c;
+    for (c = 0;  c < n; c++) {
+        b0 = value[0] & 1;
+        value[0] = (value[0] >> 1);
+        b1 = value[1] & 1;
+        value[1] = ((uint32_t)b0 << 31) | (value[1] >> 1);
+        b0 = value[2] & 1;
+        value[2] = ((uint32_t)b1 << 31) | (value[2] >> 1);
+        b1 = value[3] & 1;
+        value[3] = ((uint32_t)b0 << 31) | (value[3] >> 1);
+    }
+}
+
 static int get_raw_cidr6(uint8_t *first_raw, uint8_t *last_raw,
                          const char *ip, const size_t ip_size, size_t cidr_net_bitsize) {
-    // TODO(Rafael): Guess what?
-    return EXIT_FAILURE;
+    uint32_t mask[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+    uint8_t raw_ip[16] = { 0 };
+    uint32_t ip_addr[4] = { 0 };
+    int err = macgonuts_get_raw_ip_addr(raw_ip, sizeof(raw_ip), ip, ip_size);
+    if (err != EXIT_SUCCESS) {
+        return err;
+    }
+    ip_addr[0] = ((uint32_t)raw_ip[ 0] << 24) |
+                 ((uint32_t)raw_ip[ 1] << 16) |
+                 ((uint32_t)raw_ip[ 2] <<  8) |
+                 ((uint32_t)raw_ip[ 3]);
+    ip_addr[1] = ((uint32_t)raw_ip[ 4] << 24) |
+                 ((uint32_t)raw_ip[ 5] << 16) |
+                 ((uint32_t)raw_ip[ 6] <<  8) |
+                 ((uint32_t)raw_ip[ 7]);
+    ip_addr[2] = ((uint32_t)raw_ip[ 8] << 24) |
+                 ((uint32_t)raw_ip[ 9] << 16) |
+                 ((uint32_t)raw_ip[10] << 8)  |
+                 ((uint32_t)raw_ip[11]);
+    ip_addr[3] = ((uint32_t)raw_ip[12] << 24) |
+                 ((uint32_t)raw_ip[13] << 16) |
+                 ((uint32_t)raw_ip[14] <<  8) |
+                 ((uint32_t)raw_ip[15]);
+    shiftr128b(mask, cidr_net_bitsize);
+    ip_addr[0] = ip_addr[0] & (~mask[0]);
+    ip_addr[1] = ip_addr[1] & (~mask[1]);
+    ip_addr[2] = ip_addr[2] & (~mask[2]);
+    ip_addr[3] = ip_addr[3] & (~mask[3]);
+    first_raw[ 0] = (ip_addr[ 0] >> 24) & 0xFF;
+    first_raw[ 1] = (ip_addr[ 0] >> 16) & 0xFF;
+    first_raw[ 2] = (ip_addr[ 0] >>  8) & 0xFF;
+    first_raw[ 3] =  ip_addr[ 0] & 0xFF;
+    first_raw[ 4] = (ip_addr[ 1] >> 24) & 0xFF;
+    first_raw[ 5] = (ip_addr[ 1] >> 16) & 0xFF;
+    first_raw[ 6] = (ip_addr[ 1] >>  8) & 0xFF;
+    first_raw[ 7] =  ip_addr[ 1] & 0xFF;
+    first_raw[ 8] = (ip_addr[ 2] >> 24) & 0xFF;
+    first_raw[ 9] = (ip_addr[ 2] >> 16) & 0xFF;
+    first_raw[10] = (ip_addr[ 2] >>  8) & 0xFF;
+    first_raw[11] =  ip_addr[ 2] & 0xFF;
+    first_raw[12] = (ip_addr[ 3] >> 24) & 0xFF;
+    first_raw[13] = (ip_addr[ 3] >> 16) & 0xFF;
+    first_raw[14] = (ip_addr[ 3] >>  8) & 0xFF;
+    first_raw[15] =  ip_addr[ 3] & 0xFF;
+    ip_addr[0] = ip_addr[0] | mask[0];
+    ip_addr[1] = ip_addr[1] | mask[1];
+    ip_addr[2] = ip_addr[2] | mask[2];
+    ip_addr[3] = ip_addr[3] | mask[3];
+    last_raw[ 0] = (ip_addr[ 0] >> 24) & 0xFF;
+    last_raw[ 1] = (ip_addr[ 0] >> 16) & 0xFF;
+    last_raw[ 2] = (ip_addr[ 0] >>  8) & 0xFF;
+    last_raw[ 3] =  ip_addr[ 0] & 0xFF;
+    last_raw[ 4] = (ip_addr[ 1] >> 24) & 0xFF;
+    last_raw[ 5] = (ip_addr[ 1] >> 16) & 0xFF;
+    last_raw[ 6] = (ip_addr[ 1] >>  8) & 0xFF;
+    last_raw[ 7] =  ip_addr[ 1] & 0xFF;
+    last_raw[ 8] = (ip_addr[ 2] >> 24) & 0xFF;
+    last_raw[ 9] = (ip_addr[ 2] >> 16) & 0xFF;
+    last_raw[10] = (ip_addr[ 2] >>  8) & 0xFF;
+    last_raw[11] =  ip_addr[ 2] & 0xFF;
+    last_raw[12] = (ip_addr[ 3] >> 24) & 0xFF;
+    last_raw[13] = (ip_addr[ 3] >> 16) & 0xFF;
+    last_raw[14] = (ip_addr[ 3] >>  8) & 0xFF;
+    last_raw[15] =  ip_addr[ 3] & 0xFF;
+    return EXIT_SUCCESS;
 }
