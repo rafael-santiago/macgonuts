@@ -30,6 +30,10 @@ static int get_raw_cidr4(uint8_t *first_raw, uint8_t *last_raw,
 static int get_raw_cidr6(uint8_t *first_raw, uint8_t *last_raw,
                          const char *ip, const size_t ip_size, size_t cidr_net_bitsize);
 
+static int raw_ip2literal_4(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size);
+
+static int raw_ip2literal_6(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size);
+
 int macgonuts_get_raw_ip_addr(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size) {
     int version = 0;
     if (raw == NULL || raw_max_size == 0 || ip == NULL || ip_size == 0) {
@@ -119,6 +123,15 @@ int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *
     }
 
     return err;
+}
+
+int macgonuts_raw_ip2literal(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size) {
+    int (*raw_ip2literal)(char *, const size_t, const uint8_t *, const size_t) = NULL;
+    if (out == NULL || max_out == 0 || raw == NULL || !(raw_size == 4 || raw_size == 16)) {
+        return EINVAL;
+    }
+    raw_ip2literal = (raw_size == 4) ? raw_ip2literal_4 : raw_ip2literal_6;
+    return raw_ip2literal(out, max_out, raw, raw_size);
 }
 
 static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
@@ -460,5 +473,62 @@ static int get_raw_cidr6(uint8_t *first_raw, uint8_t *last_raw,
     last_raw[13] = (ip_addr[ 3] >> 16) & 0xFF;
     last_raw[14] = (ip_addr[ 3] >>  8) & 0xFF;
     last_raw[15] =  ip_addr[ 3] & 0xFF;
+    return EXIT_SUCCESS;
+}
+
+static int raw_ip2literal_4(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size) {
+    if (max_out < 12) {
+        return ERANGE;
+    }
+
+    snprintf(out, max_out, "%d.%d.%d.%d", raw[0], raw[1], raw[2], raw[3]);
+
+    return EXIT_SUCCESS;
+}
+
+static int raw_ip2literal_6(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size) {
+    size_t r;
+    int z_comp = 0;
+    size_t c_off = 0;
+    size_t t_len = 0;
+    const char tok[2] = { 0, ':' };
+
+    for (r = 0; r < raw_size; r += 2) {
+        if (raw[r] == 0 && raw[r + 1] == 0 && z_comp != 2 && (r + 2) < raw_size) {
+            z_comp = 1;
+            continue;
+        }
+        if (z_comp == 1) {
+            c_off = snprintf(&out[c_off], max_out - t_len, "%s", (t_len == 0) ? "::" : ":");
+            t_len  += c_off;
+            c_off = t_len;
+            z_comp = 2;
+        }
+        if (raw[r] > 0) {
+            if ((raw[r] & 0xF) != 0) {
+                if ((raw[r] >> 4) > 0) {
+                    c_off = snprintf(&out[c_off], max_out - t_len, "%.2x%x%c",
+                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
+                } else {
+                    c_off = snprintf(&out[c_off], max_out - t_len, "%x%.2x%c",
+                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
+                }
+            } else {
+                if ((raw[r] >> 4) > 0) {
+                    c_off = snprintf(&out[c_off], max_out - t_len, "%.2x%.2x%c",
+                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
+                } else {
+                    c_off = snprintf(&out[c_off], max_out - t_len, "%x%.2x%c",
+                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
+                }
+            }
+        } else if (raw[r] == 0) {
+            c_off = snprintf(&out[c_off], max_out - t_len, "%x%c",
+                             raw[r + 1], tok[(r + 2) < raw_size]);
+        }
+        t_len += c_off;
+        c_off = t_len;
+    }
+
     return EXIT_SUCCESS;
 }

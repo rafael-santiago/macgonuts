@@ -190,3 +190,27 @@ CUTE_TEST_CASE(macgonuts_get_raw_cidr_tests)
         test++;
     }
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_raw_ip2literal_tests)
+    struct test_ctx {
+        const uint8_t *raw;
+        const size_t raw_size;
+        const char *expected;
+    } test_vector[] = {
+        { (uint8_t *)"\x7F\x00\x00\x01", 4, "127.0.0.1" },
+        { (uint8_t *)"\xFF\xFF\xFF\xFF", 4, "255.255.255.255" },
+        { (uint8_t *)"\xC0\x1E\x46\x0A", 4, "192.30.70.10" },
+        { (uint8_t *)"\xC8\x5F\x3D\x58", 4, "200.95.61.88" },
+        { (uint8_t *)"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01", 16, "::1" },
+        { (uint8_t *)"\xDE\xAD\xBE\xEF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x7E\x1D", 16, "dead:beef::7e1d" },
+        { (uint8_t *)"\x20\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01", 16, "2001::1" },
+        { (uint8_t *)"\x20\x01\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01", 16, "2001:900::1" },
+        { (uint8_t *)"\x20\x01\x09\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x01", 16, "2001:900::2:0:0:1" },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    char out[256] = "";
+    while (test != test_end) {
+        CUTE_ASSERT(macgonuts_raw_ip2literal(out, sizeof(out), test->raw, test->raw_size) == EXIT_SUCCESS);
+        CUTE_ASSERT(strcmp(out, test->expected) == 0);
+        test++;
+    }
+CUTE_TEST_CASE_END

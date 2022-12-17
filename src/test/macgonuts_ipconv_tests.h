@@ -20,5 +20,7 @@ CUTE_DECLARE_TEST_CASE(macgonuts_get_raw_ip_addr_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_raw_cidr_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_raw_ip2literal_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_IPCONV_H
 

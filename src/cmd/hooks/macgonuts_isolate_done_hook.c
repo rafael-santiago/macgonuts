@@ -25,7 +25,6 @@ int macgonuts_isolate_done_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                                                                                 spfgd->layers.spoof_hw_addr[3],
                                                                                 spfgd->layers.spoof_hw_addr[4],
                                                                                 spfgd->layers.spoof_hw_addr[5]);
-    // TODO(Rafael): Implement function to print a ip address in human reading form.
     macgonuts_si_info("fuddling resolution info (`%s` == `%s`) sent to `%s`...\n", spoof_mac, spoof_address,
                                                                                    spfgd->usrinfo.tg_address);
     return EXIT_SUCCESS;
