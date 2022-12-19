@@ -6,7 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "macgonuts_redirect_tests.h"
+#include "macgonuts_mocks.h"
 #include <macgonuts_redirect.h>
+#include <macgonuts_socket.h>
 
 CUTE_TEST_CASE(macgonuts_should_redirect_tests)
     struct macgonuts_spoofing_guidance_ctx spfgd = { 0 };
@@ -88,4 +90,48 @@ CUTE_TEST_CASE(macgonuts_should_redirect_tests)
         CUTE_ASSERT(macgonuts_should_redirect(test->ethfrm, test->ethfrm_size, &spfgd.layers) == test->expected);
         test++;
     }
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_redirect_tests)
+#if defined(__linux__)
+# define LO_IFACE "eth0"
+#else
+# Some code wanted
+#endif // defined(__linux__)
+
+    const unsigned char frame_from_wire6[] = { // INFO(Rafael): Ethernet frame.
+                                               0x33, 0x33, 0xFF, 0x00, 0x00, 0x03,
+                                               0x08, 0x00, 0x27, 0x5D, 0x5B, 0xB8,
+                                               0x86, 0xDD,
+                                               // INFO(Rafael): IP6 datagram.
+                                               0x60, 0x00, 0x00, 0x00, 0x00, 0x20,
+                                               0x3A, 0xFF, 0x20, 0x01, 0xCA, 0xFE,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x02,
+                                               0xBA, 0xBA, 0xCA, 0x00, 0x00, 0x00,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+                                               0xFF, 0x00, 0x00, 0x03,
+                                               // INFO(Rafael): ICMP datagram.
+                                               0x87, 0x00, 0x18, 0x82, 0x00, 0x00,
+                                               0x00, 0x00, 0x20, 0x01, 0xCA, 0xFE,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                                               0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
+                                               0x01, 0x01, 0x08, 0x00, 0x27, 0x5D,
+                                               0x5B, 0xB8 };
+    struct macgonuts_spoof_layers_ctx layers = { 0 };
+    unsigned char *send_buf = NULL;
+    size_t send_buf_size = 0;
+    macgonuts_socket_t rsk = macgonuts_create_socket(LO_IFACE, 1);
+    CUTE_ASSERT(rsk != -1);
+    memcpy(&layers.lo_hw_addr[0], (uint8_t *)"\x33\x33\xFF\x00\x00\x03", 6);
+    layers.proto_addr_size = 16;
+    memcpy(&layers.spoof_hw_addr[0], (uint8_t *)"\x01\x02\x03\x04\x05\x06", 6);
+    CUTE_ASSERT(macgonuts_redirect(rsk, &layers, frame_from_wire6, sizeof(frame_from_wire6), NULL) == ENODATA);
+    memcpy(&layers.spoof_proto_addr[0], (uint8_t *)"\xBA\xBA\xCA\x00\x00\x00\x00\x00"
+                                                   "\x00\x00\x00\x01\xFF\x00\x00\x03", 16);
+    CUTE_ASSERT(macgonuts_redirect(rsk, &layers, frame_from_wire6, sizeof(frame_from_wire6), NULL) == EXIT_SUCCESS);
+    send_buf = mock_get_send_buf(&send_buf_size);
+    CUTE_ASSERT(send_buf_size == sizeof(frame_from_wire6));
+    CUTE_ASSERT(memcmp(&send_buf[0], "\x01\x02\x03\x04\x05\x06", 6) == 0);
+    macgonuts_release_socket(rsk);
 CUTE_TEST_CASE_END

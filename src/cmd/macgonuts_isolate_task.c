@@ -120,5 +120,7 @@ static int fill_up_tg_info(void) {
         return EXIT_FAILURE;
     }
 
+    // TODO(Rafael): Implement function to increment raw ip.
+
     return EXIT_SUCCESS;
 }

@@ -11,4 +11,6 @@
 
 CUTE_DECLARE_TEST_CASE(macgonuts_should_redirect_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_redirect_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_REDIRECT_TESTS_H

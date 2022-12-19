@@ -84,6 +84,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_spoof_layers_info_tests);
     CUTE_RUN_TEST(macgonuts_spoof_tests);
     CUTE_RUN_TEST(macgonuts_should_redirect_tests);
+    CUTE_RUN_TEST(macgonuts_redirect_tests);
     CUTE_RUN_TEST(macgonuts_metaspoofer_tests);
     CUTE_RUN_TEST(macgonuts_pcap_tests);
     CUTE_RUN_TEST(macgonuts_format_filter_tests);
