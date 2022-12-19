@@ -134,6 +134,22 @@ int macgonuts_raw_ip2literal(char *out, const size_t max_out, const uint8_t *raw
     return raw_ip2literal(out, max_out, raw, raw_size);
 }
 
+void macgonuts_inc_raw_ip(uint8_t *raw, const size_t raw_size) {
+    uint8_t *rp_end = raw - 1;
+    uint8_t *rp = (rp_end + 1) + raw_size - 1;
+    uint8_t cf;
+    uint8_t t = *rp;
+    *rp += 1;
+    cf = (*rp < t);
+    rp--;
+    while (rp != rp_end) {
+        t = *rp;
+        *rp += cf;
+        cf = (*rp < t);
+        rp--;
+    }
+}
+
 static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
     const char *p = ip, *lp = p;
     const char *p_end = p + ip_size;

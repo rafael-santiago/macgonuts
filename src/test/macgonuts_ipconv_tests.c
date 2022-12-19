@@ -214,3 +214,35 @@ CUTE_TEST_CASE(macgonuts_raw_ip2literal_tests)
         test++;
     }
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_inc_raw_ip_tests)
+    struct test_ctx {
+        uint8_t *raw;
+        size_t raw_size;
+        uint8_t *expected;
+    } test_vector[] = {
+        { (uint8_t *)"\xDE\xAD\xBE\xEF", 4, (uint8_t *)"\xDE\xAD\xBE\xF0" },
+        { (uint8_t *)"\xFF\xFF\xFF\xFF", 4, (uint8_t *)"\x00\x00\x00\x00" },
+        { (uint8_t *)"\xC8\x5F\x3D\x58", 4, (uint8_t *)"\xC8\x5F\x3D\x59" },
+        { (uint8_t *)"\x7F\x00\x00\x01", 4, (uint8_t *)"\x7F\x00\x00\x02" },
+        { (uint8_t *)"\x20\x01\x09\x00\x00\x00\x00\x00"
+                     "\x00\x02\x00\x00\x00\x00\x00\x01", 16,
+          (uint8_t *)"\x20\x01\x09\x00\x00\x00\x00\x00"
+                     "\x00\x02\x00\x00\x00\x00\x00\x02" },
+        { (uint8_t *)"\x20\x01\x09\xFF\xFF\xFF\xFF\xFF"
+                     "\xFF\x02\xFF\xFF\xFF\xFF\xFF\xFF", 16,
+          (uint8_t *)"\x20\x01\x09\xFF\xFF\xFF\xFF\xFF"
+                     "\xFF\x03\x00\x00\x00\x00\x00\x00" },
+        { (uint8_t *)"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+                     "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 16,
+          (uint8_t *)"\x00\x00\x00\x00\x00\x00\x00\x00"
+                     "\x00\x00\x00\x00\x00\x00\x00\x00" },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    uint8_t raw[16] = { 0 };
+    while (test != test_end) {
+        memcpy(&raw[0], &test->raw[0], test->raw_size);
+        macgonuts_inc_raw_ip(raw, test->raw_size);
+        CUTE_ASSERT(memcmp(&raw[0], &test->expected[0], test->raw_size) == 0);
+        test++;
+    }
+CUTE_TEST_CASE_END

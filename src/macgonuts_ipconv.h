@@ -22,5 +22,7 @@ int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *
 
 int macgonuts_raw_ip2literal(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size);
 
+void macgonuts_inc_raw_ip(uint8_t *raw, const size_t raw_size);
+
 #endif // MACGONUTS_IPCONV_H
 
