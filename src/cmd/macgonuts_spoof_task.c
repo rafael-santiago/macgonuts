@@ -11,6 +11,7 @@
 #include <cmd/hooks/macgonuts_spoof_done_hook.h>
 #include <cmd/hooks/macgonuts_spoof_redirect_hook.h>
 #include <cmd/macgonuts_option.h>
+#include <cmd/macgonuts_misc_utils.h>
 #include <macgonuts_socket.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_thread.h>
@@ -18,8 +19,6 @@
 #include <macgonuts_status_info.h>
 
 static struct macgonuts_spoofing_guidance_ctx g_Spfgd = { 0 };
-
-static int is_valid_number(const char *n);
 
 static void sigint_watchdog(int signo);
 
@@ -54,7 +53,7 @@ int macgonuts_spoof_task(void) {
             macgonuts_si_error("--fake-pkts-amount is pointless if you want to redirect.\n");
             return EXIT_FAILURE;
         }*/
-        if (is_valid_number(n)) {
+        if (macgonuts_is_valid_number(n)) {
             g_Spfgd.spoofing.total = atoi(n);
         } else {
             macgonuts_si_error("--fake-pkts-amount has invalid number.\n");
@@ -64,7 +63,7 @@ int macgonuts_spoof_task(void) {
 
     n = macgonuts_get_option("timeout", NULL);
     if (n != NULL) {
-        if (is_valid_number(n)) {
+        if (macgonuts_is_valid_number(n)) {
             g_Spfgd.spoofing.timeout = atoi(n);
         } else {
             macgonuts_si_error("--timeout has invalid number.\n");
@@ -129,18 +128,6 @@ int macgonuts_spoof_task_help(void) {
                        "                     --target-addr=<ip4|ip6> --addr2spoof=<ip4|ip6>\n"
                        "                    [--fake-pkts-amount=<n> --timeout=<ms> --redirect --undo-spoof]\n");
     return EXIT_SUCCESS;
-}
-
-static int is_valid_number(const char *n) {
-    const char *np = n;
-    const char *np_end = n + strlen(n);
-    while (np != np_end) {
-        if (!isdigit(*np)) {
-            return 0;
-        }
-        np++;
-    }
-    return 1;
 }
 
 static void sigint_watchdog(int signo) {

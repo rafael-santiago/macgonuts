@@ -246,3 +246,19 @@ CUTE_TEST_CASE(macgonuts_inc_raw_ip_tests)
         test++;
     }
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_cidr_version_tests)
+    struct test_ctx {
+        const char *cidr;
+        const int expected;
+    } test_vector[] = {
+        { "127.0.0.1/10", 4 },
+        { "2001::9/64", 6 },
+        { "20:102::1", -1 },
+        { "256.21.3.4/38", -1 },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    while (test != test_end) {
+        CUTE_ASSERT(macgonuts_get_cidr_version(test->cidr, strlen(test->cidr)) == test->expected);
+        test++;
+    }
+CUTE_TEST_CASE_END

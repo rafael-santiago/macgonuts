@@ -9,6 +9,7 @@
 #include <cmd/macgonuts_option.h>
 #include <cmd/macgonuts_spoof_task.h>
 #include <cmd/macgonuts_eavesdrop_task.h>
+#include <cmd/macgonuts_isolate_task.h>
 #include <macgonuts_status_info.h>
 
 typedef int (*macgonuts_task_func)(void);
@@ -27,9 +28,10 @@ struct macgonuts_task_ctx {
     const char *name;
     macgonuts_task_func task;
     macgonuts_task_func help;
-} gMacgonutsCmdTasks[] = {
+} g_MacgonutsCmdTasks[] = {
     MACGONUTS_CMD_REGISTER_TASK(spoof),
     MACGONUTS_CMD_REGISTER_TASK(eavesdrop),
+    MACGONUTS_CMD_REGISTER_TASK(isolate),
     MACGONUTS_CMD_REGISTER_TASK(help),
 };
 
@@ -38,8 +40,8 @@ struct macgonuts_task_ctx {
 int macgonuts_exec(const int argc, const char **argv) {
     const char *task = NULL;
     macgonuts_task_func task_subprogram = macgonuts_unknown_task;
-    struct macgonuts_task_ctx *tp = &gMacgonutsCmdTasks[0], *tp_end = tp +
-            sizeof(gMacgonutsCmdTasks) / sizeof(gMacgonutsCmdTasks[0]);
+    struct macgonuts_task_ctx *tp = &g_MacgonutsCmdTasks[0], *tp_end = tp +
+            sizeof(g_MacgonutsCmdTasks) / sizeof(g_MacgonutsCmdTasks[0]);
     macgonuts_set_argc_argv(argc, argv);
     task = macgonuts_get_raw_option(1);
     if (task == NULL) {
@@ -66,8 +68,8 @@ static int macgonuts_help_task(void) {
     char *ap = NULL, *ap_end = NULL;
     size_t written = 0;
     const char *sep[2] = { ", ", "." };
-    struct macgonuts_task_ctx *tp = &gMacgonutsCmdTasks[0], *tp_end = tp +
-        sizeof(gMacgonutsCmdTasks) / sizeof(gMacgonutsCmdTasks[0]);
+    struct macgonuts_task_ctx *tp = &g_MacgonutsCmdTasks[0], *tp_end = tp +
+        sizeof(g_MacgonutsCmdTasks) / sizeof(g_MacgonutsCmdTasks[0]);
     macgonuts_task_func help_subprogram = macgonuts_no_help_topic;
     if (topic == NULL) {
         ap = &avail_tasks[0];

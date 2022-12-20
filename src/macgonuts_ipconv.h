@@ -12,6 +12,8 @@
 
 int macgonuts_get_ip_version(const char *ip, const size_t ip_size);
 
+int macgonuts_get_cidr_version(const char *ip, const size_t ip_size);
+
 int macgonuts_check_ip_addr(const char *ip, const size_t ip_size);
 
 int macgonuts_check_ip_cidr(const char *ip, const size_t ip_size);

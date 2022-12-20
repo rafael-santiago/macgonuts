@@ -57,6 +57,30 @@ int macgonuts_get_ip_version(const char *ip, const size_t ip_size) {
     return -1;
 }
 
+int macgonuts_get_cidr_version(const char *ip, const size_t ip_size) {
+    char addr[128] = { 0 };
+    size_t addr_size = 0;
+    const char *slash = NULL;
+
+    if (ip == NULL || ip_size == 0 || !macgonuts_check_ip_cidr(ip, ip_size)) {
+        return -1;
+    }
+
+    slash = strstr(ip, "/");
+    addr_size = (slash - ip);
+    memcpy(addr, ip, addr_size);
+
+    if (chk_ipv4_addr(addr, addr_size)) {
+        return 4;
+    }
+
+    if (chk_ipv6_addr(addr, addr_size)) {
+        return 6;
+    }
+
+    return -1;
+}
+
 int macgonuts_check_ip_addr(const char *ip, const size_t ip_size) {
     int version = macgonuts_get_ip_version(ip, ip_size);
     return (version == 4 || version == 6);
