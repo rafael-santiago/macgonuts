@@ -12,12 +12,11 @@ int macgonuts_isolate_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                                 const unsigned char *ethfrm, const size_t ethfrm_size) {
     assert(spfgd != NULL
             && spfgd->usrinfo.lo_iface != NULL
-            && spfgd->usrinfo.tg_address != NULL
-            && spfgd->usrinfo.spoof_address);
+            && spfgd->usrinfo.tg_address != NULL);
 
     macgonuts_si_mode_enter_announce("isolate");
 
-    macgonuts_si_print("-=-=-=-=-=-=-=-= { you are isolating `%s` } =-=-=-=-=-=-=-=-", spfgd->usrinfo.tg_address);
+    macgonuts_si_print("-=-=-=-=-=-=-=-= { you are isolating `%s` } =-=-=-=-=-=-=-=-\n\n", spfgd->usrinfo.tg_address);
 
     return EXIT_SUCCESS;
 }

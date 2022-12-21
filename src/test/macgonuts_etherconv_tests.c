@@ -36,6 +36,7 @@ CUTE_TEST_CASE(macgonuts_check_ether_addr_tests)
         { "bB:cC:dD:eE:fF:gG", 0 },
         { "Aa:Bb:Cc:Dd:Ee:Ff", 1 },
         { "Bb:Cc:Dd:Ee:Ff:Gg", 0 },
+        { "08:00:27:e5:9b:4a", 1 },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_check_ether_addr(test->mac, strlen(test->mac)) == test->valid);

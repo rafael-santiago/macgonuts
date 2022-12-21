@@ -18,4 +18,7 @@
 int macgonuts_get_addr_from_iface_unix(char *addr_buf, const size_t max_addr_buf_size,
                                        const int addr_version, const char *iface);
 
+int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size,
+                                    uint8_t *raw, size_t *raw_size);
+
 #endif // MACGONUTS_MACGONUTS_SOCKET_COMMON_H

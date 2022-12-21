@@ -527,48 +527,78 @@ static int raw_ip2literal_4(char *out, const size_t max_out, const uint8_t *raw,
 }
 
 static int raw_ip2literal_6(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size) {
-    size_t r;
-    int z_comp = 0;
-    size_t c_off = 0;
-    size_t t_len = 0;
-    const char tok[2] = { 0, ':' };
+    size_t o = 0;
+    size_t ct[2] = { 0, 0 };
+    char *z_p = NULL;
+    char *z_p_end = NULL;
+    char *p = NULL;
+    char *p_end = NULL;
+    char *l_p = NULL;
+    char temp[1<<10] = "";
+    size_t t;
+    size_t t_len = snprintf(out, max_out, "%x%.2x:%x%.2x:%x%.2x:%x%.2x:"
+                                          "%x%.2x:%x%.2x:%x%.2x:%x%.2x", raw[ 0], raw[ 1], raw[ 2], raw[ 3],
+                                                                         raw[ 4], raw[ 5], raw[ 6], raw[ 7],
+                                                                         raw[ 8], raw[ 9], raw[10], raw[11],
+                                                                         raw[12], raw[13], raw[14], raw[15]);
 
-    for (r = 0; r < raw_size; r += 2) {
-        if (raw[r] == 0 && raw[r + 1] == 0 && z_comp != 2 && (r + 2) < raw_size) {
-            z_comp = 1;
-            continue;
-        }
-        if (z_comp == 1) {
-            c_off = snprintf(&out[c_off], max_out - t_len, "%s", (t_len == 0) ? "::" : ":");
-            t_len  += c_off;
-            c_off = t_len;
-            z_comp = 2;
-        }
-        if (raw[r] > 0) {
-            if ((raw[r] & 0xF) != 0) {
-                if ((raw[r] >> 4) > 0) {
-                    c_off = snprintf(&out[c_off], max_out - t_len, "%.2x%x%c",
-                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
-                } else {
-                    c_off = snprintf(&out[c_off], max_out - t_len, "%x%.2x%c",
-                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
-                }
-            } else {
-                if ((raw[r] >> 4) > 0) {
-                    c_off = snprintf(&out[c_off], max_out - t_len, "%.2x%.2x%c",
-                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
-                } else {
-                    c_off = snprintf(&out[c_off], max_out - t_len, "%x%.2x%c",
-                                     raw[r], raw[r + 1], tok[(r + 2) < raw_size]);
-                }
-            }
-        } else if (raw[r] == 0) {
-            c_off = snprintf(&out[c_off], max_out - t_len, "%x%c",
-                             raw[r + 1], tok[(r + 2) < raw_size]);
-        }
-        t_len += c_off;
-        c_off = t_len;
+    p = strstr(out, "000:");
+    p_end = out + t_len;
+    while (p != NULL) {
+        memcpy(p, p + 3, p_end - p);
+        p = strstr(out, "000:");
+        p_end -= 3;
     }
+
+    p = strstr(out, ":0");
+    while (p != NULL) {
+        memcpy(p + 1, p + 2, p_end - p);
+        p = strstr(out, ":0");
+        p_end -= 1;
+    }
+
+    p = strstr(out, "::");
+    while (p != NULL) {
+        l_p = p;
+        while (p != p_end && *p == ':') {
+            ct[0] += (*p == ':');
+            p++;
+        }
+        if (ct[0] > ct[1]) {
+            z_p = l_p;
+            z_p_end = p;
+            ct[1] = ct[0];
+            ct[0] = 0;
+        }
+        if (p < p_end) {
+            p = strstr(p, "::");
+            l_p = p;
+        } else {
+            p = NULL;
+        }
+    }
+
+    if (z_p != NULL) {
+        memcpy(z_p + 2, z_p_end, strlen(z_p_end) + 1);
+        p = z_p + 3;
+    } else {
+        p = out;
+    }
+
+    o = 0;
+    t_len = strlen(out);
+    t = 0;
+    memset(temp, 0, sizeof(temp));
+    while (o < t_len) {
+        if (out[o] == ':' && out[o + 1] == ':' && &out[o] != z_p) {
+            memcpy(&temp[t], ":0", 2);
+            t += 2;
+            o += 1;
+        } else {
+            temp[t++] = out[o++];
+        }
+    }
+    snprintf(out, max_out, "%s", temp);
 
     return EXIT_SUCCESS;
 }

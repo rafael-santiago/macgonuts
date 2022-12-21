@@ -95,3 +95,56 @@ get_addr6_from_iface_epilogue:
     return err;
 }
 
+int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size,
+                                    uint8_t *raw, size_t *raw_size) {
+    char buf[64<<10] = "";
+    uint8_t *rp = NULL;
+    ssize_t buf_size;
+    char *bp = NULL;
+    char *bp_end = NULL;
+    char *l_bp = NULL;
+    int fd = open("/proc/net/route", O_RDONLY);
+    if (fd == -1) {
+        return EXIT_FAILURE;
+    }
+    buf_size = read(fd, buf, sizeof(buf));
+    close(fd);
+    bp_end = buf + buf_size;
+    bp = strstr(buf, "\n");
+    if (bp == NULL) {
+        return EXIT_FAILURE;
+    }
+    while (bp != bp_end && (*bp == '\n' || *bp == '\t' || *bp == '\r')) {
+        bp++;
+    }
+    l_bp = bp;
+    buf_size = 0;
+    // INFO(Rafael): Finding out the default gateway.
+    while (buf_size < 2 && bp != bp_end) {
+        buf_size += (*bp == '\t');
+        if (buf_size == 1) {
+            memset(iface_buf, 0, sizeof(iface_buf));
+            memcpy(iface_buf, l_bp, (bp - l_bp) % sizeof(iface_buf));
+        }
+        bp++;
+    }
+    if (buf_size != 2) {
+        return EXIT_FAILURE;
+    }
+    bp_end = strstr(bp, "\t");
+    if (bp_end == NULL) {
+        return EXIT_FAILURE;
+    }
+    bp_end -= 1;
+    bp -= 1;
+    rp = raw;
+    while (bp_end > bp) {
+#define get_nbvalue(n) ( isdigit(n) ? ((n) - 48) : (toupper(n) - 55) )
+        *rp = get_nbvalue(bp_end[-1]) << 4 | get_nbvalue(bp_end[0]);
+#undef get_nbvalue
+        bp_end -= 2;
+        rp++;
+    }
+    *raw_size = (rp - raw);
+    return EXIT_SUCCESS;
+}

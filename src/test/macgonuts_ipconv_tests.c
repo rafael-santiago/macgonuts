@@ -206,6 +206,7 @@ CUTE_TEST_CASE(macgonuts_raw_ip2literal_tests)
         { (uint8_t *)"\x20\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01", 16, "2001::1" },
         { (uint8_t *)"\x20\x01\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01", 16, "2001:900::1" },
         { (uint8_t *)"\x20\x01\x09\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x01", 16, "2001:900::2:0:0:1" },
+        { (uint8_t *)"\x20\x01\x0D\xB8\x00\x00\xf1\x01\x00\x00\x00\x00\x00\x00\x00\x04", 16, "2001:db8:0:f101::4" },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     char out[256] = "";
     while (test != test_end) {
