@@ -52,6 +52,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_unsolicited_multicast_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_raw_ip_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_raw_cidr_tests);
+    CUTE_RUN_TEST(macgonuts_get_last_net_addr_tests);
     CUTE_RUN_TEST(macgonuts_raw_ip2literal_tests);
     CUTE_RUN_TEST(macgonuts_inc_raw_ip_tests);
     // INFO(Rafael): Those two ethernet conveniences depends on correctness of ip convenience module.

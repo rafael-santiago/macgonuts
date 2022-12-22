@@ -22,6 +22,8 @@ int macgonuts_get_raw_ip_addr(uint8_t *raw, const size_t raw_max_size, const cha
 
 int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *cidr, const size_t cidr_size);
 
+int macgonuts_get_last_net_addr(uint8_t *last, const char *cidr, const size_t cidr_size);
+
 int macgonuts_raw_ip2literal(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size);
 
 void macgonuts_inc_raw_ip(uint8_t *raw, const size_t raw_size);

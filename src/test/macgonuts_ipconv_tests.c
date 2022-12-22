@@ -42,6 +42,7 @@ CUTE_TEST_CASE(macgonuts_check_ip_addr_tests)
         const int is_valid;
     } test_vector[] = {
         { "127.0.0.1", 1                                           },
+        { "127.0.0.1s", 0                                          },
         { "256.0.0.1", 0                                           },
         { "192.", 0                                                },
         { "192.168.", 0                                            },
@@ -183,6 +184,11 @@ CUTE_TEST_CASE(macgonuts_get_raw_cidr_tests)
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     uint8_t first[16] = { 0 };
     uint8_t last[16] = { 0 };
+    CUTE_ASSERT(macgonuts_get_raw_cidr(NULL, last, test->cidr, strlen(test->cidr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_cidr(first, NULL, test->cidr, strlen(test->cidr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_cidr(first, last, NULL, strlen(test->cidr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_cidr(first, last, test->cidr, 0) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_raw_cidr(first, last, "127.0.0.1.1/1234", 16) == EINVAL);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_get_raw_cidr(first, last, test->cidr, strlen(test->cidr)) == EXIT_SUCCESS);
         CUTE_ASSERT(memcmp(first, test->expected_first, test->expected_size) == 0);
@@ -209,6 +215,10 @@ CUTE_TEST_CASE(macgonuts_raw_ip2literal_tests)
         { (uint8_t *)"\x20\x01\x0D\xB8\x00\x00\xf1\x01\x00\x00\x00\x00\x00\x00\x00\x04", 16, "2001:db8:0:f101::4" },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     char out[256] = "";
+    CUTE_ASSERT(macgonuts_raw_ip2literal(NULL, sizeof(out), test->raw, test->raw_size) == EINVAL);
+    CUTE_ASSERT(macgonuts_raw_ip2literal(out, 0, test->raw, test->raw_size) == EINVAL);
+    CUTE_ASSERT(macgonuts_raw_ip2literal(out, sizeof(out), NULL, test->raw_size) == EINVAL);
+    CUTE_ASSERT(macgonuts_raw_ip2literal(out, sizeof(out), test->raw, 0) == EINVAL);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_raw_ip2literal(out, sizeof(out), test->raw, test->raw_size) == EXIT_SUCCESS);
         CUTE_ASSERT(strcmp(out, test->expected) == 0);
@@ -258,8 +268,36 @@ CUTE_TEST_CASE(macgonuts_get_cidr_version_tests)
         { "20:102::1", -1 },
         { "256.21.3.4/38", -1 },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    CUTE_ASSERT(macgonuts_get_cidr_version(NULL, 10) == -1);
+    CUTE_ASSERT(macgonuts_get_cidr_version("127.0.0.1/1", 0) == -1);
     while (test != test_end) {
         CUTE_ASSERT(macgonuts_get_cidr_version(test->cidr, strlen(test->cidr)) == test->expected);
+        test++;
+    }
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_last_net_addr_tests)
+    struct test_ctx {
+        const char *cidr;
+        uint8_t *expected;
+        size_t expected_size;
+    } test_vector[] = {
+        { "192.30.70.0/24", (uint8_t *)"\xC0\x1E\x46\xFF", 4 },
+        { "192.30.70.10/4", (uint8_t *)"\xCF\xFF\xFF\xFF", 4 },
+        { "192.30.70.0/28", (uint8_t *)"\xC0\x1E\x46\x0F", 4 },
+        { "200.222.221.0/28", (uint8_t *)"\xC8\xDE\xDD\x0F", 4 },
+        { "dead:beef::7e1d/64", (uint8_t *)"\xDE\xAD\xBE\xEF\x00\x00\x00\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 16 },
+        { "2001::1/24", (uint8_t *)"\x20\x01\x00\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 16 },
+        { "dead:beef::7e1d/51", (uint8_t *)"\xDE\xAD\xBE\xEF\x00\x00\x1F\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 16 },
+        { "2001::1/37", (uint8_t *)"\x20\x01\x00\x00\x07\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", 16 },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    uint8_t last[16] = { 0 };
+    CUTE_ASSERT(macgonuts_get_last_net_addr(NULL, test->cidr, strlen(test->cidr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_last_net_addr(last, NULL, strlen(test->cidr)) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_last_net_addr(last, test->cidr, 0) == EINVAL);
+    while (test != test_end) {
+        CUTE_ASSERT(macgonuts_get_last_net_addr(last, test->cidr, strlen(test->cidr)) == EXIT_SUCCESS);
+        CUTE_ASSERT(memcmp(last, test->expected, test->expected_size) == 0);
         test++;
     }
 CUTE_TEST_CASE_END

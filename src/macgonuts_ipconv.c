@@ -34,6 +34,12 @@ static int raw_ip2literal_4(char *out, const size_t max_out, const uint8_t *raw,
 
 static int raw_ip2literal_6(char *out, const size_t max_out, const uint8_t *raw, const size_t raw_size);
 
+static int get_last_net_addr4(uint8_t *last, const char *cidr_addr, const size_t cidr_addr_size,
+                              const size_t cidr_net_bitsize);
+
+static int get_last_net_addr6(uint8_t *last, const char *cidr_addr, const size_t cidr_addr_size,
+                              const size_t cidr_net_bitsize);
+
 int macgonuts_get_raw_ip_addr(uint8_t *raw, const size_t raw_max_size, const char *ip, const size_t ip_size) {
     int version = 0;
     if (raw == NULL || raw_max_size == 0 || ip == NULL || ip_size == 0) {
@@ -129,7 +135,7 @@ int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *
         return EINVAL;
     }
     slash_p = strstr(cidr, "/");
-    cidr_addr_size = slash_p - cidr;
+    cidr_addr_size = (slash_p - cidr) % sizeof(cidr_addr);
     memcpy(cidr_addr, cidr, cidr_addr_size);
     cidr_net_bitsize = atoi(slash_p + 1);
     switch (macgonuts_get_ip_version(cidr_addr, cidr_addr_size)) {
@@ -139,6 +145,42 @@ int macgonuts_get_raw_cidr(uint8_t *first_addr, uint8_t *last_addr, const char *
 
         case 6:
             err = get_raw_cidr6(first_addr, last_addr, cidr_addr, cidr_addr_size, cidr_net_bitsize);
+            break;
+
+        default:
+            err = EINVAL; // INFO(Rafael): It should never happen in normal conditions.
+            break;
+    }
+
+    return err;
+}
+
+int macgonuts_get_last_net_addr(uint8_t *last, const char *cidr, const size_t cidr_size) {
+    size_t cidr_addr_size;
+    char cidr_addr[128] = { 0 };
+    const char *slash = NULL;
+    size_t cidr_net_bitsize = 0;
+    int err = EFAULT;
+
+    if (last == NULL
+        || cidr == NULL
+        || cidr_size == 0
+        || !macgonuts_check_ip_cidr(cidr, cidr_size)) {
+        return EINVAL;
+    }
+
+    slash = strstr(cidr, "/");
+    cidr_addr_size = (slash - cidr) % sizeof(cidr_addr);
+    memcpy(cidr_addr, cidr, cidr_addr_size % sizeof(cidr_addr));
+    cidr_net_bitsize = atoi(slash + 1);
+
+    switch (macgonuts_get_ip_version(cidr_addr, cidr_addr_size)) {
+        case 4:
+            err = get_last_net_addr4(last, cidr_addr, cidr_addr_size, cidr_net_bitsize);
+            break;
+
+        case 6:
+            err = get_last_net_addr6(last, cidr_addr, cidr_addr_size, cidr_net_bitsize);
             break;
 
         default:
@@ -188,6 +230,9 @@ static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
             p += ((p + 1) == p_end);
             dots_nr += (*p == '.');
             if (lp == p || (p - lp) > 3 || dots_nr > 3) {
+                return 0;
+            }
+            if (!is_int(lp, p - lp)) {
                 return 0;
             }
             memset(num, 0, sizeof(num));
@@ -313,7 +358,7 @@ static int is_int(const char *buf, const size_t buf_size) {
     do {
         is = isdigit(*bp);
         bp++;
-    } while (!is && bp != bp_end);
+    } while (is && bp != bp_end);
     return is;
 }
 
@@ -600,5 +645,48 @@ static int raw_ip2literal_6(char *out, const size_t max_out, const uint8_t *raw,
     }
     snprintf(out, max_out, "%s", temp);
 
+    return EXIT_SUCCESS;
+}
+
+static int get_last_net_addr4(uint8_t *last, const char *cidr_addr, const size_t cidr_addr_size,
+                          const size_t cidr_net_bitsize) {
+    uint8_t addr[4] = { 0 };
+    uint32_t temp = 0L;
+    if (get_raw_ip4(addr, 4, cidr_addr, cidr_addr_size) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    temp = (0xFFFFFFFF >> cidr_net_bitsize);
+    last[0] = addr[0] | ((temp >> 24) & 0xFF);
+    last[1] = addr[1] | ((temp >> 16) & 0xFF);
+    last[2] = addr[2] | ((temp >>  8) & 0xFF);
+    last[3] = addr[3] | (temp & 0xFF);
+    return EXIT_SUCCESS;
+}
+
+static int get_last_net_addr6(uint8_t *last, const char *cidr_addr, const size_t cidr_addr_size,
+                          const size_t cidr_net_bitsize) {
+    uint8_t addr[16] = { 0 };
+    uint32_t temp[4] = { 0xFFFFFFFF, 0xFFFFFFFF,
+                         0xFFFFFFFF, 0xFFFFFFFF };
+    if (get_raw_ip6(addr, 16, cidr_addr, cidr_addr_size) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    shiftr128b(temp, cidr_net_bitsize);
+    last[ 0] = addr[ 0] | ((temp[ 0] >> 24) & 0xFF);
+    last[ 1] = addr[ 1] | ((temp[ 0] >> 16) & 0xFF);
+    last[ 2] = addr[ 2] | ((temp[ 0] >>  8) & 0xFF);
+    last[ 3] = addr[ 3] | ( temp[ 0] & 0xFF);
+    last[ 4] = addr[ 4] | ((temp[ 1] >> 24) & 0xFF);
+    last[ 5] = addr[ 5] | ((temp[ 1] >> 16) & 0xFF);
+    last[ 6] = addr[ 6] | ((temp[ 1] >>  8) & 0xFF);
+    last[ 7] = addr[ 7] | ( temp[ 1] & 0xFF);
+    last[ 8] = addr[ 8] | ((temp[ 2] >> 24) & 0xFF);
+    last[ 9] = addr[ 9] | ((temp[ 2] >> 16) & 0xFF);
+    last[10] = addr[10] | ((temp[ 2] >> 8) & 0xFF);
+    last[11] = addr[11] | ( temp[ 2] & 0xFF);
+    last[12] = addr[12] | ((temp[ 3] >> 24) & 0xFF);
+    last[13] = addr[13] | ((temp[ 3] >> 16) & 0xFF);
+    last[14] = addr[14] | ((temp[ 3] >>  8) & 0xFF);
+    last[15] = addr[15] | ( temp[ 3] & 0xFF);
     return EXIT_SUCCESS;
 }

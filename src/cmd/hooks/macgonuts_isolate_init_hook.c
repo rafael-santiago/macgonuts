@@ -15,8 +15,7 @@ int macgonuts_isolate_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
             && spfgd->usrinfo.tg_address != NULL);
 
     macgonuts_si_mode_enter_announce("isolate");
-
-    macgonuts_si_print("-=-=-=-=-=-=-=-= { you are isolating `%s` } =-=-=-=-=-=-=-=-\n\n", spfgd->usrinfo.tg_address);
+    macgonuts_si_print("\n-=-=-=-=-=-=-=-= { you are isolating `%s` } =-=-=-=-=-=-=-=-\n\n", spfgd->usrinfo.tg_address);
 
     return EXIT_SUCCESS;
 }
