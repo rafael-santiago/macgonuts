@@ -103,6 +103,9 @@ int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size
     char *bp = NULL;
     char *bp_end = NULL;
     char *l_bp = NULL;
+    if (iface_buf == NULL || iface_buf_size == 0 || raw == NULL || raw_size == NULL) {
+        return EINVAL;
+    }
     int fd = open("/proc/net/route", O_RDONLY);
     if (fd == -1) {
         return EXIT_FAILURE;

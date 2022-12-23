@@ -14,4 +14,10 @@ const char *get_default_iface_name(void);
 
 void get_default_iface_mac(uint8_t *mac);
 
+void get_default_iface_addr(char *addr);
+
+void get_gateway_addr(uint8_t *addr);
+
+void get_gateway_iface(char *iface);
+
 #endif // MACGONUTS_TEST_MACGONUTS_TEST_UTILS_H
