@@ -7,16 +7,11 @@
  */
 #include "macgonuts_socket_tests.h"
 #include "macgonuts_mocks.h"
+#include "macgonuts_test_utils.h"
 #include <macgonuts_socket.h>
 #include <macgonuts_socket_common.h>
 #include <string.h>
 #include <pthread.h>
-
-#if defined(__linux__)
-# define DEFAULT_TEST_IFACE "eth0"
-#else
-# error Some code wanted.
-#endif
 
 struct rcvctx {
     macgonuts_socket_t *s;
@@ -41,13 +36,13 @@ CUTE_TEST_CASE(macgonuts_create_release_socket_tests)
     macgonuts_socket_t rsk = -1;
     rsk = macgonuts_create_socket("unk0", 0);
     CUTE_ASSERT(rsk == -1);
-    rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
+    rsk = macgonuts_create_socket(get_default_iface_name(), 0);
     CUTE_ASSERT(rsk > -1);
     macgonuts_release_socket(rsk);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_sendpkt_tests)
-    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
+    macgonuts_socket_t rsk = macgonuts_create_socket(get_default_iface_name(), 0);
     char buf[] = "you're good for me.";
     CUTE_ASSERT(rsk > -1);
     CUTE_ASSERT(macgonuts_sendpkt(rsk, buf, strlen(buf)) == strlen(buf));
@@ -58,7 +53,7 @@ CUTE_TEST_CASE(macgonuts_recvpkt_tests)
     // INFO(Rafael): Pthread stuff tends to leak a lot of resources due to performance issues.
     //               Let's ignore those leaks.
     int leak_chk_status = g_cute_leak_check;
-    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
+    macgonuts_socket_t rsk = macgonuts_create_socket(get_default_iface_name(), 0);
     ssize_t sz = 0;
     int version = 4;
     pthread_t p0, p1;
@@ -80,11 +75,7 @@ CUTE_TEST_CASE_END
 CUTE_TEST_CASE(macgonuts_get_addr_from_iface_tests)
     char addr[50] = "";
     char expected_addr[256] = "";
-#if defined(__linux__)
-    char *iface = "eth0";
-#else
-# error Some code wanted.
-#endif
+    const char *iface = get_default_iface_name();
     mock_set_expected_ip_version(4);
     CUTE_ASSERT(get_iface_addr4(expected_addr, sizeof(expected_addr), iface) == EXIT_SUCCESS);
     mock_set_expected_ip4_addr(expected_addr);
@@ -104,22 +95,14 @@ CUTE_TEST_CASE_END
 CUTE_TEST_CASE(macgonuts_get_mac_from_iface_tests)
     char mac[20] = "";
     char expected_mac[20] = "";
-#if defined(__linux__)
-    char *iface = "eth0";
-#else
-# error Some code wanted.
-#endif
+    const char *iface = get_default_iface_name();
     CUTE_ASSERT(get_iface_mac(expected_mac, sizeof(expected_mac), iface) == EXIT_SUCCESS);
     CUTE_ASSERT(macgonuts_get_mac_from_iface(mac, sizeof(mac), iface) == EXIT_SUCCESS);
     CUTE_ASSERT(strcmp(mac, expected_mac) == 0);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_set_iface_promisc_on_off_tests)
-#if defined(__linux__)
-    char *iface = "eth0";
-#else
-# error Some code wanted.
-#endif
+    const char *iface = get_default_iface_name();
     CUTE_ASSERT(macgonuts_set_iface_promisc_on(NULL) == EINVAL);
     CUTE_ASSERT(macgonuts_set_iface_promisc_on(iface) == EXIT_SUCCESS);
     CUTE_ASSERT(check_promisc_mode_on(iface) == 1);
@@ -200,8 +183,3 @@ static int check_promisc_mode_off(const char *iface) {
              "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
     return (system(cmdline) != 0);
 }
-
-
-#if defined(DEFAULT_TEST_IFACE)
-# undef DEFAULT_TEST_IFACE
-#endif // defined(DEFAULT_TEST_IFACE)

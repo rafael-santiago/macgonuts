@@ -7,6 +7,7 @@
  */
 #include "macgonuts_get_ethaddr_tests.h"
 #include "macgonuts_mocks.h"
+#include "macgonuts_test_utils.h"
 #include <macgonuts_get_ethaddr.h>
 #include <macgonuts_socket.h>
 #include <string.h>
@@ -63,12 +64,13 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip4_tests)
     mock_set_expected_ip_version(4);
     mock_set_expected_ip4_addr("10.0.2.11");
     mock_set_recv_buf(g_FullARPReply, sizeof(g_FullARPReply));
-    rsk = macgonuts_create_socket("eth1", 1);
+    rsk = macgonuts_create_socket(get_default_iface_name(), 1);
     CUTE_ASSERT(rsk != -1);
-    CUTE_ASSERT(macgonuts_set_iface_promisc_on("eth1") == EXIT_SUCCESS);
-    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr), ip, strlen(ip), rsk, "eth1") == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_on(get_default_iface_name()) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, strlen(ip), rsk, get_default_iface_name()) == EXIT_SUCCESS);
     macgonuts_release_socket(rsk);
-    CUTE_ASSERT(macgonuts_set_iface_promisc_off("eth1") == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_off(get_default_iface_name()) == EXIT_SUCCESS);
     CUTE_ASSERT(memcmp(hw_addr, expected_hw_addr, sizeof(hw_addr)) == 0);
 CUTE_TEST_CASE_END
 
@@ -80,12 +82,12 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip6_tests)
     mock_set_expected_ip_version(6);
     mock_set_expected_ip6_addr("2001:db8:0:f101::2");
     mock_set_recv_buf(g_FullNDPNAReply, sizeof(g_FullNDPNAReply));
-    rsk = macgonuts_create_socket("eth1", 1);
+    rsk = macgonuts_create_socket(get_default_iface_name(), 1);
     CUTE_ASSERT(rsk != -1);
-    CUTE_ASSERT(macgonuts_set_iface_promisc_on("eth1") == EXIT_SUCCESS);
-    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr), ip, strlen(ip), rsk, "eth1") == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_on(get_default_iface_name()) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, strlen(ip), rsk, "eth1") == EXIT_SUCCESS);
     macgonuts_release_socket(rsk);
-    CUTE_ASSERT(macgonuts_set_iface_promisc_off("eth1") == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_set_iface_promisc_off(get_default_iface_name()) == EXIT_SUCCESS);
     CUTE_ASSERT(memcmp(hw_addr, expected_hw_addr, sizeof(hw_addr)) == 0);
 CUTE_TEST_CASE_END
-

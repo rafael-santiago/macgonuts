@@ -7,6 +7,7 @@
  */
 #include "macgonuts_redirect_tests.h"
 #include "macgonuts_mocks.h"
+#include "macgonuts_test_utils.h"
 #include <macgonuts_redirect.h>
 #include <macgonuts_socket.h>
 
@@ -93,12 +94,6 @@ CUTE_TEST_CASE(macgonuts_should_redirect_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_redirect_tests)
-#if defined(__linux__)
-# define LO_IFACE "eth0"
-#else
-# Some code wanted
-#endif // defined(__linux__)
-
     const unsigned char frame_from_wire6[] = { // INFO(Rafael): Ethernet frame.
                                                0x33, 0x33, 0xFF, 0x00, 0x00, 0x03,
                                                0x08, 0x00, 0x27, 0x5D, 0x5B, 0xB8,
@@ -121,7 +116,7 @@ CUTE_TEST_CASE(macgonuts_redirect_tests)
     struct macgonuts_spoof_layers_ctx layers = { 0 };
     unsigned char *send_buf = NULL;
     size_t send_buf_size = 0;
-    macgonuts_socket_t rsk = macgonuts_create_socket(LO_IFACE, 1);
+    macgonuts_socket_t rsk = macgonuts_create_socket(get_default_iface_name(), 1);
     CUTE_ASSERT(rsk != -1);
     memcpy(&layers.lo_hw_addr[0], (uint8_t *)"\x33\x33\xFF\x00\x00\x03", 6);
     layers.proto_addr_size = 16;

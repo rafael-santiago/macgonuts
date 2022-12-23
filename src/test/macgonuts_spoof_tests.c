@@ -7,14 +7,10 @@
  */
 #include "macgonuts_spoof_tests.h"
 #include "macgonuts_mocks.h"
+#include "macgonuts_test_utils.h"
 #include <macgonuts_spoof.h>
 #include <macgonuts_socket.h>
 
-#if defined(__linux__)
-# define DEFAULT_TEST_IFACE "eth0"
-#else
-# error Some code wanted.
-#endif
 
 CUTE_TEST_CASE(macgonuts_spoof_tests)
     const unsigned char expected_frame4[] = {
@@ -46,7 +42,7 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
     };
     const size_t expected_frame6_size = sizeof(expected_frame6) / sizeof(expected_frame6[0]);
     struct macgonuts_spoof_layers_ctx spf_layers = { 0 };
-    int rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
+    int rsk = macgonuts_create_socket(get_default_iface_name(), 0);
     unsigned char *sent_spoof = NULL;
     size_t sent_spoof_size = 0;
     CUTE_ASSERT(rsk != -1);
@@ -89,7 +85,7 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_tests)
-    macgonuts_socket_t rsk = macgonuts_create_socket(DEFAULT_TEST_IFACE, 0);
+    macgonuts_socket_t rsk = macgonuts_create_socket(get_default_iface_name(), 0);
     struct macgonuts_spoof_layers_ctx spf_layers = { 0 };
     char *target_addr = NULL;
     size_t target_addr_size = 4;
@@ -100,27 +96,27 @@ CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_tests)
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(-1,
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
-                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+                                                addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 NULL,
                                                 target_addr, target_addr_size,
-                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+                                                addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 &spf_layers,
                                                 NULL, target_addr_size,
-                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+                                                addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 &spf_layers,
                                                 target_addr, 0,
-                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+                                                addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
-                                                NULL, addr2spoof_size, DEFAULT_TEST_IFACE) == EINVAL);
+                                                NULL, addr2spoof_size, get_default_iface_name()) == EINVAL);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
-                                                addr2spoof, 0, DEFAULT_TEST_IFACE) == EINVAL);
+                                                addr2spoof, 0, get_default_iface_name()) == EINVAL);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
@@ -132,7 +128,7 @@ CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_tests)
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
-                                                addr2spoof, addr2spoof_size, DEFAULT_TEST_IFACE) == EPROTO);
+                                                addr2spoof, addr2spoof_size, get_default_iface_name()) == EPROTO);
     addr2spoof = "10.0.2.11";
     addr2spoof_size = strlen(addr2spoof);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(rsk,

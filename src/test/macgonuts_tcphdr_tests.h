@@ -14,4 +14,4 @@ CUTE_DECLARE_TEST_CASE(macgonuts_read_tcp_pkt_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_make_tcp_pkt_tests);
 
-#endif // MACGONUTS_TCPHDR_TESTS_H
+#endif // MACGONUTS_TEST_MACGONUTS_TCPHDR_TESTS_H

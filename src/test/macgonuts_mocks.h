@@ -23,4 +23,4 @@ void mock_set_recv_buf(const unsigned char *buf, const size_t buf_size);
 
 unsigned char *mock_get_send_buf(size_t *buf_size);
 
-#endif
+#endif // MACGONUTS_TEST_MACGONUTS_MOCKS_H

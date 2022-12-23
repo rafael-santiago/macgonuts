@@ -6,15 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "macgonuts_metaspoofer_tests.h"
+#include "macgonuts_test_utils.h"
 #include <macgonuts_metaspoofer.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_thread.h>
-
-#if defined(__linux__)
-# define DEFAULT_TEST_IFACE "eth0"
-#else
-# error Some code wanted.
-#endif
 
 static int test_init(struct macgonuts_spoofing_guidance_ctx *gdc, const unsigned char *pkt, const size_t pkt_size);
 
@@ -39,7 +34,7 @@ CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     spfgd.hooks.init = test_init;
     spfgd.hooks.deinit = test_deinit;
     spfgd.hooks.done = test_done;
-    spfgd.usrinfo.lo_iface = DEFAULT_TEST_IFACE;
+    spfgd.usrinfo.lo_iface = (char *)get_default_iface_name();
     spfgd.spoofing.total = 1000;
     spfgd.spoofing.timeout = 20;
     spfgd.usrinfo.tg_address = "10.0.2.15";
