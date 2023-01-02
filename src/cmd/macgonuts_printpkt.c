@@ -27,7 +27,7 @@ int macgonuts_printpkt(FILE *pktout, const unsigned char *pkt, const size_t pkt_
         return err;
     }
     while (p != p_end) {
-        err = fprintf(pktout, "0x%.4x:  ", off);
+        err = fprintf(pktout, "0x%.4x:  ", (unsigned int)off);
         if (err < 0) {
             goto macgonuts_printpkt_epilogue;
         }

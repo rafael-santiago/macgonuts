@@ -21,7 +21,7 @@
 #include <macgonuts_pcap.h>
 #include <macgonuts_filter_fmt.h>
 
-static struct macgonuts_spoofing_guidance_ctx g_Spfgd[2] = { 0, 0 };
+static struct macgonuts_spoofing_guidance_ctx g_Spfgd[2];
 
 static int run_metaspoofers(struct macgonuts_spoofing_guidance_ctx *target_a,
                             struct macgonuts_spoofing_guidance_ctx *target_b);

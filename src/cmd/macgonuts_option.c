@@ -61,13 +61,12 @@ int macgonuts_get_bool_option(const char *option, const int default_value) {
     const char **ap = NULL;
     const char **ap_end = NULL;
     char temp[1<<10];
-    size_t temp_size;
 
     if (option == NULL || g_Argv == NULL || g_Argc == 0) {
         return default_value;
     }
 
-    temp_size = snprintf(temp, sizeof(temp), "--%s", option);
+    snprintf(temp, sizeof(temp), "--%s", option);
 
     ap = g_Argv;
     ap_end = ap + g_Argc;

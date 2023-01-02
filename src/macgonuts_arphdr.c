@@ -52,7 +52,7 @@ unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr,
 }
 
 int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned char *arpbuf, const size_t arpbuf_size) {
-    const unsigned char *ap = NULL, *ap_end __attribute__((unused)) = NULL;
+    const unsigned char *ap = NULL;
     int err = EFAULT;
 
     if (arphdr == NULL || arpbuf == NULL) {
@@ -79,7 +79,6 @@ int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned c
     }
 
     ap = &arpbuf[8];
-    ap_end = arpbuf + arpbuf_size;
 
     arphdr->sha = (uint8_t *)malloc(arphdr->hlen);
     if (arphdr->sha == NULL) {

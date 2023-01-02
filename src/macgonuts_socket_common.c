@@ -155,7 +155,6 @@ get_addr4_from_iface_epilogue:
 static int get_addr6_from_iface(char *addr_buf, const size_t max_addr_buf_size, const char *iface) {
     struct ifaddrs *ifa = NULL, *ifp = NULL;
     int err = EFAULT;
-    struct sockaddr_in6 *addr __attribute__((unused)) = NULL;
 
     if (max_addr_buf_size < INET6_ADDRSTRLEN) {
         return ERANGE;
@@ -170,7 +169,6 @@ static int get_addr6_from_iface(char *addr_buf, const size_t max_addr_buf_size, 
         if (strcmp(ifp->ifa_name, iface) == 0
             && ifp->ifa_addr != NULL
             && ifp->ifa_addr->sa_family == AF_INET6) {
-            addr = (struct sockaddr_in6 *)ifp->ifa_addr;
             err = (inet_ntop(AF_INET6,
                     &(((struct sockaddr_in6 *)ifp->ifa_addr)->sin6_addr),
                     addr_buf, max_addr_buf_size - 1) != NULL) ? EXIT_SUCCESS
