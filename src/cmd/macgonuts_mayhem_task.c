@@ -38,6 +38,8 @@ static void *mayhem_unicast_tdr(void *args);
 
 static int should_exit(void);
 
+static void sigint_watchdog(int signr);
+
 struct mayhem_tgt_addr_ctx {
     uint8_t addr[2][16];
     size_t addr_nr; // INFO(Rafael): A size two means that it is about an unrolled CIDR (first, last address).
@@ -195,6 +197,9 @@ static int do_mayhem(void) {
         goto do_mayhem_epilogue;
     }
 
+    signal(SIGINT, sigint_watchdog);
+    signal(SIGTERM, sigint_watchdog);
+
     tp = target_list;
     tp_end = tp + *target_list_nr;
 
@@ -282,7 +287,7 @@ static int sched_mayhem_unicast(void) {
         return EXIT_FAILURE;
     }
 
-    while (memcmp(curr_no_route_to, end_no_route_to, proto_addr_size) != 0) {
+    while (memcmp(curr_no_route_to, end_no_route_to, proto_addr_size) != 0 && !should_exit()) {
         t = 0;
         do {
             g_Spfgd[t].usrinfo.tg_address = tg_address;
@@ -315,7 +320,7 @@ static int sched_mayhem_range(void) {
     macgonuts_inc_raw_ip(end_tg_addr, proto_addr_size);
 
     while (memcmp(curr_tg_addr, end_tg_addr, proto_addr_size) != 0
-           && err == EXIT_SUCCESS) {
+           && err == EXIT_SUCCESS && !should_exit()) {
         memcpy(&addr[0][0], &curr_tg_addr[0], proto_addr_size);
         err = sched_mayhem_unicast();
         macgonuts_inc_raw_ip(curr_tg_addr, proto_addr_size);
@@ -451,4 +456,12 @@ should_exit_epilogue:
     }
 
     return do_exit;
+}
+
+static void sigint_watchdog(int signr) {
+    if (macgonuts_mutex_lock(&g_Spfgd[0].handles.lock) != EXIT_SUCCESS) {
+        return;
+    }
+    g_Spfgd[0].spoofing.abort = 1;
+    macgonuts_mutex_lock(&g_Spfgd[0].handles.lock);
 }
