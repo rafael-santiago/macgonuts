@@ -10,6 +10,7 @@
 #include <cmd/macgonuts_spoof_task.h>
 #include <cmd/macgonuts_eavesdrop_task.h>
 #include <cmd/macgonuts_isolate_task.h>
+#include <cmd/macgonuts_mayhem_task.h>
 #include <macgonuts_status_info.h>
 
 typedef int (*macgonuts_task_func)(void);
@@ -32,6 +33,7 @@ struct macgonuts_task_ctx {
     MACGONUTS_CMD_REGISTER_TASK(spoof),
     MACGONUTS_CMD_REGISTER_TASK(eavesdrop),
     MACGONUTS_CMD_REGISTER_TASK(isolate),
+    MACGONUTS_CMD_REGISTER_TASK(mayhem),
     MACGONUTS_CMD_REGISTER_TASK(help),
 };
 
