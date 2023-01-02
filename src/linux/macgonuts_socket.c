@@ -38,7 +38,6 @@ int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size
 
 macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_timeo) {
     struct timeval tv = { 0 };
-    int yes = 1;
     macgonuts_socket_t sockfd = -1;
     struct sockaddr_ll sll = { 0 };
     sockfd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));

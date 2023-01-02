@@ -31,8 +31,6 @@ static int fill_up_lo_info(void);
 
 static int fill_up_tg_info(void);
 
-static int get_gateway_hw_addr(uint8_t *hw_addr, const size_t hw_addr_size);
-
 static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size);
 
 static int get_dest_addr(uint8_t *src_addr, const unsigned char *ethbuf, const size_t ethbuf_size);
@@ -253,7 +251,7 @@ static int fill_up_lo_info(void) {
     //              address to a host, it will detect that the mac address is unreachable and discard this info
     //              by keeping the prior resolution that was working. Here to not unveil the source of attack,
     //              let's use the network gateway mac address.
-    return get_gateway_hw_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
+    return macgonuts_get_gateway_hw_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
 }
 
 static int fill_up_tg_info(void) {
@@ -294,34 +292,6 @@ static int fill_up_tg_info(void) {
     }
 
     return EXIT_SUCCESS;
-}
-
-static int get_gateway_hw_addr(uint8_t *hw_addr, const size_t hw_addr_size) {
-    uint8_t gw_addr[16] = { 0 };
-    size_t gw_addr_size = 0;
-    char gw_proto_addr[100] = "";
-    char iface[256] = "";
-    macgonuts_socket_t wire = -1;
-    int err = EFAULT;
-
-    if (macgonuts_get_gateway_addr_info(iface, sizeof(iface), gw_addr, &gw_addr_size) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
-
-    if (macgonuts_raw_ip2literal(gw_proto_addr,
-                                 sizeof(gw_proto_addr) - 1,
-                                 gw_addr, gw_addr_size) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
-    wire = macgonuts_create_socket(iface, 1);
-    if (wire == -1) {
-        return EXIT_FAILURE;
-    }
-    err = macgonuts_get_ethaddr(hw_addr, hw_addr_size,
-                                gw_proto_addr, strlen(gw_proto_addr),
-                                wire, iface);
-    macgonuts_release_socket(wire);
-    return err;
 }
 
 static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size) {

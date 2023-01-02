@@ -14,4 +14,6 @@ CUTE_DECLARE_TEST_CASE(macgonuts_get_addr_from_iface_unix_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_gateway_addr_info_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_gateway_hw_addr_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_SOCKET_COMMON_TESTS_H

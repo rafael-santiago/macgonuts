@@ -61,13 +61,12 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
     struct macgonuts_arphdr_ctx arp_req_hdr = { 0 }, arp_rep_hdr = { 0 };
     char src_hw_addr[20] = { 0 };
     char src_ip_addr[20] = { 0 };
-    int ntry = 10, rtry = 0;
+    int ntry = 10;
     int done = 0;
     ssize_t bytes_nr = 0;
     unsigned char *arp_req_pkt = NULL;
     size_t arp_req_pkt_size = 0;
     unsigned char arp_rep_pkt[1<<10] = { 0 };
-    size_t arp_rep_pkt_size = 0;
 
     // INFO(Rafael): Crafting ethernet frame.
     err = macgonuts_get_raw_ether_addr(ethfrm.dest_hw_addr, sizeof(ethfrm.dest_hw_addr),

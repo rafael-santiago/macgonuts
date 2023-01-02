@@ -109,8 +109,6 @@ void macgonuts_si_set_outmode(const macgonuts_si_outmode_t otype) {
 }
 
 static void sync_si_print(const char *info_label, const char *message, va_list args) {
-    const char *mp = NULL;
-    const char *mp_end = NULL;
     char *out_buf = NULL;
     size_t out_buf_size = 0;
     size_t info_label_size = (info_label == NULL) ? 0 : strlen(info_label);

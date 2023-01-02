@@ -399,7 +399,6 @@ static int get_raw_ip6(uint8_t *raw, const size_t raw_max_size, const char *ip, 
     uint16_t u16 = 0;
     size_t dcolon_nr = 0;
     int nibbles_nr = 0;
-    char xb[3] = { 0 };
     if (raw_max_size < 16) {
         return ERANGE;
     }

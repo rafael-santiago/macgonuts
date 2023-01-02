@@ -31,7 +31,6 @@ int macgonuts_check_ether_addr(const char *ether, const size_t ether_size) {
 
 int macgonuts_getrandom_ether_addr(char *ether, const size_t max_ether_size) {
     char *ep;
-    char xbyte[10] = { 0 };
     size_t oct_nr;
     unsigned char u8;
     int urandom = -1;

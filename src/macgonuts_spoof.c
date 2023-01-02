@@ -29,7 +29,6 @@ static int macgonuts_spoof_err(const macgonuts_socket_t rsk,
 
 int macgonuts_spoof(const macgonuts_socket_t rsk,
                     struct macgonuts_spoof_layers_ctx *spf_layers) {
-    int err = EFAULT;
     uint8_t ip_v = -1;
     int (*do_spoof)(const macgonuts_socket_t,
                     struct macgonuts_spoof_layers_ctx *) = NULL;

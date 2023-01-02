@@ -52,7 +52,7 @@ unsigned char *macgonuts_make_arp_pkt(const struct macgonuts_arphdr_ctx *arphdr,
 }
 
 int macgonuts_read_arp_pkt(struct macgonuts_arphdr_ctx *arphdr, const unsigned char *arpbuf, const size_t arpbuf_size) {
-    const unsigned char *ap = NULL, *ap_end = NULL;
+    const unsigned char *ap = NULL, *ap_end __attribute__((unused)) = NULL;
     int err = EFAULT;
 
     if (arphdr == NULL || arpbuf == NULL) {

@@ -9,8 +9,8 @@
 
 int macgonuts_memglob(const unsigned char *data, const size_t data_size,
                       const unsigned char *pattern, const size_t pattern_size) {
-    const char *d, *d_end;
-    const char *p, *p_end, *lp;
+    const unsigned char *d, *d_end;
+    const unsigned char *p, *p_end;
     int matches = 1;
 
     if (data == NULL || pattern == NULL) {

@@ -1,2 +1,2 @@
---forgefiles=Forgefile.hsl --Forgefile-projects=macgonuts-static-lib --bin-output-dir=../lib --obj-output-dir=.o --includes=.,libs/accacia/src
+--forgefiles=Forgefile.hsl --Forgefile-projects=macgonuts-static-lib --bin-output-dir=../lib --obj-output-dir=.o --includes=.,libs/accacia/src --cflags=-Werror=all
 
