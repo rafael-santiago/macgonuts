@@ -32,6 +32,7 @@ int macgonuts_spoof(const macgonuts_socket_t rsk,
     uint8_t ip_v = -1;
     int (*do_spoof)(const macgonuts_socket_t,
                     struct macgonuts_spoof_layers_ctx *) = NULL;
+    int err = EFAULT;
 
     if (rsk == -1 || spf_layers == NULL) {
         return EINVAL;
@@ -46,7 +47,23 @@ int macgonuts_spoof(const macgonuts_socket_t rsk,
     do_spoof = (ip_v == 4) ? macgonuts_spoof4 :
                (ip_v == 6) ? macgonuts_spoof6 : macgonuts_spoof_err;
 
-    return do_spoof(rsk, spf_layers);
+    err = do_spoof(rsk, spf_layers);
+
+    if (spf_layers->always_do_pktcraft && spf_layers->spoof_frm != NULL) {
+        // INFO(Rafael): For performance issues, in order to avoid executing everytime
+        //               memory allocation tasks, the hardware address resolution packet
+        //               is crafted once. Since more common tasks related to mac spoofing
+        //               has well-defined targets, it is a big deal. However, macgonuts
+        //               command line tool ships some anarchic features such as "mayhem"
+        //               which in this case the spoof targets will vary a lot. For this
+        //               case of spoofing task (being macgonuts as mac spoof engine) the
+        //               always_do_pktcraft is also a big deal.
+        free(spf_layers->spoof_frm);
+        spf_layers->spoof_frm = NULL;
+        spf_layers->spoof_frm_size = 0;
+    }
+
+    return err;
 }
 
 int macgonuts_undo_spoof(const macgonuts_socket_t rsk,

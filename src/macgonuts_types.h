@@ -81,6 +81,7 @@ struct macgonuts_spoof_layers_ctx {
     uint8_t spoof_proto_addr[16];
     unsigned char *spoof_frm;
     size_t spoof_frm_size;
+    int always_do_pktcraft;
 };
 
 struct macgonuts_spoofing_guidance_ctx {
