@@ -20,7 +20,7 @@
 #include <macgonuts_thread.h>
 #include <macgonuts_types.h>
 
-#define MACGONUTS_SPFTD_NR 1
+#define MACGONUTS_SPFTD_NR 20
 
 struct macgonuts_spoofing_guidance_ctx g_Spfgd[MACGONUTS_SPFTD_NR] = { 0 };
 
@@ -276,7 +276,7 @@ static int fill_up_lo_info(struct macgonuts_spoofing_guidance_ctx *spfgd) {
 
 static int sched_mayhem_unicast(void) {
     macgonuts_thread_t td[MACGONUTS_SPFTD_NR];
-    size_t t;
+    size_t t, t_nr = 0;
     int err = EXIT_SUCCESS;
     uint8_t curr_no_route_to[16] = { 0 };
     uint8_t end_no_route_to[16] = { 0 };
@@ -337,7 +337,9 @@ static int sched_mayhem_unicast(void) {
             macgonuts_inc_raw_ip(curr_no_route_to, proto_addr_size);
         } while (t < MACGONUTS_SPFTD_NR && memcmp(curr_no_route_to, end_no_route_to, proto_addr_size) != 0);
 
-        for (t = 0; t < MACGONUTS_SPFTD_NR; t++) {
+        t_nr = t;
+
+        for (t = 0; t < t_nr; t++) {
             macgonuts_thread_join(&td[t], NULL);
         }
     }
