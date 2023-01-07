@@ -48,7 +48,7 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
     CUTE_ASSERT(rsk != -1);
     CUTE_ASSERT(macgonuts_spoof(-1, &spf_layers) == EINVAL);
     CUTE_ASSERT(macgonuts_spoof(rsk, NULL) == EINVAL);
-    // INFO(Rafael): Spoof4 (arp).
+    // INFO(Rafael): Spoof4 (arp) always_do_pktcraft = 0 (default).
     spf_layers.proto_addr_version = 4;
     spf_layers.proto_addr_size = 4;
     memcpy(&spf_layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spf_layers.lo_hw_addr));
@@ -62,8 +62,10 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
     CUTE_ASSERT(sent_spoof != NULL);
     CUTE_ASSERT(sent_spoof_size == expected_frame4_size);
     CUTE_ASSERT(memcmp(&sent_spoof[0], &expected_frame4[0], expected_frame4_size) == 0);
+    CUTE_ASSERT(spf_layers.spoof_frm != NULL);
+    CUTE_ASSERT(spf_layers.spoof_frm_size == expected_frame4_size);
     macgonuts_release_spoof_layers_ctx(&spf_layers);
-    // INFO(Rafael): Spoof6 (ndp).
+    // INFO(Rafael): Spoof6 (ndp) always_do_pktcraft = 0 (default).
     spf_layers.proto_addr_version = 6;
     spf_layers.proto_addr_size = 16;
     memcpy(&spf_layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spf_layers.lo_hw_addr));
@@ -80,6 +82,47 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
     CUTE_ASSERT(sent_spoof != NULL);
     CUTE_ASSERT(sent_spoof_size == expected_frame6_size);
     CUTE_ASSERT(memcmp(&sent_spoof[0], &expected_frame6[0], expected_frame6_size) == 0);
+    CUTE_ASSERT(spf_layers.spoof_frm != NULL);
+    CUTE_ASSERT(spf_layers.spoof_frm_size == expected_frame6_size);
+    macgonuts_release_spoof_layers_ctx(&spf_layers);
+    // INFO(Rafael): Spoof4 (arp) always_do_pktcraft = 1.
+    spf_layers.proto_addr_version = 4;
+    spf_layers.proto_addr_size = 4;
+    spf_layers.always_do_pktcraft = 1;
+    memcpy(&spf_layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spf_layers.lo_hw_addr));
+    memcpy(&spf_layers.lo_proto_addr[0], "\x7F\x00\x00\x01", sizeof(spf_layers.lo_proto_addr));
+    memcpy(&spf_layers.tg_proto_addr[0], "\x7F\x00\x00\x02", sizeof(spf_layers.tg_proto_addr));
+    memcpy(&spf_layers.spoof_proto_addr[0], "\x7F\x00\x00\x03", sizeof(spf_layers.spoof_proto_addr));
+    memcpy(&spf_layers.tg_hw_addr[0], "\x00\x01\x02\x03\x04\x05", sizeof(spf_layers.tg_hw_addr));
+    memcpy(&spf_layers.spoof_hw_addr[0], "\xAA\x01\xBB\x04\xCC\x05", sizeof(spf_layers.spoof_hw_addr));
+    CUTE_ASSERT(macgonuts_spoof(rsk, &spf_layers) == EXIT_SUCCESS);
+    sent_spoof = mock_get_send_buf(&sent_spoof_size);
+    CUTE_ASSERT(sent_spoof != NULL);
+    CUTE_ASSERT(sent_spoof_size == expected_frame4_size);
+    CUTE_ASSERT(memcmp(&sent_spoof[0], &expected_frame4[0], expected_frame4_size) == 0);
+    CUTE_ASSERT(spf_layers.spoof_frm == NULL);
+    CUTE_ASSERT(spf_layers.spoof_frm_size == 0);
+    macgonuts_release_spoof_layers_ctx(&spf_layers);
+    // INFO(Rafael): Spoof6 (ndp) always_do_pktcraft = 1.
+    spf_layers.proto_addr_version = 6;
+    spf_layers.proto_addr_size = 16;
+    spf_layers.always_do_pktcraft = 1;
+    memcpy(&spf_layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spf_layers.lo_hw_addr));
+    memcpy(&spf_layers.lo_proto_addr[0], "\xF0\xDA\x53\xF0\xDA\x53\xF0\xDA\x53\xF0\xDA\x53\xF0\xDA\x53\x00",
+           sizeof(spf_layers.lo_proto_addr));
+    memcpy(&spf_layers.spoof_proto_addr[0], "\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE\xCA\xFE",
+           sizeof(spf_layers.spoof_proto_addr));
+    memcpy(&spf_layers.tg_hw_addr[0], "\x00\x01\x02\x03\x04\x05", sizeof(spf_layers.tg_hw_addr));
+    memcpy(&spf_layers.tg_proto_addr[0], "\xFE\xD1\xD0\xFE\xD1\xD0\xFE\xD1\xD0\xFE\xD1\xD0\xFE\xD1\xD0\x00",
+           sizeof(spf_layers.tg_proto_addr));
+    memcpy(&spf_layers.spoof_hw_addr[0], "\xAA\x01\xBB\x04\xCC\x05", sizeof(spf_layers.spoof_hw_addr));
+    CUTE_ASSERT(macgonuts_spoof(rsk, &spf_layers) == EXIT_SUCCESS);
+    sent_spoof = mock_get_send_buf(&sent_spoof_size);
+    CUTE_ASSERT(sent_spoof != NULL);
+    CUTE_ASSERT(sent_spoof_size == expected_frame6_size);
+    CUTE_ASSERT(memcmp(&sent_spoof[0], &expected_frame6[0], expected_frame6_size) == 0);
+    CUTE_ASSERT(spf_layers.spoof_frm == NULL);
+    CUTE_ASSERT(spf_layers.spoof_frm_size == 0);
     macgonuts_release_spoof_layers_ctx(&spf_layers);
     macgonuts_release_socket(rsk);
 CUTE_TEST_CASE_END

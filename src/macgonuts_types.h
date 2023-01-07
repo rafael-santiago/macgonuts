@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <pthread.h>
