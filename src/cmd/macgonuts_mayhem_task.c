@@ -288,9 +288,7 @@ static int do_mayhem(struct macgonuts_spoofing_guidance_ctx **spfgd, const size_
                 // INFO(Rafael): It should never happen in normal conditions.
                 break;
         }
-        if (err != EXIT_SUCCESS && *target_list_nr == 1) {
-            break;
-        }
+
         tp = ((tp + 1) == tp_end) ? target_list : tp + 1;
     }
 
@@ -309,7 +307,7 @@ static int fill_up_tg_info(struct macgonuts_spoofing_guidance_ctx *spfgd) {
                                     spfgd->handles.wire, spfgd->usrinfo.lo_iface);
 
     if (err != EXIT_SUCCESS) {
-        macgonuts_si_warn("unable to discover MAC address from `%s`, skipping it.\n", spfgd->usrinfo.tg_address);
+        macgonuts_si_warn("unable to discover MAC address of `%s`, skipping it.\n", spfgd->usrinfo.tg_address);
         return err;
     }
 
@@ -514,12 +512,13 @@ static int sched_mayhem_range(struct macgonuts_spoofing_guidance_ctx **spfgd, co
     int err = EXIT_SUCCESS;
     uint8_t addr[2][16] = { 0 };
 
-    memcpy(&curr_tg_addr[0], ((uint8_t **)(*spfgd)->metainfo.arg[2])[0], proto_addr_size);
-    memcpy(&end_tg_addr[0], ((uint8_t **)(*spfgd)->metainfo.arg[2])[1], proto_addr_size);
+    memcpy(&curr_tg_addr[0], (*spfgd)->metainfo.arg[2], proto_addr_size);
+    memcpy(&end_tg_addr[0], ((*spfgd)->metainfo.arg[2] + 16), proto_addr_size);
     macgonuts_inc_raw_ip(end_tg_addr, proto_addr_size);
+    (*spfgd)->metainfo.arg[2] = &addr[0];
 
     while (memcmp(curr_tg_addr, end_tg_addr, proto_addr_size) != 0
-           && err == EXIT_SUCCESS && !should_exit(spoof_threads_nr)) {
+           && !should_exit(spoof_threads_nr)) {
         memcpy(&addr[0][0], &curr_tg_addr[0], proto_addr_size);
         err = sched_mayhem_unicast(spfgd, spoof_threads_nr);
         macgonuts_inc_raw_ip(curr_tg_addr, proto_addr_size);
