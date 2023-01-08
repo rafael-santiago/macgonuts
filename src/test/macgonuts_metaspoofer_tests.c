@@ -36,7 +36,7 @@ CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     spfgd.hooks.done = test_done;
     spfgd.usrinfo.lo_iface = (char *)get_default_iface_name();
     spfgd.spoofing.total = 1000;
-    spfgd.spoofing.timeout = 200;
+    spfgd.spoofing.timeout = 0;
     spfgd.usrinfo.tg_address = "10.0.2.15";
     spfgd.usrinfo.spoof_address = "10.0.2.13";
     //spfgd.usrinfo.lo_mac_address = "AA:BB:DD:CC:DD:FF";

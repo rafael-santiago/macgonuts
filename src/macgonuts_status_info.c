@@ -48,42 +48,40 @@ void macgonuts_si_print(const char *message, ...) {
 
 void macgonuts_si_mode_enter_announce(const char *mode_name) {
     if ((g_StatusInfoOutType & (kMacgonutsSiBuf | kMacgonutsSiMonochrome))) {
-        macgonuts_si_print("--- m a c g o n u t s  %s mode is on\n---\n", mode_name);
+        macgonuts_si_print("%s mode is on\n____\n", mode_name);
         return;
     }
-    fprintf(stdout, "--- m a c g o n u t s  ");
     accacia_textstyle(AC_TSTYLE_BOLD);
     accacia_textcolor(AC_TCOLOR_BLUE);
     fprintf(stdout, "%s", mode_name);
     accacia_textstyle(AC_TSTYLE_DEFAULT);
     accacia_textcolor(AC_TCOLOR_WHITE);
-    fprintf(stdout, " is now ");
+    fprintf(stdout, " mode is now ");
     accacia_textstyle(AC_TSTYLE_BOLD);
     accacia_textcolor(AC_TCOLOR_GREEN);
     fprintf(stdout, "on");
     accacia_textstyle(AC_TSTYLE_DEFAULT);
     accacia_textcolor(AC_TCOLOR_WHITE);
-    fprintf(stdout, "\n---\n");
+    fprintf(stdout, "\n____\n");
     accacia_screennormalize();
 }
 
 void macgonuts_si_mode_leave_announce(const char *mode_name) {
     if ((g_StatusInfoOutType & (kMacgonutsSiBuf | kMacgonutsSiMonochrome))) {
-        macgonuts_si_print("--- m a c g o n u t s  %s mode is off\n---\n", mode_name);
+        macgonuts_si_print("%s mode is off\n____\n", mode_name);
         return;
     }
-    fprintf(stdout, "--- m a c g o n u t s  ");
     accacia_textstyle(AC_TSTYLE_BOLD);
     accacia_textcolor(AC_TCOLOR_BLUE);
     fprintf(stdout, "%s", mode_name);
     accacia_textstyle(AC_TSTYLE_DEFAULT);
     accacia_textcolor(AC_TCOLOR_WHITE);
-    fprintf(stdout, " is now ");
+    fprintf(stdout, " mode is now ");
     accacia_textcolor(AC_TCOLOR_RED);
     fprintf(stdout, "off");
     accacia_textstyle(AC_TSTYLE_DEFAULT);
     accacia_textcolor(AC_TCOLOR_WHITE);
-    fprintf(stdout, "\n---\n");
+    fprintf(stdout, "\n____\n");
     accacia_screennormalize();
 }
 
