@@ -44,6 +44,14 @@ static char *g_MacgonutsBanners[] = {
     " ._ _   _.  _  _   _  ._     _|_  _\n"
     " | | | (_| (_ (_| (_) | | |_| |_ _> %s\n"
     "               _|\n",
+
+    " __   __  _______  _______  _______  _______  __    _  __   __  _______  _______ \n"
+    "|  |_|  ||   _   ||       ||       ||       ||  |  | ||  | |  ||       ||       |\n"
+    "|       ||  |_|  ||       ||    ___||   _   ||   |_| ||  | |  ||_     _||  _____|\n"
+    "|       ||       ||       ||   | __ |  | |  ||       ||  |_|  |  |   |  | |_____ \n"
+    "|       ||       ||      _||   ||  ||  |_|  ||  _    ||       |  |   |  |_____  |\n"
+    "| ||_|| ||   _   ||     |_ |   |_| ||       || | |   ||       |  |   |   _____| |\n"
+    "|_|   |_||__| |__||_______||_______||_______||_|  |__||_______|  |___|  |_______| %s\n"
 };
 
 static const struct gradients {
@@ -85,8 +93,10 @@ void macgonuts_print_random_banner(void) {
     accacia_textstyle(AC_TSTYLE_BOLD);
     while (bp != banner_end) {
         fprintf(stdout, "\033[38;5;%dm%c\033[0m", color, *bp);
+        if (*bp == '\n') {
+            color = (color > g_GradientRanges[g].ceil) ? g_GradientRanges[g].floor : color + 1;
+        }
         bp++;
-        color = (color > g_GradientRanges[g].ceil) ? g_GradientRanges[g].floor : color + 1;
     }
     fprintf(stdout, "\n");
     accacia_textcolor(AC_TCOLOR_BLACK);

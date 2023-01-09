@@ -378,6 +378,7 @@ malory@SearchAndDestroy:~# macgonuts mayhem --lo-iface=eth1 --no-route-range=192
 See? ``target-addrs`` supports CIDRs so just defining the exact CIDR of the current network
 will make the whole network nodes potential targets.
 
-Congrats! Now you are a disorder master by knowing every single detail about ``macgonuts mayhem`` command.
+Congrats! Now you are a layer-2 disorder master by knowing every single detail about
+``macgonuts mayhem`` command, bad cat!
 
 [``Back``](#topics)
