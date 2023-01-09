@@ -12,6 +12,7 @@
     - [The spoof command](#the-spoof-command)
     - [The eavesdrop command](#the-eavesdrop-command)
     - [The isolate command](#the-isolate-command)
+    - [The mayhem command](#the-mayhem-command)
 
 ## What does ``macgonuts`` is for?
 
@@ -288,5 +289,95 @@ In this case all between ``192.30.70.0-192.30.70.15`` and ``192.30.70.60`` will 
 John's host (``192.30.70.8``).
 
 Congrats! Now you are a macgonuts troll master by knowing every single thing about isolate command!
+
+[``Back``](#topics)
+
+### The mayhem command
+
+If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
+With mayhem you are able to make ARP/Neighbor tables a total mess. As a result the host will be unable
+to communicate each other or at least unable to communicate each other without unstability.
+
+Inder to work on this command needs three basic options: the local interface, a CIDR and a list of
+targets.
+
+So, story time!!!!
+
+Once upon time, Mallory. This nice person was wanting to interfere with communication of Alice, Bob and Eve.
+Alice was at host ``192.30.70.8``, Bob at host ``192.30.70.9`` and Eve at host ``192.30.70.10``. However,
+the three have been keeping communication also with other hosts that compound the network. This network
+was a class C network, so the net mask was ``255.255.255.0``.
+
+Mallory has been poking a little ``macgonuts`` these days and decided give ``mayhem`` command a try:
+
+```
+malory@SearchAndDestroy:~# macgonuts help mayhem
+use: macgonuts mayhem --lo-iface=<label>
+                      --no-route-range=<cidr4|cidr6>
+                      --target-addrs=<ip4|ip6|cidr4|cidr6 list>
+                     [--fake-pkts-amount=<n> --timeout=<ms> --spoof-threads=<n>]
+
+```
+
+Nice, Mallory was accessing her network from ``eth1``, since ``no-route-range`` expects a CIDR and
+her network is a class C network, it does mean that this network uses 24 bits of the ip to identify
+the network, so ``no-route-range`` needs to be ``192.30.70.0/24``. Any host into this range should
+become unreachble by all targets specified in ``target-addrs`` option, again, ``192.30.70.8``,
+``192.30.70.9`` and ``192.30.70.10`` a.k.a. Alice, Bob and Eve. Look:
+
+```
+malory@SearchAndDestroy:~# macgonuts mayhem --lo-iface=eth1 --no-route-range=192.30.70.0/24 \
+> --target-addrs=192.30.70.8,192.30.70.9,192.30.70.10
+```
+
+After running the command above the network will become infested of fake ARP resolution packets.
+The ARP tables of Alice, Bob and Eve have become bloated with fuzzy information. Taking all the
+three straight to nowhere.
+
+Nevertheless the command above is still a little bit well behaved since it will use only one thread to
+do the spoofing task, that is a little bit demanding in terms of work load. Maybe Mallory should
+give ``spoof-threads`` option a try:
+
+```
+malory@SearchAndDestroy:~# macgonuts mayhem --lo-iface=eth1 --no-route-range=192.30.70.0/24 \
+> --target-addrs=192.30.70.8,192.30.70.9,192.30.70.10 --spoof-threads=255
+```
+
+Great! Now the act of spoofing all no-route range to each target is almost instant,
+since we have 255 threads sending in parallel the fake ARP replys, because
+this network has only 255 possible nodes, well 253 technically (0 is network address and
+255 the broadcast).
+
+Mallory also could defined a timeout when sending out those fake MAC resolution packets by using
+``timeout`` option:
+
+```
+malory@SearchAndDestroy:~# macgonuts mayhem --lo-iface=eth1 --no-route-range=192.30.70.0/24 \
+> --target-addrs=192.30.70.8,192.30.70.9,192.30.70.10 --spoof-threads=255 --timeout=100
+```
+
+Yes, this is also expressed in milliseconds. It could be also possible to set a total of
+fake resolution packets to each node present in no-route range:
+
+```
+malory@SearchAndDestroy:~# macgonuts mayhem --lo-iface=eth1 --no-route-range=192.30.70.0/24 \
+> --target-addrs=192.30.70.8,192.30.70.9,192.30.70.10 --spoof-threads=255 --timeout=100 \
+> --fake-pkts-amount=20
+```
+
+The default of this option is just one per host.
+
+Okay, but what about mess with the whole nodes? MuAhAUHAuAHAUAhUAhAUHAUha... Simple:
+
+```
+malory@SearchAndDestroy:~# macgonuts mayhem --lo-iface=eth1 --no-route-range=192.30.70.0/24 \
+> --target-addrs=192.30.70.0/24 --spoof-threads=255 --timeout=100 \
+> --fake-pkts-amount=20
+```
+
+See? ``target-addrs`` supports CIDRs so just defining the exact CIDR of the current network
+will make the whole network nodes potential targets.
+
+Congrats! Now you are a disorder master by knowing every single detail about ``macgonuts mayhem`` command.
 
 [``Back``](#topics)
