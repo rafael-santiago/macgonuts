@@ -12,7 +12,7 @@ freshly ``macgonuts`` binary to get your stuff done, you can give ``the poor man
     - [Installing Hefesto](#installing-hefesto)
     - [The poor man's build](#the-poor-mans-build)
     - [The developer's build](#developers-build)
-    - [Installing the command line tool](#installing-the-command-line)
+    - [Installing the command line tool](#installing-the-command-line-tool)
 
 ## Getting newest macgonuts source code revision
 
