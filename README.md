@@ -9,8 +9,8 @@ badass executable without clumsy zillions of dependencies. Suckless is the key h
 Anyway, if you want to do spoof from your own code, you can still use ``Macgonuts`` as a ``C library`` or ``Go``,
 ``Python`` bind as well.
 
-You should take your first steps [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc.BUILD) and so
-buckle up and quickly mastering all the tool [here](https://github.com/rafael-santiago/macgonuts/blob/main/MANUAL.md).
+You should take your first steps [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc/BUILD.md) and so
+buckle up and quickly mastering all the tool [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc/MANUAL.md).
 
 I hope you like it, enjoy!
 
