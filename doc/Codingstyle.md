@@ -157,8 +157,8 @@ Try to deliver pieces of engineering that would exist even many centuries after 
 lousy book samples snippets that falls apart on a minimal poke.
 
 Your code must stand up even without having you around. Less people needing you around to build your
-stuff, more sound engineering you are doing, more time you have to do different stuff besides nursing it.
-You have a brain and a life do not waste them. Really!
+stuff, more (good) engineering you are doing, more time you have to do different stuff instead of nursing
+some sloppy source codes. You have a brain and a life do not waste them. Really!
 
 When it is necessary to add a comment, try to use the following meaningful comment markers:
 
