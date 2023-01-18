@@ -14,6 +14,8 @@ buckle up and quickly mastering all the tool [here](https://github.com/rafael-sa
 
 I hope you like it, enjoy!
 
+---
+
 **Bear in mind**: Use this software at your own responsability and risk. I am not responsible for any misuse of it,
 including some kind of damage, data loss etc. Sniffing network, eavesdropping people without them knowing is wrong
 and a crime. Do not be a jerk, respect people rights. This tool was written with the intention of being a support
