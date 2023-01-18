@@ -192,7 +192,7 @@ A new feature is considered done when:
 2. It does not add mess, confusion or even unstability or bugs in the previous stuff.
 3. It ships what it promises in the simple (but not simpler) way. In other words, you have used Occam's razor principle on it.
 4. It is being well tested.
-5. It must not be tied up with some compiler or toolchain to work on. The oposity would be an example of lousy engineering, here.
+5. It must not be tied up with some compiler or toolchain to work on. The opposite would be an example of lousy engineering, here.
    More concepts less dependencies.
 6. The ``CI`` must be passing.
 7. It is well documented.
