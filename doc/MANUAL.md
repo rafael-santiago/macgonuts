@@ -31,7 +31,7 @@ my main goal was to have something to use the pun.
 4. When you want a quick help about a command you run: ``macgonuts help <command>``.
 5. If you do not want to read this manual by preferring poke the tool by yourself: ``macgonuts help``.
 6. If you still do not understand try to go to 1 (repeat it some couple of times).
-7. Open an issue asking me about, thank you for helping me to improve on the documentation! ;)
+7. Open an issue asking me about, thank you for helping me to improve on the documentation! :wink:
 
 [``Back``](#topics)
 

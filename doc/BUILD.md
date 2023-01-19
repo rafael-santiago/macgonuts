@@ -41,7 +41,7 @@ build ``Macgonuts`` is:
 
 Any other dependency we ship it as sub-modules and build it during build but ``DO NOT`` polute your system
 with nothing. It is used into ``src/libs`` folder of your copy. If you delete your copy, all will gone
-with this deletion, simply, self contained and clean. Tideness is everything! ;)
+with this deletion, simply, self contained and clean. Tideness is everything! :wink:
 
 ## Installing Hefesto
 
@@ -128,7 +128,7 @@ giving us the clue where is the exact introduced bug.
 For tests I have been using another library of mine called [cutest](https://github.com/rafael-santiago/cutest).
 
 Tests are ran by default, so you will not face the risk of committing without locally testing your stuff to see
-that it is now remotely broken, ;)
+that it is now remotely broken, :wink:
 
 Well, knowing it and being into the toplevel ``src`` subdirectory, all you should do when building ``macgonuts``
 with ``Hefesto`` is:
