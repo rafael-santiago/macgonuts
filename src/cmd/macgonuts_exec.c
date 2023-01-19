@@ -92,8 +92,17 @@ static int macgonuts_help_task(void) {
             ap += written;
             tp += 1;
         } while (ap < ap_end && tp != tp_end);
-        macgonuts_si_error("no help topic provided, try %s\n", avail_tasks);
-        return EXIT_FAILURE;
+        macgonuts_si_warn("no help topic provided, try %s\n_________\n", avail_tasks);
+        macgonuts_si_print("Macgonuts is Copyright (C) 2022-2023 by Rafael Santiago and licensed under BSD-4.\n"
+                           "This is a free software. You can redistribute it and/or modify under the terms of "
+                           "BSD-4 license.\n\n");
+        macgonuts_si_print("Use this software at your own responsability and risk. I am not responsible for any "
+                           "misuse of it,\nincluding some kind of damage, data loss etc. Sniffing network, "
+                           "eavesdropping people's communication\nwithout them knowing is wrong and a crime. Do "
+                           "not be a jerk, respect people rights. Macgonuts is an\nARP/NDP swiss army knife with "
+                           "batteries included but ethics you need to bring it from home!! ;)\n\n");
+        macgonuts_si_print("Bug reports, feedback etc: <https://github.com/rafael-santiago/macgonuts/issues>.\n\n");
+        return EXIT_SUCCESS;
     }
     do {
         if (strcmp(tp->name, topic) == 0) {
