@@ -11,6 +11,7 @@
 #include <cmd/macgonuts_eavesdrop_task.h>
 #include <cmd/macgonuts_isolate_task.h>
 #include <cmd/macgonuts_mayhem_task.h>
+#include <cmd/macgonuts_version_task.h>
 #include <cmd/macgonuts_banners.h>
 #include <macgonuts_status_info.h>
 
@@ -35,6 +36,7 @@ struct macgonuts_task_ctx {
     MACGONUTS_CMD_REGISTER_TASK(eavesdrop),
     MACGONUTS_CMD_REGISTER_TASK(isolate),
     MACGONUTS_CMD_REGISTER_TASK(mayhem),
+    MACGONUTS_CMD_REGISTER_TASK(version),
     MACGONUTS_CMD_REGISTER_TASK(help),
 };
 
@@ -51,13 +53,18 @@ int macgonuts_exec(const int argc, const char **argv) {
         macgonuts_si_error("no task informed.\n");
         return EXIT_FAILURE;
     }
+    if (strcmp(task, "--version") == 0) {
+        return macgonuts_version_task();
+    }
     do {
         if (strcmp(tp->name, task) == 0) {
             task_subprogram = tp->task;
         }
         tp++;
     } while (tp != tp_end && task_subprogram == macgonuts_unknown_task);
-    if (task_subprogram != macgonuts_unknown_task && task_subprogram != macgonuts_help_task) {
+    if (task_subprogram != macgonuts_unknown_task
+        && task_subprogram != macgonuts_help_task
+        && task_subprogram != macgonuts_version_task) {
         macgonuts_print_random_banner();
     }
     return task_subprogram();
