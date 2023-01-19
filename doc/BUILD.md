@@ -76,6 +76,18 @@ you@somewhere-over-the-rainbow:~/macgonuts/src# make
 If you are looking for the dynamic or static libraries, it will be built into ``lib`` toplevel directory.
 If you are looking for the command line tool, it will be built into ``bin`` toplevel directory.
 
+In order to install the build artifacts, run:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# make install
+```
+
+Unstalling:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# make uninstall
+```
+
 [``Back``](#topics)
 
 ## The developer's build

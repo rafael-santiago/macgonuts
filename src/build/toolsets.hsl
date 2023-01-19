@@ -11,6 +11,20 @@ include ~/toolsets/clang/clang-lib.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
 include ~/fsutil.hsl
 
+function installer() : result type none {
+    var option type list;
+
+    $option = hefesto.sys.get_option("install");
+    if ($option.count() > 0) {
+        hefesto.project.abort(build("install"));
+    }
+
+    $option = hefesto.sys.get_option("uninstall");
+    if ($option.count() > 0) {
+        hefesto.project.abort(build("uninstall"));
+    }
+}
+
 function build_projects(projects type list) : result type int {
     if ($projects.count() == 0) {
         hefesto.sys.echo("ERROR: No projects to build.\n");
@@ -232,4 +246,58 @@ local function build_macgonuts_socket() : result type int {
         $socket_lib_objects = "macgonuts_socket.o macgonuts_socket_common.o";
     }
     result hefesto.sys.run("ar -r " + $libpath + " " + $socket_lib_objects);
+}
+
+local function build_install() : result type int {
+    var pkg_artifacts_dest type list;
+    var pkg_artifacts_src type list;
+
+    $pkg_artifacts_dest.add_item("/usr/local/bin/macgonuts");
+    $pkg_artifacts_dest.add_item("/usr/local/man/man1/macgonuts.1");
+
+    $pkg_artifacts_src.add_item("../bin/macgonuts");
+    $pkg_artifacts_src.add_item("../doc/man1/macgonuts.1");
+
+    var a type int;
+    $a = 0;
+    var err type int;
+    $err = 0;
+    while ($a < $pkg_artifacts_dest.count() && $err == 0) {
+        var curr_filepath type string;
+        $curr_filepath = $pkg_artifacts_dest.item($a);
+        mktree(pathfromfilepath($curr_filepath));
+        if (hefesto.sys.cp($pkg_artifacts_src.item($a), $pkg_artifacts_dest.item($a)) != 1) {
+            hefesto.sys.echo("ERROR: When trying to install `" + $pkg_artifacts_dest.item($a) + "`.\n");
+            $err = 1;
+        }
+        $a = $a + 1;
+    }
+
+    if ($err == 0) {
+        hefesto.sys.echo("INFO: Installed.\n");
+    } else if ($err != 0) {
+        build("uninstall");
+    }
+
+    result $err;
+}
+
+local function build_uninstall() : result type int {
+    var pkg_artifacts_src type list;
+
+    $pkg_artifacts_src.add_item("/usr/local/bin/macgonuts");
+    $pkg_artifacts_src.add_item("/usr/local/man/man1/macgonuts.1");
+
+    var a type int;
+    $a = 0;
+    while ($a < $pkg_artifacts_src.count()) {
+        if (hefesto.sys.rm($pkg_artifacts_src.item($a)) != 0) {
+            hefesto.sys.echo("WARN: When trying to uninstal `" + $pkg_artifacts_src.item($a) + "`. Try it yourself.\n");
+        }
+        $a = $a + 1;
+    }
+
+    hefesto.sys.echo("INFO: Uninstalled.\n");
+
+    result 0;
 }

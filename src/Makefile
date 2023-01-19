@@ -42,3 +42,11 @@ $(OBJDIR)/%.o: %.c
 clean:
 	@rm -rf .o
 	@rm $(LIBDIR)/$(BINARY)
+
+install:
+	@mkdir -p /usr/local/bin && cp ../bin/macgonuts /usr/local/bin &&\
+ mkdir -p /usr/local/man/man1 && cp ../doc/man1/macgonuts.1 /usr/local/man/man1/macgonuts.1
+	@echo installed.
+uninstall:
+	@rm /usr/local/bin/macgonuts && rm /usr/local/man/man1/macgonuts.1
+	@echo uninstalled.

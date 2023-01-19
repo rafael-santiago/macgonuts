@@ -188,12 +188,12 @@ All new features must be documented by including its advantages and drawbacks. A
 
 A new feature is considered done when:
 
-1. It does what must do.
-2. It does not add mess, confusion or even unstability or bugs in the previous stuff.
-3. It ships what it promises in the simple (but not simpler) way. In other words, you have used Occam's razor principle on it.
+1. It does what it must do.
+2. It does not add mess, confusion or even unstability nor bugs in the previous stuff.
+3. It ships what it promises in a simple (but not simpler) way. In other words, you have used Occam's razor principle on it.
 4. It is being well tested.
-5. It must not be tied up with some compiler or toolchain to work on. The opposite would be an example of lousy engineering, here.
-   More concepts less dependencies.
+5. It must not be tied up with some compiler or toolchain to work on. The opposite would be an example of lousy engineering,
+   here. More concepts less dependencies.
 6. The ``CI`` must be passing.
 7. It is well documented.
 8. The commit that adds this new feature to the upstream is descriptive.
