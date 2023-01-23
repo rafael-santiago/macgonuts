@@ -2,7 +2,7 @@
 
 **Abstract**: ``Macgonuts`` main build is based on another tool of mine called [Hefesto](https://github.com/rafael-santiago/hefesto).
 If you want to contribute to ``macgnonuts`` you need to know details about it. If you are only seeking to get a
-freshly ``macgonuts`` binary to get your stuff done, you can give ``the poor man's build`` a try that uses simply
+freshly ``macgonuts`` binary to get your stuff done, you can give ``the low-cost build`` a try that uses simply
 ``Makefiles``. Get your build instructions destiny below.
 
 ## Topics
@@ -10,7 +10,7 @@ freshly ``macgonuts`` binary to get your stuff done, you can give ``the poor man
 - [Getting newest macgonuts source code revision](#getting-newest-macgonuts-source-code-revision)
 - [Build](#build)
     - [Installing Hefesto](#installing-hefesto)
-    - [The poor man's build](#the-poor-mans-build)
+    - [The low-cost build](#the-low-cost-build)
     - [The developer's build](#developers-build)
     - [Installing the command line tool](#installing-the-command-line-tool)
 
@@ -37,7 +37,7 @@ build ``Macgonuts`` is:
 - ``libc`` (Harrrrrrd of having it on unixes, huh?).
 - ``Pthread`` libraries well installed in your system.
 - ``Hefesto`` (my build system of choice for this tool and if you want to contribute to ``Macgonuts`` you should install it).
-- ``Make`` tool (if you are intending to run poor man's build only to get your macgonuts binaries to do your own stuff).
+- ``Make`` tool (if you are intending to run low-cost build only to get your macgonuts binaries to do your own stuff).
 
 Any other dependency we ship it as sub-modules and build it during build but ``DO NOT`` polute your system
 with nothing. It is used into ``src/libs`` folder of your copy. If you delete your copy, all will gone
@@ -60,11 +60,11 @@ You can also run the script ``get-hefesto.sh`` into ``src`` folder of ``Macgonut
 
 [``Back``](#topics)
 
-## The poor man's build
+## The low-cost build
 
-Well, ``poor man's build`` is only to produce libraries and the command line tool. Due to it if you are adding new
+Well, ``low-cost build`` is only to produce libraries and the command line tool. Due to it if you are adding new
 features to macgonuts to open a pull request, better to run the developer's build based on Hefesto because it
-will run tests, search for memory leak and stuff. ``Poor man's build does not run any test nor do any profile``.
+will run tests, search for memory leak and stuff. ``Low-cost build does not run any test nor do any profile``.
 
 Having ``GNU make`` tool well installed in your system, move to ``src`` toplevel subdirectory and:
 
