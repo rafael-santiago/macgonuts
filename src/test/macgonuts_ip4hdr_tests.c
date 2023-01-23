@@ -27,7 +27,7 @@ CUTE_TEST_CASE(macgonuts_read_ip4_pkt_tests)
     struct macgonuts_ip4hdr_ctx ip4hdr = { 0 };
     CUTE_ASSERT(macgonuts_read_ip4_pkt(NULL, dgram_from_wire, dgram_from_wire_size) == EINVAL);
     CUTE_ASSERT(macgonuts_read_ip4_pkt(&ip4hdr, NULL, dgram_from_wire_size) == EINVAL);
-    CUTE_ASSERT(macgonuts_read_ip4_pkt(&ip4hdr, dgram_from_wire, 0) == EINVAL);
+    CUTE_ASSERT(macgonuts_read_ip4_pkt(&ip4hdr, dgram_from_wire, 0) == EPROTO);
     CUTE_ASSERT(macgonuts_read_ip4_pkt(&ip4hdr, dgram_from_wire, dgram_from_wire_size) == EXIT_SUCCESS);
     CUTE_ASSERT(ip4hdr.version == 4);
     CUTE_ASSERT(ip4hdr.ihl == 5);

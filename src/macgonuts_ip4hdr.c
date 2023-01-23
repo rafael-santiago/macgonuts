@@ -70,8 +70,12 @@ unsigned char *macgonuts_make_ip4_pkt(const struct macgonuts_ip4hdr_ctx *ip4hdr,
 }
 
 int macgonuts_read_ip4_pkt(struct macgonuts_ip4hdr_ctx *ip4hdr, const unsigned char *ip4buf, const size_t ip4buf_size) {
-    if (ip4hdr == NULL || ip4buf == NULL || ip4buf_size == 0) {
+    if (ip4hdr == NULL || ip4buf == NULL) {
         return EINVAL;
+    }
+
+    if (ip4buf_size < IP4_HDR_BASE_SIZE(ip4hdr)) {
+        return EPROTO;
     }
 
     ip4hdr->version = ip4buf[0] >> 4;

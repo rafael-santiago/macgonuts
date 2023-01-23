@@ -38,7 +38,8 @@ my main goal was to have something to use the pun.
 ## Commands
 
 This section describes in details all implemented commands in ``macgonuts``. Keep on reading to master up
-the tool and making a youtube video about it (because I do not have any talent or even patience to do this).
+the tool and making a youtube video about it (because I do not have any talent or even patience to do this),
+many thanks in advance!
 
 ### The spoof command
 
@@ -119,7 +120,7 @@ eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
 Same effect, still spoofed but now redirecting packets and do not abusing network throughput.
 
 Eve hits ``ctrl+c`` to exit the application (by the way, this is how you exit spoof command, sorry!). However,
-Bob stills think that Eve's computer is Alice's computer and at this moment he will notice that "Alice"
+Bob still thinks that Eve's computer is Alice's computer and at this moment he will notice that "Alice"
 stopped respond to his requests. If Eve wants to become incognito, she can pass the option ``--undo-spoof``:
 
 ```
@@ -298,14 +299,14 @@ If you are only seeking to annoy a network as whole, maybe the mayhem command is
 With mayhem you are able to make ARP/Neighbor tables a total mess. As a result the host will be unable
 to communicate each other or at least unable to communicate each other without unstability.
 
-Inder to work on this command needs three basic options: the local interface, a CIDR and a list of
+In order to work on this command needs three basic options: the local interface, a CIDR and a list of
 targets.
 
 So, story time!!!!
 
 Once upon time, Mallory. This nice person was wanting to interfere with communication of Alice, Bob and Eve.
 Alice was at host ``192.30.70.8``, Bob at host ``192.30.70.9`` and Eve at host ``192.30.70.10``. However,
-the three have been keeping communication also with other hosts that compound the network. This network
+the three have been keeping communication with other hosts that compound the network, too. This network
 was a class C network, so the net mask was ``255.255.255.0``.
 
 Mallory has been poking a little ``macgonuts`` these days and decided give ``mayhem`` command a try:
@@ -322,7 +323,7 @@ use: macgonuts mayhem --lo-iface=<label>
 Nice, Mallory was accessing her network from ``eth1``, since ``no-route-range`` expects a CIDR and
 her network is a class C network, it does mean that this network uses 24 bits of the ip to identify
 the network, so ``no-route-range`` needs to be ``192.30.70.0/24``. Any host into this range should
-become unreachble by all targets specified in ``target-addrs`` option, again, ``192.30.70.8``,
+become unreachable by all targets specified in ``target-addrs`` option, again, ``192.30.70.8``,
 ``192.30.70.9`` and ``192.30.70.10`` a.k.a. Alice, Bob and Eve. Look:
 
 ```
