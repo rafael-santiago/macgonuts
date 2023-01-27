@@ -7,10 +7,12 @@
  */
 #include <macgonuts_dnsconv.h>
 
-static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off);
+static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off,
+                                   const int is_domain_name);
 
 uint8_t *macgonuts_get_dns_u8str(const unsigned char *data, const size_t data_size,
-                                 size_t *u8str_size, const size_t current_offset) {
+                                 size_t *u8str_size, const size_t current_offset,
+                                 const int is_domain_name) {
     const unsigned char *d = NULL;
     const unsigned char *d_end = NULL;
     uint8_t *u8str = NULL;
@@ -30,7 +32,7 @@ uint8_t *macgonuts_get_dns_u8str(const unsigned char *data, const size_t data_si
     d = data;
     d_end = d + data_size;
 
-    *u8str_size = get_u8str_total_size(data, data_size, current_offset);
+    *u8str_size = get_u8str_total_size(data, data_size, current_offset, is_domain_name);
 
     if (*u8str_size == 0) {
         return NULL;
@@ -55,7 +57,7 @@ uint8_t *macgonuts_get_dns_u8str(const unsigned char *data, const size_t data_si
             d += d[0] + 1;
             if (u8p >= u8p_end || d >= d_end) {
                 continue;
-            } else if (*d != 0) {
+            } else if (is_domain_name && *d != 0) {
                 *u8p = '.';
                 u8p++;
             }
@@ -71,7 +73,8 @@ uint8_t *macgonuts_get_dns_u8str(const unsigned char *data, const size_t data_si
     return u8str;
 }
 
-static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off) {
+static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off,
+                                   const int is_domain_name) {
     const unsigned char *d = NULL;
     const unsigned char *d_end = NULL;
     size_t s = 0;
@@ -87,7 +90,7 @@ static size_t get_u8str_total_size(const unsigned char *data, const size_t data_
         if ((*d & 0xC0) == 0) {
             s += *d;
             d += *d + 1;
-            if (d < d_end && *d != 0) {
+            if (is_domain_name && d < d_end && *d != 0) {
                 s += 1; // INFO(Rafael): Plus one is for the dot symbol.
             }
         } else {

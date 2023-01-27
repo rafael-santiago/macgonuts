@@ -11,6 +11,6 @@
 #include <macgonuts_types.h>
 
 uint8_t *macgonuts_get_dns_u8str(const unsigned char *data, const size_t data_size,
-                                 size_t *u8str_size, const size_t current_offset);
+                                 size_t *u8str_size, const size_t current_offset, const int is_domain_name);
 
 #endif // MACGONUTS_DNSCONV_H

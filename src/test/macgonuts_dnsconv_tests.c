@@ -38,22 +38,26 @@ CUTE_TEST_CASE(macgonuts_get_dns_u8str_tests)
         const unsigned char *data;
         const size_t data_size;
         size_t c_off;
+        int is_domain_name;
         const uint8_t *expected;
         const size_t expected_size;
     } test_vector[] = {
-        { NULL, test_data_size, 20, NULL, 0 },
-        { test_data, 0, 20, NULL, 0 },
-        { test_data, test_data_size, test_data_size << 1, NULL, 0 },
-        { test_data, test_data_size, 20, (uint8_t *)"F.ISI.ARPA", 10 },
-        { test_data, test_data_size, 40, (uint8_t *)"FOO.F.ISI.ARPA", 14 },
-        { test_data, test_data_size, 64, (uint8_t *)"ARPA", 4 },
-        { test_data, test_data_size, 92, NULL, 0 },
+        { NULL, test_data_size, 20, 0, NULL, 0 },
+        { test_data, 0, 20, 1, NULL, 0 },
+        { test_data, test_data_size, test_data_size << 1, 0, NULL, 0 },
+        { test_data, test_data_size, 20, 1, (uint8_t *)"F.ISI.ARPA", 10 },
+        { test_data, test_data_size, 40, 1, (uint8_t *)"FOO.F.ISI.ARPA", 14 },
+        { test_data, test_data_size, 64, 1, (uint8_t *)"ARPA", 4 },
+        { test_data, test_data_size, 92, 1, NULL, 0 },
+        { test_data, test_data_size, 20, 0, (uint8_t *)"FISIARPA", 8 },
+        { test_data, test_data_size, 40, 0, (uint8_t *)"FOOFISIARPA", 11 },
+        { test_data, test_data_size, 64, 0, (uint8_t *)"ARPA", 4 },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     uint8_t *u8str = NULL;
     size_t u8str_size = 0;
-    CUTE_ASSERT(macgonuts_get_dns_u8str(test->data, test->data_size, NULL, test->c_off) == NULL);
+    CUTE_ASSERT(macgonuts_get_dns_u8str(test->data, test->data_size, NULL, test->c_off, test->is_domain_name) == NULL);
     while (test != test_end) {
-        u8str = macgonuts_get_dns_u8str(test->data, test->data_size, &u8str_size, test->c_off);
+        u8str = macgonuts_get_dns_u8str(test->data, test->data_size, &u8str_size, test->c_off, test->is_domain_name);
         if (test->expected != NULL) {
             CUTE_ASSERT(u8str != NULL);
             CUTE_ASSERT(u8str_size == test->expected_size);
