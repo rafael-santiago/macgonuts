@@ -19,6 +19,8 @@
 #include "macgonuts_udphdr_tests.h"
 #include "macgonuts_ndphdr_tests.h"
 #include "macgonuts_tcphdr_tests.h"
+#include "macgonuts_dnsconv_tests.h"
+#include "macgonuts_dnshdr_tests.h"
 #include "macgonuts_ipchsum_tests.h"
 #include "macgonuts_get_ethaddr_tests.h"
 #include "macgonuts_status_info_tests.h"
@@ -76,6 +78,9 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_make_ndp_nsna_pkt_tests);
     CUTE_RUN_TEST(macgonuts_read_tcp_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_tcp_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_read_dns_pkt_tests);
+    CUTE_RUN_TEST(macgonuts_get_dns_u8str_tests);
+    CUTE_RUN_TEST(macgonuts_make_dns_pkt_tests);
     CUTE_RUN_TEST(macgonuts_getrandom_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_addr_from_iface_unix_tests);
     CUTE_RUN_TEST(macgonuts_get_gateway_addr_info_tests);
