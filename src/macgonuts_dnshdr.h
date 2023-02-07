@@ -40,6 +40,17 @@ typedef enum macgonuts_dns_class {
     kMacgonutsDNSQClassAny = 255
 }macgonuts_dns_class_t;
 
+struct macgonuts_dns_rr_hdr_ctx {
+    size_t name_size;
+    uint8_t *name;
+    uint16_t rtype;
+    uint16_t rclass;
+    uint32_t ttl;
+    uint16_t rdlength;
+    uint8_t *rdata;
+    struct macgonuts_dns_rr_hdr_ctx *next;
+};
+
 struct macgonuts_dnshdr_ctx {
     uint16_t id;
 
@@ -56,19 +67,9 @@ struct macgonuts_dnshdr_ctx {
     uint16_t ancount;
     uint16_t nscount;
     uint16_t arcount;
-    uint8_t *rr;
-    size_t rr_size;
-};
 
-struct macgonuts_dns_rr_hdr_ctx {
-    size_t name_size;
-    uint8_t *name;
-    uint16_t rtype;
-    uint16_t rclass;
-    uint32_t ttl;
-    uint16_t rdlength;
-    uint8_t *rdata;
-    struct macgonuts_dns_rr_hdr_ctx *next;
+    struct macgonuts_dns_rr_hdr_ctx *qd;
+    struct macgonuts_dns_rr_hdr_ctx *an;
 };
 
 unsigned char *macgonuts_make_dns_pkt(const struct macgonuts_dnshdr_ctx *dnshdr, size_t *pkt_size);

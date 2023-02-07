@@ -6,17 +6,42 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_dnshdr.h>
+#include <macgonuts_dnsconv.h>
 
 #define DNS_HDR_BASE_SIZE(c) (sizeof((c)->id) + 2 + sizeof((c)->qdcount) +\
                               sizeof((c)->ancount) + sizeof((c)->nscount) + sizeof((c)->arcount))
 
+#define DNS_HDR_QSEC_BASE_SIZE(c) ( sizeof((c)->rtype) + sizeof((c)->rclass) )
+
+#define DNS_HDR_GSEC_BASE_SIZE(c) ( sizeof((c)->rtype) + sizeof((c)->rclass) + sizeof((c)->ttl) + sizeof((c)->rdlength) )
+
+static int read_dns_gsec(const unsigned char *dnsbuf, const unsigned char *dnsbuf_end, const unsigned char *dnspkt_head,
+                         struct macgonuts_dns_rr_hdr_ctx *rrhdr, const int is_question_sec,
+                         unsigned char **next);
+
+static int read_dns_qsec(const unsigned char *dnsbuf, const unsigned char *dnsbuf_end, const unsigned char *dnspkt_head,
+                         struct macgonuts_dns_rr_hdr_ctx *rrhdr, unsigned char **next);
+
+static int make_gsec(unsigned char *pkt, unsigned char *pkt_end, const struct macgonuts_dnshdr_ctx *dnshdr,
+                     const int is_question_sec, unsigned char **next);
+
+static int make_qsec(unsigned char *pkt, unsigned char *pkt_end, const struct macgonuts_dnshdr_ctx *dnshdr,
+                     unsigned char **next);
+
+static struct macgonuts_dns_rr_hdr_ctx *create_rr_hdr_ctx(const size_t records_nr);
+
+static void destroy_rr_hdr_ctx(struct macgonuts_dns_rr_hdr_ctx *rrhdr);
+
+static size_t get_rr_hdr_size(const struct macgonuts_dnshdr_ctx *dnshdr);
+
 unsigned char *macgonuts_make_dns_pkt(const struct macgonuts_dnshdr_ctx *dnshdr, size_t *pkt_size) {
     unsigned char *pkt = NULL;
+    unsigned char *next = NULL;
     if (dnshdr == NULL || pkt_size == NULL) {
         return NULL;
     }
 
-    *pkt_size = DNS_HDR_BASE_SIZE(dnshdr) + dnshdr->rr_size;
+    *pkt_size = DNS_HDR_BASE_SIZE(dnshdr) + get_rr_hdr_size(dnshdr);
     pkt = (unsigned char *)malloc(*pkt_size);
     if (pkt == NULL) {
         *pkt_size = 0;
@@ -42,14 +67,22 @@ unsigned char *macgonuts_make_dns_pkt(const struct macgonuts_dnshdr_ctx *dnshdr,
     pkt[10] = (dnshdr->arcount >> 8) & 0xFF;
     pkt[11] = dnshdr->arcount & 0xFF;
 
-    if (dnshdr->rr_size > 0 && dnshdr->rr != NULL) {
-        memcpy(&pkt[12], dnshdr->rr, dnshdr->rr_size);
+    if (dnshdr->qdcount > 0 && make_qsec(&pkt[12], pkt + *pkt_size, dnshdr, &next) != EXIT_SUCCESS) {
+        free(pkt);
+        pkt = NULL;
+    }
+
+    if (dnshdr->ancount > 0 && make_gsec(next, pkt + *pkt_size, dnshdr, 0, &next) != EXIT_SUCCESS) {
+        free(pkt);
+        pkt = NULL;
     }
 
     return pkt;
 }
 
 int macgonuts_read_dns_pkt(struct macgonuts_dnshdr_ctx *dnshdr, const unsigned char *dnsbuf, const size_t dnsbuf_size) {
+    unsigned char *next = NULL;
+
     if (dnshdr == NULL
         || dnsbuf == NULL) {
         return EINVAL;
@@ -75,57 +108,275 @@ int macgonuts_read_dns_pkt(struct macgonuts_dnshdr_ctx *dnshdr, const unsigned c
     dnshdr->nscount = (uint16_t)dnsbuf[ 8] << 8 | (uint16_t)dnsbuf[ 9];
     dnshdr->arcount = (uint16_t)dnsbuf[10] << 8 | (uint16_t)dnsbuf[11];
 
-    dnshdr->rr_size = dnsbuf_size - DNS_HDR_BASE_SIZE(dnshdr);
-    if (dnshdr->rr_size > 0) {
-        dnshdr->rr = (uint8_t *)malloc(dnshdr->rr_size);
-        if (dnshdr->rr == NULL) {
-            memset(dnshdr, 0, sizeof(struct macgonuts_dnshdr_ctx));
-            return ENOMEM;
-        }
-        memcpy(dnshdr->rr, &dnsbuf[12], dnshdr->rr_size);
+    dnshdr->qd = (dnshdr->qdcount > 0) ? create_rr_hdr_ctx(dnshdr->qdcount) : NULL;
+    dnshdr->an = (dnshdr->ancount > 0) ? create_rr_hdr_ctx(dnshdr->ancount) : NULL;
+
+    if (dnshdr->qd != NULL
+        && read_dns_qsec(&dnsbuf[12], dnsbuf + dnsbuf_size, dnsbuf, dnshdr->qd, &next) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
+    if (dnshdr->an != NULL
+        && read_dns_gsec(next, dnsbuf + dnsbuf_size, dnsbuf, dnshdr->an, 0, &next) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;
-}
-
-int macgonuts_read_dns_resource_record(struct macgonuts_dns_rr_hdr_ctx *dnsrr,
-                                       const struct macgonuts_dnshdr_ctx *dnshdr) {
-    return EXIT_FAILURE;
-}
-
-uint8_t *macgonuts_make_dns_an_pkt(const char *domain_name, const uint8_t *proto_addr, const size_t proto_addr_size) {
-    return NULL;
 }
 
 void macgonuts_release_dnshdr(struct macgonuts_dnshdr_ctx *dnshdr) {
     if (dnshdr == NULL) {
         return;
     }
-    if (dnshdr->rr != NULL) {
-        free(dnshdr->rr);
+
+    if (dnshdr->qd != NULL) {
+        destroy_rr_hdr_ctx(dnshdr->qd);
+    }
+
+    if (dnshdr->an != NULL) {
+        destroy_rr_hdr_ctx(dnshdr->an);
     }
 }
 
-void macgonuts_release_dns_rr_hdr(struct macgonuts_dns_rr_hdr_ctx *dnsrr) {
-    struct macgonuts_dns_rr_hdr_ctx *p = NULL, *t = NULL;
+static size_t get_rr_hdr_size(const struct macgonuts_dnshdr_ctx *dnshdr) {
+    struct macgonuts_dns_rr_hdr_ctx *rp = NULL;
+    size_t hdr_size = 0;
+    for (rp = dnshdr->qd; rp != NULL; rp = rp->next) {
+        hdr_size += DNS_HDR_QSEC_BASE_SIZE(rp) + rp->name_size + 2;
+    }
 
-    if (dnsrr == NULL) {
+    for (rp = dnshdr->an; rp != NULL; rp = rp->next) {
+        hdr_size += DNS_HDR_GSEC_BASE_SIZE(rp) + rp->name_size + 2 + rp->rdlength;
+    }
+
+    return hdr_size;
+}
+
+static int read_dns_qsec(const unsigned char *dnsbuf, const unsigned char *dnsbuf_end, const unsigned char *dnspkt_head,
+                         struct macgonuts_dns_rr_hdr_ctx *rrhdr, unsigned char **next) {
+    return read_dns_gsec(dnsbuf, dnsbuf_end, dnspkt_head, rrhdr, 1, next);
+}
+
+static int read_dns_gsec(const unsigned char *dnsbuf, const unsigned char *dnsbuf_end, const unsigned char *dnspkt_head,
+                         struct macgonuts_dns_rr_hdr_ctx *rrhdr, const int is_question_sec,
+                         unsigned char **next) {
+    int err = EXIT_SUCCESS;
+    const unsigned char *db = dnsbuf;
+    struct macgonuts_dns_rr_hdr_ctx *rp = rrhdr;
+    size_t next_size = 0;
+    const unsigned char *db_head = NULL;
+
+    *next = NULL;
+
+    while (rp != NULL && db < dnsbuf_end && err == EXIT_SUCCESS) {
+        db_head = (*db == 0xC0) ? dnspkt_head + db[1] : db;
+        rp->name = macgonuts_get_dns_u8str(db_head, dnsbuf_end - db_head, &rp->name_size, 0, 1);
+        if (rp->name == NULL) {
+            err = ENOMEM;
+            continue;
+        }
+        //printf("[%p] name: %s %.2X%.2X\n", rrhdr, rp->name, db[0], db[1]);
+
+        if (*db != 0xC0) {
+            db += rp->name_size + 1;
+            if (*db != 0) {
+                err = EINVAL;
+                continue;
+            }
+            db += 1;
+        } else {
+            db += 2;
+        }
+        next_size = sizeof(rp->rtype);
+
+        if ((db + next_size) > dnsbuf_end) {
+            err = ENOBUFS;
+            continue;
+        }
+        rp->rtype = (uint16_t) db[0] << 8 | (uint16_t) db[1];
+        db += next_size;
+        next_size = sizeof(rp->rclass);
+
+        if ((db + next_size) > dnsbuf_end) {
+            err = ENOBUFS;
+            continue;
+        }
+        rp->rclass = (uint16_t) db[0] << 8 | (uint16_t) db[1];
+        db += next_size;
+
+        if (!is_question_sec) {
+            next_size = sizeof(rp->ttl);
+            if ((db + next_size) > dnsbuf_end) {
+                err = ENOBUFS;
+                continue;
+            }
+            rp->ttl = (uint32_t) db[0] << 24 | (uint32_t) db[1] << 16 |
+                      (uint32_t) db[2] <<  8 | (uint32_t) db[3];
+            db += next_size;
+            next_size = sizeof(rp->rdlength);
+
+            if ((db + next_size) > dnsbuf_end) {
+                err = ENOBUFS;
+                continue;
+            }
+            rp->rdlength = (uint16_t) db[0] << 8 | (uint16_t) db[1];
+            db += next_size;
+            next_size = rp->rdlength;
+
+            if ((db + next_size) > dnsbuf_end) {
+                err = ENOBUFS;
+                continue;
+            }
+
+            rp->rdata = (uint8_t *)malloc(next_size);
+            if (rp->rdata == NULL) {
+                err = ENOMEM;
+                continue;
+            }
+            memcpy(rp->rdata, db, next_size);
+            db += next_size;
+        }
+
+        rp = rp->next;
+        if (rp != NULL && db > dnsbuf_end) {
+            err = ENOBUFS;
+            continue;
+        }
+    }
+
+    if (err == EXIT_SUCCESS && rp == NULL) {
+        *next = (unsigned char *)db;
+    } else {
+        err = EPROTO;
+    }
+
+    return err;
+}
+
+static int make_gsec(unsigned char *pkt, unsigned char *pkt_end, const struct macgonuts_dnshdr_ctx *dnshdr,
+                     const int is_question_sec, unsigned char **next) {
+    const struct macgonuts_dns_rr_hdr_ctx *rp = (is_question_sec) ? dnshdr->qd : dnshdr->an;
+    unsigned char *pkt_p = pkt;
+    uint8_t *label = NULL;
+    size_t label_size;
+    for (; rp != NULL; rp = rp->next) {
+        label = macgonuts_make_label_from_domain_name(rp->name, rp->name_size, &label_size);
+        if (label == NULL
+            || (pkt_end - pkt_p) < label_size) {
+            return ENOBUFS;
+        }
+        memcpy(pkt_p, label, label_size);
+        free(label);
+        pkt_p += label_size + 1;
+
+        label_size = sizeof(rp->rtype);
+        if ((pkt_p + label_size) > pkt_end) {
+            return ENOBUFS;
+        }
+
+        pkt_p[0] = (rp->rtype >> 8) & 0xFF;
+        pkt_p[1] = rp->rtype & 0xFF;
+        pkt_p += label_size;
+
+        label_size = sizeof(rp->rclass);
+        if ((pkt_p + label_size) > pkt_end) {
+            return ENOBUFS;
+        }
+        pkt_p[0] = (rp->rclass >> 8) & 0xFF;
+        pkt_p[1] = rp->rclass & 0xFF;
+        pkt_p += label_size;
+
+        if (!is_question_sec) {
+            label_size = sizeof(rp->ttl);
+            if ((pkt_p + label_size) > pkt_end) {
+                return ENOBUFS;
+            }
+            pkt_p[0] = (rp->ttl >> 24) & 0xFF;
+            pkt_p[1] = (rp->ttl >> 16) & 0xFF;
+            pkt_p[2] = (rp->ttl >>  8) & 0xFF;
+            pkt_p[3] = rp->ttl & 0xFF;
+            pkt_p += label_size;
+
+            label_size = sizeof(rp->rdlength);
+            if ((pkt_p + label_size) > pkt_end) {
+                return ENOBUFS;
+            }
+            pkt_p[0] = (rp->rdlength >> 8) & 0xFF;
+            pkt_p[1] = rp->rdlength & 0xFF;
+            pkt_p += label_size;
+
+            label_size = rp->rdlength;
+            if ((pkt_p + label_size) > pkt_end) {
+                return ENOBUFS;
+            }
+            memcpy(pkt_p, rp->rdata, label_size);
+            pkt_p += label_size;
+        }
+    }
+
+    (*next) = pkt_p;
+
+    return EXIT_SUCCESS;
+}
+
+static int make_qsec(unsigned char *pkt, unsigned char *pkt_end, const struct macgonuts_dnshdr_ctx *dnshdr,
+                     unsigned char **next) {
+    return make_gsec(pkt, pkt_end, dnshdr, 1, next);
+}
+
+
+static struct macgonuts_dns_rr_hdr_ctx *create_rr_hdr_ctx(const size_t records_nr) {
+    size_t r;
+    struct macgonuts_dns_rr_hdr_ctx *rrhdr = NULL;
+    struct macgonuts_dns_rr_hdr_ctx *rp = NULL;
+
+    if (records_nr == 0) {
+        return NULL;
+    }
+
+    // INFO(Rafael): This more "tricky" way of allocating the needed data contexts is for
+    //               do not stress up the system by requesting more work from the memory manager and,
+    //               also make macgonuts able to release this resource quickly, as a resuly, it will
+    //               occupy less the os' memory manager, too.
+
+    r = sizeof(struct macgonuts_dns_rr_hdr_ctx) * records_nr;
+    rrhdr = (struct macgonuts_dns_rr_hdr_ctx *)malloc(r);
+    if (rrhdr == NULL) {
+        return NULL;
+    }
+    memset(rrhdr, 0, r);
+
+    rp = rrhdr;
+    for (r = 1; r < records_nr; r++) {
+        rp->next = rp + sizeof(struct macgonuts_dns_rr_hdr_ctx);
+        rp = rp->next;
+    }
+
+    return rrhdr;
+}
+
+static void destroy_rr_hdr_ctx(struct macgonuts_dns_rr_hdr_ctx *rrhdr) {
+    struct macgonuts_dns_rr_hdr_ctx *rp = rrhdr;
+
+    if (rp == NULL) {
         return;
     }
 
-    for (p = t = dnsrr; t != NULL; p = t) {
-        t = p->next;
-        if (p->name != NULL) {
-            free(p->name);
+    for (; rp != NULL; rp = rp->next) {
+        if (rp->name != NULL) {
+            free(rp->name);
         }
-        if (p->rdata != NULL) {
-            free(p->rdata);
-        }
-        if (p != dnsrr) {
-            // INFO(Rafael): The first one is stack based, the follow ones are heap based.
-            free(p);
+
+        if (rp->rdata != NULL) {
+            free(rp->rdata);
         }
     }
+
+    free(rrhdr);
 }
 
 #undef DNS_HDR_BASE_SIZE
+
+#undef DNS_HDR_QSEC_BASE_SIZE
+
+#undef DNS_HDR_GSEC_BASE_SIZE
