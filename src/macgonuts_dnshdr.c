@@ -138,6 +138,52 @@ void macgonuts_release_dnshdr(struct macgonuts_dnshdr_ctx *dnshdr) {
     }
 }
 
+int macgonuts_add_dns_answer(struct macgonuts_dnshdr_ctx *dnshdr, const uint8_t *proto_addr,
+                             const size_t proto_addr_size, const uint32_t ttl_insecs) {
+    if (dnshdr == NULL
+        || proto_addr == NULL
+        || dnshdr->qdcount == 0 || dnshdr->ancount > 0) {  // INFO(Rafael): It must be an unanswered question.
+        return EINVAL;
+    }
+
+    if (proto_addr_size != 4 && proto_addr_size != 16) {
+        return EPROTO;
+    }
+
+    dnshdr->ancount = 1;
+
+    dnshdr->an = create_rr_hdr_ctx(1);
+
+    if (dnshdr->an == NULL) {
+        return ENOMEM;
+    }
+
+    dnshdr->an->name_size = 2;
+    dnshdr->an->name = (uint8_t *)malloc(2);
+    if (dnshdr->an->name == NULL) {
+        dnshdr->an->name_size = 0;
+        return ENOMEM;
+    }
+
+    dnshdr->an->rdata = (uint8_t *)malloc(proto_addr_size);
+    if (dnshdr->an->rdata == NULL) {
+        return ENOMEM;
+    }
+    dnshdr->an->rdlength = proto_addr_size;
+
+    // INFO(Rafael): We will use compression, here we are pointing to the first label requested in the question
+    //               record, which has the offset 12 as its starting point by taking into consideration the
+    //               DNS datagram (isolated from the whole OSI stack, I meant).
+    dnshdr->an->name[0] = 0xC0;
+    dnshdr->an->name[1] = 0x0C;
+    dnshdr->an->rtype = kMacgonutsDNSTypeA;
+    dnshdr->an->rclass = kMacgonutsDNSClassIN;
+    dnshdr->an->ttl = ttl_insecs;
+    memcpy(dnshdr->an->rdata, proto_addr, proto_addr_size);
+
+    return EXIT_SUCCESS;
+}
+
 static size_t get_rr_hdr_size(const struct macgonuts_dnshdr_ctx *dnshdr) {
     struct macgonuts_dns_rr_hdr_ctx *rp = NULL;
     size_t hdr_size = 0;

@@ -18,4 +18,5 @@ size_t macgonuts_get_qname_size_from_dname(const uint8_t *dname, const size_t dn
 uint8_t *macgonuts_make_label_from_domain_name(const uint8_t *domain_name,
                                                const size_t domain_name_size,
                                                size_t *label_size);
+
 #endif // MACGONUTS_DNSCONV_H

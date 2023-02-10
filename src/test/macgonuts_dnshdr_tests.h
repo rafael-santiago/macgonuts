@@ -14,4 +14,6 @@ CUTE_DECLARE_TEST_CASE(macgonuts_read_dns_pkt_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_make_dns_pkt_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_add_dns_answer_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_DNSHDR_TESTS_H

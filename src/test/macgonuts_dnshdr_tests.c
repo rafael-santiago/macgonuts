@@ -233,3 +233,84 @@ CUTE_TEST_CASE(macgonuts_make_dns_pkt_tests)
     macgonuts_release_dnshdr(&dnshdr_from_crafted_one);
     macgonuts_release_dnshdr(&dnshdr);
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_add_dns_answer_tests)
+    const unsigned char dns_request[] = { 0xAA, 0x85, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00,
+                                          0x00, 0x00, 0x00, 0x00, 0x04, 0x61, 0x75, 0x73,
+                                          0x35, 0x07, 0x6D, 0x6F, 0x7A, 0x69, 0x6C, 0x6C,
+                                          0x61, 0x03, 0x6F, 0x72, 0x67, 0x00, 0x00, 0x01,
+                                          0x00, 0x01 };
+    const size_t dns_request_size = sizeof(dns_request) / sizeof(dns_request[0]);
+    const unsigned char dns_reply[] = { 0xAA, 0x85, 0x81, 0x80, 0x00, 0x01, 0x00,
+                                        0x03, 0x00, 0x00, 0x00, 0x00, 0x04, 0x61,
+                                        0x75, 0x73, 0x35, 0x07, 0x6D, 0x6F, 0x7A,
+                                        0x69, 0x6C, 0x6C, 0x61, 0x03, 0x6F, 0x72,
+                                        0x67, 0x00, 0x00, 0x01, 0x00, 0x01, 0xC0,
+                                        0x0C, 0x00, 0x05, 0x00, 0x01, 0x00, 0x00,
+                                        0x00, 0x07, 0x00, 0x28, 0x0B, 0x62, 0x61,
+                                        0x6C, 0x72, 0x6F, 0x67, 0x2D, 0x61, 0x75,
+                                        0x73, 0x35, 0x05, 0x72, 0x35, 0x33, 0x2D,
+                                        0x32, 0x08, 0x73, 0x65, 0x72, 0x76, 0x69,
+                                        0x63, 0x65, 0x73, 0x07, 0x6D, 0x6F, 0x7A,
+                                        0x69, 0x6C, 0x6C, 0x61, 0x03, 0x63, 0x6F,
+                                        0x6D, 0x00, 0xC0, 0x2E, 0x00, 0x05, 0x00,
+                                        0x01, 0x00, 0x00, 0x01, 0xC6, 0x00, 0x26,
+                                        0x04, 0x70, 0x72, 0x6F, 0x64, 0x06, 0x62,
+                                        0x61, 0x6C, 0x72, 0x6F, 0x67, 0x04, 0x70,
+                                        0x72, 0x6F, 0x64, 0x08, 0x63, 0x6C, 0x6F,
+                                        0x75, 0x64, 0x6F, 0x70, 0x73, 0x06, 0x6D,
+                                        0x6F, 0x7A, 0x67, 0x63, 0x70, 0x03, 0x6E,
+                                        0x65, 0x74, 0x00, 0xC0, 0x62, 0x00, 0x01,
+                                        0x00, 0x01, 0x00, 0x00, 0x00, 0x34, 0x00,
+                                        0x04, 0x23, 0xF4, 0xB5, 0xC9 };
+    const size_t dns_reply_size = sizeof(dns_reply) / sizeof(dns_reply[0]);
+    struct test_ctx {
+        const uint8_t proto_addr[16];
+        const size_t proto_addr_size;
+        const uint32_t ttl_insecs;
+        int expected_return;
+    } test_vector[] = {
+        { { 0x7F, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 4, 3600, EXIT_SUCCESS },
+        { { 0xC0, 0x1E, 0x46, 0x07, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 4, 30, EXIT_SUCCESS },
+        { { 0xCA, 0xFE, 0xFE, 0xD1, 0xD0, 0xFE, 0xD1, 0xD0,
+            0xCA, 0xFE, 0x00, 0xBA, 0xBA, 0xCA, 0xB0, 0xB0 }, 16, 0, EXIT_SUCCESS },
+        { { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, 0, 0, EPROTO },
+    }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
+    struct macgonuts_dnshdr_ctx dnshdr = { 0 };
+    CUTE_ASSERT(macgonuts_read_dns_pkt(&dnshdr, dns_reply, dns_reply_size) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_add_dns_answer(&dnshdr,
+                                         test->proto_addr,
+                                         test->proto_addr_size,
+                                         test->ttl_insecs) == EINVAL);
+    macgonuts_release_dnshdr(&dnshdr);
+    CUTE_ASSERT(macgonuts_add_dns_answer(NULL, test->proto_addr, test->proto_addr_size, test->ttl_insecs) == EINVAL);
+    CUTE_ASSERT(macgonuts_read_dns_pkt(&dnshdr, dns_request, dns_request_size) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_add_dns_answer(&dnshdr, NULL, test->proto_addr_size, test->ttl_insecs) == EINVAL);
+    macgonuts_release_dnshdr(&dnshdr);
+    while (test != test_end) {
+        CUTE_ASSERT(macgonuts_read_dns_pkt(&dnshdr, dns_request, dns_request_size) == EXIT_SUCCESS);
+        CUTE_ASSERT(macgonuts_add_dns_answer(&dnshdr,
+                                             test->proto_addr,
+                                             test->proto_addr_size,
+                                             test->ttl_insecs) == test->expected_return);
+        if (test->expected_return == EXIT_SUCCESS) {
+            CUTE_ASSERT(dnshdr.qdcount == 1);
+            CUTE_ASSERT(dnshdr.ancount == 1);
+            CUTE_ASSERT(dnshdr.an != NULL);
+            CUTE_ASSERT(dnshdr.an->next == NULL);
+            CUTE_ASSERT(dnshdr.an->name_size == 2);
+            CUTE_ASSERT(dnshdr.an->name[0] == 0xC0 && dnshdr.an->name[1] == 0x0C);
+            CUTE_ASSERT(dnshdr.an->rtype == kMacgonutsDNSTypeA);
+            CUTE_ASSERT(dnshdr.an->rclass == kMacgonutsDNSClassIN);
+            CUTE_ASSERT(dnshdr.an->ttl == test->ttl_insecs);
+            CUTE_ASSERT(dnshdr.an->rdlength == test->proto_addr_size);
+            CUTE_ASSERT(dnshdr.an->rdata != NULL);
+            CUTE_ASSERT(memcmp(dnshdr.an->rdata, test->proto_addr, test->proto_addr_size) == 0);
+        }
+        macgonuts_release_dnshdr(&dnshdr);
+        test++;
+    }
+CUTE_TEST_CASE_END

@@ -79,7 +79,8 @@ int macgonuts_read_dns_pkt(struct macgonuts_dnshdr_ctx *dnshdr, const unsigned c
 int macgonuts_read_dns_resource_record(struct macgonuts_dns_rr_hdr_ctx *dnsrr,
                                        const struct macgonuts_dnshdr_ctx *dnshdr);
 
-uint8_t *macgonuts_make_dns_an_pkt(const char *domain_name, const uint8_t *proto_addr, const size_t proto_addr_size);
+int macgonuts_add_dns_answer(struct macgonuts_dnshdr_ctx *dnshdr, const uint8_t *proto_addr,
+                             const size_t proto_addr_size, const uint32_t ttl_insecs);
 
 void macgonuts_release_dnshdr(struct macgonuts_dnshdr_ctx *dnshdr);
 
