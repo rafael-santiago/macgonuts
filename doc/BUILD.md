@@ -82,7 +82,7 @@ In order to install the build artifacts, run:
 you@somewhere-over-the-rainbow:~/macgonuts/src# make install
 ```
 
-Unstalling:
+Uninstalling:
 
 ```
 you@somewhere-over-the-rainbow:~/macgonuts/src# make uninstall

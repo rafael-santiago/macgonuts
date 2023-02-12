@@ -176,7 +176,7 @@ int macgonuts_add_dns_answer(struct macgonuts_dnshdr_ctx *dnshdr, const uint8_t 
     //               DNS datagram (isolated from the whole OSI stack, I meant).
     dnshdr->an->name[0] = 0xC0;
     dnshdr->an->name[1] = 0x0C;
-    dnshdr->an->rtype = kMacgonutsDNSTypeA;
+    dnshdr->an->rtype = (proto_addr_size == 4) ? kMacgonutsDNSTypeA : kMacgonutsDNSTypeAAAA;
     dnshdr->an->rclass = kMacgonutsDNSClassIN;
     dnshdr->an->ttl = ttl_insecs;
     memcpy(dnshdr->an->rdata, proto_addr, proto_addr_size);
@@ -306,14 +306,19 @@ static int make_gsec(unsigned char *pkt, unsigned char *pkt_end, const struct ma
     uint8_t *label = NULL;
     size_t label_size;
     for (; rp != NULL; rp = rp->next) {
-        label = macgonuts_make_label_from_domain_name(rp->name, rp->name_size, &label_size);
-        if (label == NULL
-            || (pkt_end - pkt_p) < label_size) {
-            return ENOBUFS;
+        if (rp->name[0] != 0xC0) {
+            label = macgonuts_make_label_from_domain_name(rp->name, rp->name_size, &label_size);
+            if (label == NULL
+                || (pkt_end - pkt_p) < label_size) {
+                return ENOBUFS;
+            }
+            memcpy(pkt_p, label, label_size);
+            free(label);
+            pkt_p += label_size + 1;
+        } else {
+            memcpy(pkt_p, rp->name, 2);
+            pkt_p += 2;
         }
-        memcpy(pkt_p, label, label_size);
-        free(label);
-        pkt_p += label_size + 1;
 
         label_size = sizeof(rp->rtype);
         if ((pkt_p + label_size) > pkt_end) {

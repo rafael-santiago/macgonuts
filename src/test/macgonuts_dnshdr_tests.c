@@ -303,7 +303,7 @@ CUTE_TEST_CASE(macgonuts_add_dns_answer_tests)
             CUTE_ASSERT(dnshdr.an->next == NULL);
             CUTE_ASSERT(dnshdr.an->name_size == 2);
             CUTE_ASSERT(dnshdr.an->name[0] == 0xC0 && dnshdr.an->name[1] == 0x0C);
-            CUTE_ASSERT(dnshdr.an->rtype == kMacgonutsDNSTypeA);
+            CUTE_ASSERT(dnshdr.an->rtype == (test->proto_addr_size == 4) ? kMacgonutsDNSTypeA : kMacgonutsDNSTypeAAAA);
             CUTE_ASSERT(dnshdr.an->rclass == kMacgonutsDNSClassIN);
             CUTE_ASSERT(dnshdr.an->ttl == test->ttl_insecs);
             CUTE_ASSERT(dnshdr.an->rdlength == test->proto_addr_size);

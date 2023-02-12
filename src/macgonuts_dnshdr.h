@@ -27,6 +27,7 @@ typedef enum macgonuts_dns_type {
     kMacgonutsDNSTypeMINFO,
     kMacgonutsDNSTypeMX,
     kMacgonutsDNSTypeTXT,
+    kMacgonutsDNSTypeAAAA = 28,
     kMacgonutsDNSQTypeAXFR = 252,
     kMacgonutsDNSQTypeMAILB,
     kMacgonutsDNSQTypeMAILA
