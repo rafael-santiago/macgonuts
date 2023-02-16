@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <cmd/macgonuts_printpkt_if.h>
-#include <cmd/macgonuts_memglob.h>
+#include <macgonuts_memglob.h>
 
 int macgonuts_printpkt_if(const unsigned char *ethfrm, const size_t ethfrm_size,
                           struct macgonuts_filter_glob_ctx **filter_globs,

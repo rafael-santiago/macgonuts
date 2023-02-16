@@ -399,7 +399,7 @@ static struct macgonuts_dns_rr_hdr_ctx *create_rr_hdr_ctx(const size_t records_n
 
     rp = rrhdr;
     for (r = 1; r < records_nr; r++) {
-        rp->next = rp + sizeof(struct macgonuts_dns_rr_hdr_ctx);
+        rp->next = rp + 1;
         rp = rp->next;
     }
 

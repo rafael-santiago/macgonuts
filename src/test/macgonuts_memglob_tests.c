@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include "macgonuts_memglob_tests.h"
-#include <cmd/macgonuts_memglob.h>
+#include <macgonuts_memglob.h>
 
 CUTE_TEST_CASE(macgonuts_memglob_tests)
     struct strglob_tests_ctx {

@@ -7,7 +7,6 @@
  */
 #include <cutest.h>
 #include "macgonuts_option_tests.h"
-#include "macgonuts_memglob_tests.h"
 #include "macgonuts_misc_utils_tests.h"
 
 CUTE_TEST_CASE(macgonuts_cmdtool_tests)
@@ -16,7 +15,6 @@ CUTE_TEST_CASE(macgonuts_cmdtool_tests)
     CUTE_RUN_TEST(macgonuts_get_option_tests);
     CUTE_RUN_TEST(macgonuts_get_bool_option_tests);
     CUTE_RUN_TEST(macgonuts_get_array_option_tests);
-    CUTE_RUN_TEST(macgonuts_memglob_tests);
     CUTE_RUN_TEST(macgonuts_is_valid_number_tests);
 CUTE_TEST_CASE_END
 

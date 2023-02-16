@@ -5,7 +5,7 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-#include <cmd/macgonuts_memglob.h>
+#include <macgonuts_memglob.h>
 
 int macgonuts_memglob(const unsigned char *data, const size_t data_size,
                       const unsigned char *pattern, const size_t pattern_size) {
