@@ -43,8 +43,8 @@ many thanks in advance!
 
 ### The spoof command
 
-Maybe the ``spoof`` command is the command for what you arrived here. With ``spoof`` command you can deceive
-a host by making it think that you are the droid that it was looking for...
+>Maybe the ``spoof`` command is the command what you arrived here for. With ``spoof`` command you can deceive
+a host by making it thinks that you are the droid that it was looking for...
 
 If you run:
 
@@ -150,7 +150,7 @@ Congrats! Now you are a macgonuts spoofing master!
 
 ### The eavesdrop command
 
-If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
+>If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
 looking for...
 
 With ``eavesdrop`` command you are able to simply watch the network traffic or log it to inspect later. You can
@@ -174,7 +174,7 @@ Eve, after some evil laughs (``- MuHahuahuahuAH...``, ``- Muhahauahuahau...``) h
 that has btw her favorite command that is able to deceive bridged/segmented networks when sniffing (Well, I love puns,
 I have to admit).
 
-All Eve needed to do was:
+All Eve did:
 
 ```
 eve@FarEastForTheTrees:~# macgonuts eavesdrop --lo-iface=eth1 \
@@ -234,7 +234,7 @@ Congrats again! Welcome to the paradise, now you are a macgonuts eavesdrop maste
 
 ### The isolate command
 
-With isolate command it is possible to make a specific host an island. Any contact done from anyone in the
+>With the isolate command it is possible to make a specific host an island. Any contact done from anyone in the
 local network will be "cut off" by isolating this target node.
 
 If you ask the quick help from isolate you will get the following:
@@ -295,7 +295,7 @@ Congrats! Now you are a macgonuts troll master by knowing every single thing abo
 
 ### The mayhem command
 
-If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
+>If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
 With mayhem you are able to make ARP/Neighbor tables a total mess. As a result the host will be unable
 to communicate each other or at least unable to communicate each other without unstability.
 
@@ -349,7 +349,7 @@ since we have 255 threads sending in parallel the fake ARP replys, because
 this network has only 255 possible nodes, well 253 technically (0 is network address and
 255 the broadcast).
 
-Mallory also could defined a timeout when sending out those fake MAC resolution packets by using
+Mallory also could be defined a timeout when sending out those fake MAC resolution packets by using
 ``timeout`` option:
 
 ```

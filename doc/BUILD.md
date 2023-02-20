@@ -2,8 +2,8 @@
 
 **Abstract**: ``Macgonuts`` main build is based on another tool of mine called [Hefesto](https://github.com/rafael-santiago/hefesto).
 If you want to contribute to ``macgnonuts`` you need to know details about it. If you are only seeking to get a
-freshly ``macgonuts`` binary to get your stuff done, you can give ``the low-cost build`` a try that uses simply
-``Makefiles``. Get your build instructions destiny below.
+freshly ``macgonuts`` binary to get your stuff done, you can give ``the low-cost build`` a try. It uses simply
+``Makefiles``. So, get your build instructions destiny below.
 
 ## Topics
 
@@ -29,7 +29,7 @@ you@somewhere-over-the-rainbow:~# _
 
 ``Macgonuts`` is a tool that has some points of ``suckless`` as its philosophy, so it tries to do
 more possible without making you bloat your system with tons of ``3rd party`` stuff that certainly has
-untracked bugs by us. If it is impossible to have a system without bugs better to stick with your
+untracked bugs by us. If it is impossible to have a system without bugs, it is better to stick with your
 own bugs and getting (less possible) in touch with bugs from other people. Thus, all you need to
 build ``Macgonuts`` is:
 
@@ -37,7 +37,7 @@ build ``Macgonuts`` is:
 - ``libc`` (Harrrrrrd of having it on unixes, huh?).
 - ``Pthread`` libraries well installed in your system.
 - ``Hefesto`` (my build system of choice for this tool and if you want to contribute to ``Macgonuts`` you should install it).
-- ``Make`` tool (if you are intending to run low-cost build only to get your macgonuts binaries to do your own stuff).
+- ``Make`` tool (if you are intending to run low-cost build only to get your ``macgonuts`` binaries to do your own stuff).
 
 Any other dependency we ship it as sub-modules and build it during build but ``DO NOT`` polute your system
 with nothing. It is used into ``src/libs`` folder of your copy. If you delete your copy, all will gone
@@ -63,7 +63,7 @@ You can also run the script ``get-hefesto.sh`` into ``src`` folder of ``Macgonut
 ## The low-cost build
 
 Well, ``low-cost build`` is only to produce libraries and the command line tool. Due to it if you are adding new
-features to macgonuts to open a pull request, better to run the developer's build based on Hefesto because it
+features to macgonuts to open a pull request, better to run the developer's build based on ``Hefesto`` because it
 will run tests, search for memory leak and stuff. ``Low-cost build does not run any test nor do any profile``.
 
 Having ``GNU make`` tool well installed in your system, move to ``src`` toplevel subdirectory and:
@@ -93,8 +93,8 @@ you@somewhere-over-the-rainbow:~/macgonuts/src# make uninstall
 ## The developer's build
 
 ``Macgonuts`` is built with the idea that any source code hosted into ``src`` toplevel subdirectory is
-used for codes gathered into more specilized subdirectories of ``src`` toplevel. Until now the only more specialized
-subdirectory is ``src/cmd``. This ``cmd`` subdirectory stands for the ``macgonut's`` command line tool.
+used by codes gathered into more specilized subdirectories of ``src`` toplevel. Until now the only more specialized
+subdirectory is ``src/cmd``. This ``cmd`` subdirectory stands for the ``macgonuts'`` command line tool.
 
 Codes directly hosted into ``src`` compound the static libraries ``libmacgonuts.a`` and ``libmacgonutssock.a``.
 The ``libmacgonutssock.a`` is a special case where all codes related to socket (into native implementations
@@ -102,7 +102,7 @@ The ``libmacgonutssock.a`` is a special case where all codes related to socket (
 is done in order to make easy to test some communication parts).
 
 Any specific code for some platform is hosted into a subdirectory with the name of the platform, so,
-``src/linux/...`` gathers any specific implementation of stuff for Linux, for example.
+``src/linux/...`` gathers any specific implementation of stuff for ``Linux``, for example.
 
 Since ``macgonuts`` is a ``unix tool`` any code into ``src/unix`` is about ``POSIX`` compliant codes.
 
@@ -116,14 +116,14 @@ If you want to add new stuff to ``macgonuts`` static library, this new code must
 
 However, professional programmers test what they did before shipping, right? So, any "subpart" has its own
 ``test`` subdirectory that is where you need to write your tests. The tests are separated by translation units
-of the part being tested. Being it named in the following scheme: ``<translation_unit_name>_tests.h`` and 
+of the part being tested. Being it named in the following scheme: ``<translation_unit_name>_tests.h`` and
 ``<translation_unit_name>_tests.c``. So, if you created a new header and translation unit (``new_proto_conv.h`` and
 ``new_proto_conv.c``) their tests must map to ``test/new_proto_conv_tests.h`` and ``test/new_proto_conv_tests.c``.
 If you just added a new function to some previous existent module, you only need to update the test files
 by adding the test prototype and the test definition of the new stuff you added. Tests are called into every
 ``main.c``. It is present in each ``test`` subdirectory that you find. Try to keep a logical order of running.
 By running the less dependent (basic stuff) before the more dependent, it will isolate the problem ``asap`` by
-giving us the clue where is the exact introduced bug.
+giving us the clue where the introduced bug is exactly.
 
 For tests I have been using another library of mine called [cutest](https://github.com/rafael-santiago/cutest).
 
@@ -139,7 +139,7 @@ you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto
 
 Libraries will be built into ``../lib`` and binaries into ``../bin``. Tests will ran automatically, if you have been
 doing a good job you will not fear them and, I am pretty sure that you will like to see them running every single time
-remembering you that your code is actually working and that ``TDD`` matters.
+remembering you that your code is actually working and that ``TDD`` matters. :raised_hands:
 
 [``Back``](#topics)
 
@@ -151,7 +151,7 @@ Having ``Hefesto`` well installed all you need is move to ``src`` toplevel subdi
 you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --install
 ```
 
-Unstalling is similar:
+Uninstalling is similar:
 
 ```
 you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --uninstall

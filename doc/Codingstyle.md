@@ -37,12 +37,12 @@ as 8 spaces, maybe due to a different base, the Truth...).
 
 ## Header files
 
-1. Headers files have to start with a copyright disclaimer (that you can get from ``macgonuts_types.h``, for example).
+1. Header files have to start with a copyright disclaimer (that you can get from ``macgonuts_types.h``, for example).
 
 2. Avoid ``#pragma once``, please. Use standard include guards. We do not want to force users to update
 their toolchain just for building our stuff, this is tech facism... Really! Good software projects must
 be ready to compile anywhere it should. Try to use the less possible because less is quicker and less
-headache prone. New features are awesome but it is a cutting point in practice. For example [``Boojum``](https://github.com/rafael-santiago/boojum)
+headache prone. New features are awesome but they are a cutting point in practice. For example [``Boojum``](https://github.com/rafael-santiago/boojum)
 is ready to use ``C11 threading``, it is compiling in many environments but it is not linking! Due to ``libc``
 inconsistences. Some OSes are using newest compiler versions but their library are still old. I am writing it in ``2023``!
 
@@ -58,7 +58,7 @@ inconsistences. Some OSes are using newest compiler versions but their library a
 
 3. Even being ``static`` those functions must be prototyped at the beginning of the implementation file.
 
-4. Give preference for listing the public one first in the implementation file. So the public ones goe at the top of
+4. Give preference for listing the public one first in the implementation file. So the public ones go at the top of
    the implementation file the static ones after the last public one implementation.
 
 [``Back``](#topics)
@@ -110,7 +110,7 @@ This is the adopted style:
 ```c
     do {
         reformat_this();
-    } while (!yours_not_equals);
+    } while (!yours_equals);
 ```
 
 [``Back``](#topics)
@@ -132,7 +132,7 @@ int do_something(const int i_know_but_better_to_const, const char *buf, const si
 
 Since ``C language`` does not feature a deferring or ``try..finally`` statements, here we use
 ``goto`` for accomplishing clean up necessities. With it you can conclude that here gotos only
-jump forward and to the end of the function. Try to never use explicit gotos to jump backward.
+jump forward and to the end of the function. Try to never use explicit gotos to jump backward, please.
 
 ```c
 int do_messy_prologue(void) {
@@ -151,20 +151,20 @@ do_messy_prologue_epilogue:
 
 ## Comments and documentation
 
-Try not be a blasé programmer. Stop thinking you are a poet or a genius while coding or a zen haiku coder.
+Try not to be a blasé programmer. Stop thinking you are a poet or a genius while coding or a zen haiku coder.
 It does not exist. Sometimes you need to comment your stuff for other ones or even for you in the future.
 Try to deliver pieces of engineering that would exist even many centuries after you gone, instead of
 lousy book samples snippets that falls apart on a minimal poke.
 
 Your code must stand up even without having you around. Less people needing you around to build your
-stuff, more (good) engineering you are doing, more time you have to do different stuff instead of nursing
+stuff, more (good) engineering you are doing, more time you have to do different things instead of nursing
 some sloppy source codes. You have a brain and a life do not waste them. Really!
 
 When it is necessary to add a comment, try to use the following meaningful comment markers:
 
 - ``INFO(Your name or nickname):`` You should use it for general information.
 - ``WARN(Your name or nickname):`` You should use it for warning up something.
-- ``FIXME(Your name or nickname):`` You have found a bug but do not know how to fix it, but your are still pointing it.
+- ``FIXME(Your name or nickname):`` You have found a bug but do not know how to fix it, but you are still pointing it.
 - ``BUG(Your name or nickname):`` This is really a bad bug. Help!
 - ``TODO(Your name or nickname):`` A todo marker.
 
@@ -180,7 +180,7 @@ It is up to you to pick:
 
 However, consider ``MISRA-C`` points about ``// ... `` style one.
 
-All new features must be documented by including its advantages and drawbacks. Always be fair with the users.
+All new features must be documented by including its advantages and drawbacks. Always be fair with users.
 
 [``Back``](#topics)
 
@@ -193,7 +193,7 @@ A new feature is considered done when:
 3. It ships what it promises in a simple (but not simpler) way. In other words, you have used Occam's razor principle on it.
 4. It is being well tested.
 5. It must not be tied up with some compiler or toolchain to work on. The opposite would be an example of lousy engineering,
-   here. More concepts less dependencies.
+   here. More concepts, less dependencies is what we love.
 6. The ``CI`` must be passing.
 7. It is well documented.
 8. The commit that adds this new feature to the upstream is descriptive.
