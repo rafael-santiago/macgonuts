@@ -32,6 +32,7 @@
 #include "macgonuts_filter_fmt_tests.h"
 #include "macgonuts_memglob_tests.h"
 #include "macgonuts_etc_hoax_tests.h"
+#include "macgonuts_iplist_tests.h"
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
     // INFO(Rafael): Since all working modules can call some status info module convenience
@@ -108,6 +109,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_format_filter_tests);
     CUTE_RUN_TEST(macgonuts_get_filter_glob_ctx_tests);
     CUTE_RUN_TEST(macgonuts_etc_hoax_tests);
+    CUTE_RUN_TEST(macgonuts_iplist_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(macgonuts_static_lib_tests);
