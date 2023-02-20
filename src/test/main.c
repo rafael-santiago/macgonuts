@@ -84,6 +84,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_dns_u8str_tests);
     CUTE_RUN_TEST(macgonuts_get_qname_size_from_dname_tests);
     CUTE_RUN_TEST(macgonuts_make_label_from_domain_name_tests);
+    CUTE_RUN_TEST(macgonuts_is_dnsreq_tests);
     CUTE_RUN_TEST(macgonuts_read_dns_pkt_tests);
     CUTE_RUN_TEST(macgonuts_make_dns_pkt_tests);
     CUTE_RUN_TEST(macgonuts_add_dns_answer_tests);

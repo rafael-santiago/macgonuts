@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_dnsconv.h>
+#include <macgonuts_ethfrm.h>
 
 static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off,
                                    const int is_domain_name);
@@ -136,6 +137,55 @@ uint8_t *macgonuts_make_label_from_domain_name(const uint8_t *domain_name,
     }
 
     return label;
+}
+
+int macgonuts_is_dnsreq(const unsigned char *ethfrm, const size_t ethfrm_size) {
+    const unsigned char *ep = NULL;
+    const unsigned char *ep_end = NULL;
+    uint16_t u16;
+
+    if (ethfrm == NULL || ethfrm_size == 0) {
+        return 0;
+    }
+
+    ep = ethfrm;
+    ep_end = ep + ethfrm_size;
+
+    if ((ep + 14) >= ep_end) {
+        return 0;
+    }
+
+    ep += 12;
+    u16 = (uint16_t)ep[0] << 8 | (uint16_t)ep[1];
+    ep += 2;
+
+    switch (u16) {
+        case MACGONUTS_ETHER_TYPE_IP4:
+            ep += 9;
+            break;
+
+        case MACGONUTS_ETHER_TYPE_IP6:
+            ep += 6;
+            break;
+
+        default:
+            return 0;
+    }
+
+    if (ep >= ep_end || *ep != 0x11) {
+        // INFO(Rafael): Only considering DNS packets wrapped into UDP.
+        return 0;
+    }
+
+    ep = (ethfrm + 14) + ((u16 == MACGONUTS_ETHER_TYPE_IP4) ? (4 * ((ep[-9]) & 0x0F)) : 40);
+
+    if ((ep + 8) >= ep_end) {
+        return 0;
+    }
+
+    u16 = (uint16_t)ep[2] << 8 | (uint16_t)ep[3];
+
+    return (u16 == 53);
 }
 
 static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off,

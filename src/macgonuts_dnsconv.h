@@ -19,4 +19,6 @@ uint8_t *macgonuts_make_label_from_domain_name(const uint8_t *domain_name,
                                                const size_t domain_name_size,
                                                size_t *label_size);
 
+int macgonuts_is_dnsreq(const unsigned char *ethfrm, const size_t ethfrm_size);
+
 #endif // MACGONUTS_DNSCONV_H
