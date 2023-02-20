@@ -219,5 +219,9 @@ like ``master/slave`` are out too. You could use ``main``, ``secondary``, ``next
 
 Do not use sexist and/or machist terms, too.
 
-Again, if you have found some term(s) that for you is not much suitable, let we [know](https://github.com/rafael-santiago/macgonuts/issues)
+Again, if you have found some term(s) that for you is not much suitable, let me [know](https://github.com/rafael-santiago/macgonuts/issues)
 by suggesting some edition(s), thank you in advance!
+
+*-- Rafael*
+
+[``Back``](#topics)
