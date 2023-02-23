@@ -85,7 +85,4 @@ int macgonuts_add_dns_answer(struct macgonuts_dnshdr_ctx *dnshdr, const uint8_t 
 
 void macgonuts_release_dnshdr(struct macgonuts_dnshdr_ctx *dnshdr);
 
-void macgonuts_release_dns_rr_hdr(struct macgonuts_dns_rr_hdr_ctx *dnsrr);
-
-
 #endif // MACGONUTS_DNSHDR_H
