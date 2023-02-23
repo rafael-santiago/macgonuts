@@ -114,7 +114,6 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
 
     memcpy(&ip4p.src_addr[0], &ip4.src_addr, sizeof(ip4p.src_addr));
     memcpy(&ip4p.dest_addr[0], &ip4.dest_addr, sizeof(ip4p.dest_addr));
-    ip4p.zprotolen[0] = 0x00;
     ip4p.zprotolen[1] = 0x11;
     ip4p.zprotolen[2] = (udp.len >> 8) & 0xFF;
     ip4p.zprotolen[3] = udp.len & 0xFF;
@@ -180,15 +179,6 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     err = do_dnsspoof_layer4to7(&udp, &dns, etc_hoax, dns_answer_ttl, ip6.payload, ip6.payload_length);
 
     if (err != EXIT_SUCCESS) {
-        goto do_dnsspoof6_epilogue;
-    }
-
-    assert(udp.payload != NULL);
-
-    free(udp.payload);
-    udp.payload = macgonuts_make_dns_pkt(&dns, &udp.payload_size);
-    if (udp.payload == NULL) {
-        err = ENOMEM;
         goto do_dnsspoof6_epilogue;
     }
 
