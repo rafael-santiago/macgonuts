@@ -14,7 +14,7 @@
 
 int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_layers_ctx *spf_layers,
                        macgonuts_iplist_handle *iplist_handle,
-                       macgonuts_etc_hoax_handle *etc_hoax,
+                       macgonuts_etc_hoax_handle *etc_hoax_handle,
                        const uint32_t dns_answer_ttl,
                        const unsigned char *ethfrm, const size_t ethfrm_size);
 

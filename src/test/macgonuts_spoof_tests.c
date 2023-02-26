@@ -52,9 +52,9 @@ CUTE_TEST_CASE(macgonuts_spoof_tests)
     spf_layers.proto_addr_version = 4;
     spf_layers.proto_addr_size = 4;
     memcpy(&spf_layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spf_layers.lo_hw_addr));
-    memcpy(&spf_layers.lo_proto_addr[0], "\x7F\x00\x00\x01", sizeof(spf_layers.lo_proto_addr));
-    memcpy(&spf_layers.tg_proto_addr[0], "\x7F\x00\x00\x02", sizeof(spf_layers.tg_proto_addr));
-    memcpy(&spf_layers.spoof_proto_addr[0], "\x7F\x00\x00\x03", sizeof(spf_layers.spoof_proto_addr));
+    memcpy(&spf_layers.lo_proto_addr[0], "\x7F\x00\x00\x01", 4);
+    memcpy(&spf_layers.tg_proto_addr[0], "\x7F\x00\x00\x02", 4);
+    memcpy(&spf_layers.spoof_proto_addr[0], "\x7F\x00\x00\x03", 4);
     memcpy(&spf_layers.tg_hw_addr[0], "\x00\x01\x02\x03\x04\x05", sizeof(spf_layers.tg_hw_addr));
     memcpy(&spf_layers.spoof_hw_addr[0], "\xAA\x01\xBB\x04\xCC\x05", sizeof(spf_layers.spoof_hw_addr));
     CUTE_ASSERT(macgonuts_spoof(rsk, &spf_layers) == EXIT_SUCCESS);

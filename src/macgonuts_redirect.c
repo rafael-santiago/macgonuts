@@ -44,6 +44,14 @@ int macgonuts_should_redirect(const unsigned char *ethfrm, const size_t ethfrm_s
             return 0; // INFO(Rafael): It should never happen in normal conditions.
     }
 
+    if (spf_layers->spoofing_gateway) {
+        // INFO(Rafael): Since we are spoofing a gateway pkt_proto_addr can be different from spoof_proto_addr.
+        //               In this situation, we only skip redirection when pkt_proto_addr is equals to lo_proto_addr.
+        return (pkt_proto_addr_size == spf_layers->proto_addr_size
+                && memcmp(pkt_proto_addr,
+                          &spf_layers->lo_proto_addr[0], pkt_proto_addr_size) != 0);
+    }
+
     // INFO(Rafael): Does the destination network address is the same of the spoofed host?
     return (pkt_proto_addr_size == spf_layers->proto_addr_size
             && memcmp(pkt_proto_addr,

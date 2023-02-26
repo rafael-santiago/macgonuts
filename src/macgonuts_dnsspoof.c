@@ -34,7 +34,7 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
 
 int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_layers_ctx *spf_layers,
                        macgonuts_iplist_handle *iplist_handle,
-                       macgonuts_etc_hoax_handle *etc_hoax,
+                       macgonuts_etc_hoax_handle *etc_hoax_handle,
                        const uint32_t dns_answer_ttl,
                        const unsigned char *ethfrm, const size_t ethfrm_size) {
     int (*do_dnsspoof)(macgonuts_socket_t, macgonuts_etc_hoax_handle *, const uint32_t,
@@ -64,7 +64,7 @@ int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_laye
 
         case MACGONUTS_ETHER_TYPE_IP6:
             do_dnsspoof = do_dnsspoof6;
-            in_addr = (uint8_t *)&ethfrm[23];
+            in_addr = (uint8_t *)&ethfrm[22];
             in_addr_size = 16;
             break;
 
@@ -79,7 +79,7 @@ int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_laye
         return macgonuts_redirect(rsk, spf_layers, ethfrm, ethfrm_size, NULL);
     }
 
-    err = do_dnsspoof(rsk, etc_hoax, dns_answer_ttl, ethfrm, ethfrm_size);
+    err = do_dnsspoof(rsk, etc_hoax_handle, dns_answer_ttl, ethfrm, ethfrm_size);
 
     if (err == EADDRNOTAVAIL) {
         err = macgonuts_redirect(rsk, spf_layers, ethfrm, ethfrm_size, NULL);
@@ -97,6 +97,8 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     struct macgonuts_udphdr_ctx udp = { 0 };
     struct macgonuts_dnshdr_ctx dns = { 0 };
     int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
+    unsigned char *spoofed_answer = NULL;
+    size_t spoofed_answer_size = 0;
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof4_epilogue;
@@ -136,7 +138,15 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         goto do_dnsspoof4_epilogue;
     }
 
-    err = macgonuts_sendpkt(rsk, eth.data, eth.data_size);
+    spoofed_answer = macgonuts_make_ethernet_frm(&eth, &spoofed_answer_size);
+    if (spoofed_answer == NULL) {
+        err = ENOMEM;
+        goto do_dnsspoof4_epilogue;
+    }
+
+    err = (macgonuts_sendpkt(rsk,
+                             spoofed_answer,
+                             spoofed_answer_size) == spoofed_answer_size) ? EXIT_SUCCESS : EXIT_FAILURE;
 
 do_dnsspoof4_epilogue:
 
@@ -156,6 +166,10 @@ do_dnsspoof4_epilogue:
         macgonuts_release_ethfrm(&eth);
     }
 
+    if (spoofed_answer != NULL) {
+        free(spoofed_answer);
+    }
+
     return err;
 }
 
@@ -168,6 +182,9 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     struct macgonuts_dnshdr_ctx dns = { 0 };
     size_t payload_size = 0;
     int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
+    unsigned char *spoofed_answer = NULL;
+    size_t spoofed_answer_size = 0;
+
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof6_epilogue;
     }
@@ -202,13 +219,21 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     assert(eth.data != NULL);
 
     free(eth.data);
-    eth.data = macgonuts_make_ethernet_frm(&eth, &eth.data_size);
+    eth.data = macgonuts_make_ip6_pkt(&ip6, &eth.data_size);
     if (eth.data == NULL) {
         err = ENOMEM;
         goto do_dnsspoof6_epilogue;
     }
 
-    err = macgonuts_sendpkt(rsk, eth.data, eth.data_size);
+    spoofed_answer = macgonuts_make_ethernet_frm(&eth, &spoofed_answer_size);
+    if (spoofed_answer == NULL) {
+        err = ENOMEM;
+        goto do_dnsspoof6_epilogue;
+    }
+
+    err = (macgonuts_sendpkt(rsk,
+                             spoofed_answer,
+                             spoofed_answer_size) == spoofed_answer_size) ? EXIT_SUCCESS : EXIT_FAILURE;
 
 do_dnsspoof6_epilogue:
 
@@ -226,6 +251,10 @@ do_dnsspoof6_epilogue:
 
     if (eth.data != NULL) {
         macgonuts_release_ethfrm(&eth);
+    }
+
+    if (spoofed_answer != NULL) {
+        free(spoofed_answer);
     }
 
     return err;

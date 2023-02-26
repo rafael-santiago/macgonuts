@@ -380,6 +380,11 @@ static const char *get_next_line(const char *data, const char *data_end) {
 static const char *get_next_hoax_entry(const char *data, const char *data_end, const char **entry_end) {
     const char *d = data;
 
+    if (*entry_end == NULL && *data != '#') {
+        d = data;
+        goto get_next_hoax_entry_epilogue;
+    }
+
     *entry_end = NULL;
 
     do {
@@ -394,6 +399,8 @@ static const char *get_next_hoax_entry(const char *data, const char *data_end, c
             return NULL;
         }
     } while (data != data_end && is_etc_hoax_comment_tok(*d));
+
+get_next_hoax_entry_epilogue:
 
     *entry_end = get_next_line(d, data_end);
 
