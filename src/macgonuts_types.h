@@ -29,6 +29,7 @@
 #include <sys/resource.h>
 #include <net/if.h>
 #include <ifaddrs.h>
+#include <netdb.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <signal.h>

@@ -156,3 +156,64 @@ void get_gateway_iface(char *iface) {
     memcpy(gw_iface, bp + 1, bp_end - bp - 2);
     memcpy(iface, gw_iface, strlen(gw_iface));
 }
+
+int get_maxaddr4_from_iface(uint8_t *addr, const char *iface) {
+    FILE *proc = NULL;
+    char cmd[1<<10] = "";
+    char buf[1<<10] = "";
+    size_t buf_size;
+    char *p = NULL;
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*broadcast | sed s/.*broadcast//", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        return EPIPE;
+    }
+    buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+    pclose(proc);
+    if (buf[0] != ' ') {
+        return EFAULT;
+    }
+    p = strstr(buf, "\n");
+    if (p == NULL) {
+        return EFAULT;
+    }
+    *p = 0;
+    return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], buf_size - 2);
+}
+
+int get_maxaddr6_from_iface(uint8_t *addr, const char *iface) {
+    FILE *proc = NULL;
+    char cmd[1<<10] = "";
+    char buf[1<<10] = "";
+    size_t buf_size;
+    char *p[2] = { NULL, NULL };
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep scopeid.*global | sed s/.*inet6// | "
+                                   "sed s/prefixlen.// | sed s/scopeid.*//", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        return EPIPE;
+    }
+    buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+    pclose(proc);
+    if (buf[0] != ' ') {
+        return EFAULT;
+    }
+    p[0] = strstr(&buf[1], " ");
+    p[1] = p[0];
+    while (*p[1] == ' ') {
+        p[1]++;
+    }
+    *p[0] = '/';
+    strcpy(p[0] + 1, p[1]);
+    p[0] = &buf[0];
+    while (*p[0] == ' ') {
+        p[0]++;
+    }
+    p[1] = strstr(p[0], " ");
+    if (p[1] == NULL) {
+        return EFAULT;
+    }
+    *p[1] = 0;
+
+    return macgonuts_get_last_net_addr(addr, p[0], strlen(p[0]));
+}
