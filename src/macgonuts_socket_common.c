@@ -17,9 +17,9 @@ static int get_addr4_from_iface(char *addr_buf, const size_t max_addr_buf_size, 
 
 static int get_addr6_from_iface(char *addr_buf, const size_t max_addr_buf_size, const char *iface);
 
-static int get_maxaddr4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw);
+static int get_netmask4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw);
 
-static int get_maxaddr6(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw);
+static int get_netmask6(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw);
 
 int macgonuts_get_addr_from_iface_unix(char *addr_buf, const size_t max_addr_buf_size,
                                        const int addr_version, const char *iface) {
@@ -91,6 +91,37 @@ int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size
     return EXIT_SUCCESS;
 }
 
+int macgonuts_get_netmask_from_iface(const char *iface_buf, const size_t iface_buf_size,
+                                     uint8_t *raw, const int ip_version) {
+    int (*get_netmask)(const char *, const size_t, uint8_t *) = NULL;
+
+    if (iface_buf == NULL
+        || iface_buf_size == 0
+        || raw == NULL
+        || (ip_version != 4 && ip_version != 6)) {
+        return EINVAL;
+    }
+
+    switch (ip_version) {
+        case 4:
+            get_netmask = get_netmask4;
+            break;
+
+        case 6:
+            get_netmask = get_netmask6;
+            break;
+
+        default:
+            // INFO(Rafael): It should never happen in normal conditions.
+            return EXIT_FAILURE;
+    }
+
+    assert(get_netmask != NULL);
+
+    return get_netmask(iface_buf, iface_buf_size, raw);
+}
+
+/*
 int macgonuts_get_maxaddr_from_iface(const char *iface_buf,
                                      const size_t iface_buf_size,
                                      uint8_t *raw, const int ip_version) {
@@ -121,105 +152,7 @@ int macgonuts_get_maxaddr_from_iface(const char *iface_buf,
 
     return get_maxaddr(iface_buf, iface_buf_size, raw);
 }
-
-static int get_maxaddr4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
-    struct ifreq ifr = { 0 };
-    int err = EFAULT;
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    uint8_t netmask[4] = { 0 };
-    if (sockfd == -1) {
-        err = errno;
-        goto get_maxaddr4_epilogue;
-    }
-
-    memcpy(ifr.ifr_name, iface_buf, iface_buf_size);
-    if (ioctl(sockfd, SIOCGIFNETMASK, &ifr) == -1) {
-        err = errno;
-        goto get_maxaddr4_epilogue;
-    }
-
-    memcpy(&netmask[0], &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr, 4);
-    netmask[0] = ~netmask[0];
-    netmask[1] = ~netmask[1];
-    netmask[2] = ~netmask[2];
-    netmask[3] = ~netmask[3];
-
-    if(ioctl(sockfd, SIOCGIFADDR, &ifr) == -1) {
-        err = errno;
-        goto get_maxaddr4_epilogue;
-    }
-
-    memcpy(&raw[0], &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr, 4);
-    raw[0] |= netmask[0];
-    raw[1] |= netmask[1];
-    raw[2] |= netmask[2];
-    raw[3] |= netmask[3];
-
-    err = EXIT_SUCCESS;
-
-get_maxaddr4_epilogue:
-
-    if (sockfd > -1) {
-        close(sockfd);
-    }
-
-    return err;
-}
-
-static int get_maxaddr6(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
-    struct ifaddrs *ifaddrs = NULL;
-    struct ifaddrs *ifp = NULL;
-    int err = EXIT_FAILURE;
-    uint8_t netmask[16] = { 0 };
-    uint8_t in_addr[16] = { 0 };
-    char cidr6[1<<10] = "";
-    ssize_t cidr6_size = 0;
-    size_t prefixlen = 0;
-    size_t n;
-
-    if (getifaddrs(&ifaddrs)) {
-        err = errno;
-        goto get_maxaddr6_epilogue;
-    }
-
-    err = ENOENT;
-    for (ifp = ifaddrs; ifp != NULL && err == ENOENT; ifp = ifp->ifa_next) {
-        if (ifp->ifa_addr->sa_family == AF_INET6
-            && strcmp(ifp->ifa_name, iface_buf) == 0) {
-            memcpy(&in_addr[0], &(((struct sockaddr_in6 *)(ifp->ifa_addr)))->sin6_addr.s6_addr, 16);
-            memcpy(&netmask[0], &(((struct sockaddr_in6 *)(ifp->ifa_netmask)))->sin6_addr.s6_addr, 16);
-            for (n = 0; n < 16; n++) {
-                prefixlen += ((netmask[n] >> 7) & 1) +
-                             ((netmask[n] >> 6) & 1) +
-                             ((netmask[n] >> 5) & 1) +
-                             ((netmask[n] >> 4) & 1) +
-                             ((netmask[n] >> 3) & 1) +
-                             ((netmask[n] >> 2) & 1) +
-                             ((netmask[n] >> 1) & 1) +
-                             (netmask[n] & 1);
-            }
-            cidr6_size = snprintf(cidr6, sizeof(cidr6),
-                                  "%.2X%.2X:%.2X%.2X:%.2X%.2X:%2X%.2X:%.2X%.2X:%.2X%.2X:%.2X%.2X:%.2X%.2X/%zu",
-                                  in_addr[ 0], in_addr[ 1], in_addr[ 2], in_addr[ 3],
-                                  in_addr[ 4], in_addr[ 5], in_addr[ 6], in_addr[ 7],
-                                  in_addr[ 8], in_addr[ 9], in_addr[10], in_addr[11],
-                                  in_addr[12], in_addr[13], in_addr[14], in_addr[15], prefixlen);
-            if (cidr6_size <= 0) {
-                err = EFAULT;
-                goto get_maxaddr6_epilogue;
-            }
-            err = macgonuts_get_last_net_addr(raw, cidr6, cidr6_size);
-        }
-    }
-
-get_maxaddr6_epilogue:
-
-    if (ifaddrs != NULL) {
-        freeifaddrs(ifaddrs);
-    }
-
-    return err;
-}
+*/
 
 int macgonuts_get_gateway_hw_addr(uint8_t *hw_addr, const size_t hw_addr_size) {
     uint8_t gw_addr[16] = { 0 };
@@ -320,3 +253,159 @@ get_addr6_from_iface_epilogue:
     return err;
 }
 
+/*
+static int get_maxaddr4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
+    struct ifreq ifr = { 0 };
+    int err = EFAULT;
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    uint8_t netmask[4] = { 0 };
+    if (sockfd == -1) {
+        err = errno;
+        goto get_maxaddr4_epilogue;
+    }
+
+    memcpy(ifr.ifr_name, iface_buf, iface_buf_size);
+    if (ioctl(sockfd, SIOCGIFNETMASK, &ifr) == -1) {
+        err = errno;
+        goto get_maxaddr4_epilogue;
+    }
+
+    memcpy(&netmask[0], &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr, 4);
+    netmask[0] = ~netmask[0];
+    netmask[1] = ~netmask[1];
+    netmask[2] = ~netmask[2];
+    netmask[3] = ~netmask[3];
+
+    if(ioctl(sockfd, SIOCGIFADDR, &ifr) == -1) {
+        err = errno;
+        goto get_maxaddr4_epilogue;
+    }
+
+    memcpy(&raw[0], &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr, 4);
+    raw[0] |= netmask[0];
+    raw[1] |= netmask[1];
+    raw[2] |= netmask[2];
+    raw[3] |= netmask[3];
+
+    err = EXIT_SUCCESS;
+
+get_maxaddr4_epilogue:
+
+    if (sockfd > -1) {
+        close(sockfd);
+    }
+
+    return err;
+}
+
+static int get_maxaddr6(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
+    struct ifaddrs *ifaddrs = NULL;
+    struct ifaddrs *ifp = NULL;
+    int err = EXIT_FAILURE;
+    uint8_t netmask[16] = { 0 };
+    uint8_t in_addr[16] = { 0 };
+    char cidr6[1<<10] = "";
+    ssize_t cidr6_size = 0;
+    size_t prefixlen = 0;
+    size_t n;
+
+    if (getifaddrs(&ifaddrs)) {
+        err = errno;
+        goto get_maxaddr6_epilogue;
+    }
+
+    err = ENOENT;
+    for (ifp = ifaddrs; ifp != NULL && err == ENOENT; ifp = ifp->ifa_next) {
+        if (ifp->ifa_addr->sa_family == AF_INET6
+            && strcmp(ifp->ifa_name, iface_buf) == 0) {
+            memcpy(&in_addr[0], &(((struct sockaddr_in6 *)(ifp->ifa_addr)))->sin6_addr.s6_addr, 16);
+            memcpy(&netmask[0], &(((struct sockaddr_in6 *)(ifp->ifa_netmask)))->sin6_addr.s6_addr, 16);
+            for (n = 0; n < 16; n++) {
+                prefixlen += ((netmask[n] >> 7) & 1) +
+                             ((netmask[n] >> 6) & 1) +
+                             ((netmask[n] >> 5) & 1) +
+                             ((netmask[n] >> 4) & 1) +
+                             ((netmask[n] >> 3) & 1) +
+                             ((netmask[n] >> 2) & 1) +
+                             ((netmask[n] >> 1) & 1) +
+                             (netmask[n] & 1);
+            }
+            cidr6_size = snprintf(cidr6, sizeof(cidr6),
+                                  "%.2X%.2X:%.2X%.2X:%.2X%.2X:%2X%.2X:%.2X%.2X:%.2X%.2X:%.2X%.2X:%.2X%.2X/%zu",
+                                  in_addr[ 0], in_addr[ 1], in_addr[ 2], in_addr[ 3],
+                                  in_addr[ 4], in_addr[ 5], in_addr[ 6], in_addr[ 7],
+                                  in_addr[ 8], in_addr[ 9], in_addr[10], in_addr[11],
+                                  in_addr[12], in_addr[13], in_addr[14], in_addr[15], prefixlen);
+            if (cidr6_size <= 0) {
+                err = EFAULT;
+                goto get_maxaddr6_epilogue;
+            }
+            err = macgonuts_get_last_net_addr(raw, cidr6, cidr6_size);
+        }
+    }
+
+get_maxaddr6_epilogue:
+
+    if (ifaddrs != NULL) {
+        freeifaddrs(ifaddrs);
+    }
+
+    return err;
+}
+*/
+
+static int get_netmask4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
+    struct ifreq ifr = { 0 };
+    int err = EFAULT;
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd == -1) {
+        err = errno;
+        goto get_netmask4_epilogue;
+    }
+
+    memcpy(ifr.ifr_name, iface_buf, iface_buf_size);
+    if (ioctl(sockfd, SIOCGIFNETMASK, &ifr) == -1) {
+        err = errno;
+        goto get_netmask4_epilogue;
+    }
+
+    memcpy(&raw[0], &((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr, 4);
+
+    err = EXIT_SUCCESS;
+
+get_netmask4_epilogue:
+
+    if (sockfd > -1) {
+        close(sockfd);
+    }
+
+    return err;
+}
+
+static int get_netmask6(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
+    struct ifaddrs *ifaddrs = NULL;
+    struct ifaddrs *ifp = NULL;
+    int err = EXIT_FAILURE;
+
+    if (getifaddrs(&ifaddrs)) {
+        err = errno;
+        goto get_netmask6_epilogue;
+    }
+
+    err = ENOENT;
+    for (ifp = ifaddrs; ifp != NULL && err == ENOENT; ifp = ifp->ifa_next) {
+        if (ifp->ifa_addr->sa_family == AF_INET6
+            && strcmp(ifp->ifa_name, iface_buf) == 0) {
+            memcpy(&raw[0], &(((struct sockaddr_in6 *)(ifp->ifa_netmask)))->sin6_addr.s6_addr, 16);
+            err = EXIT_SUCCESS;
+        }
+    }
+
+get_netmask6_epilogue:
+
+    if (ifaddrs != NULL) {
+        freeifaddrs(ifaddrs);
+    }
+
+    return err;
+}

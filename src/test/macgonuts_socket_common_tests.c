@@ -46,6 +46,7 @@ CUTE_TEST_CASE(macgonuts_get_gateway_hw_addr_tests)
     CUTE_ASSERT(macgonuts_get_gateway_hw_addr(&hw_addr[0], 0) == EINVAL);
 CUTE_TEST_CASE_END
 
+/*
 CUTE_TEST_CASE(macgonuts_get_maxaddr_from_iface_tests)
     uint8_t netmask[16] = { 0 };
     uint8_t expected[16] = { 0 };
@@ -64,4 +65,29 @@ CUTE_TEST_CASE(macgonuts_get_maxaddr_from_iface_tests)
     snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 del dead:beef:0:cafe:fed1::d0/64", iface);
     CUTE_ASSERT(system(cmd) == 0);
     CUTE_ASSERT(memcmp(&netmask[0], &expected[0], 16) == 0);
+CUTE_TEST_CASE_END
+*/
+
+CUTE_TEST_CASE(macgonuts_get_netmask_from_iface_tests)
+    uint8_t netmask[16] = { 0 };
+    uint8_t expected[16] = { 0 };
+    char cmd[1<<10] = "";
+    const char *iface = get_default_iface_name();
+    const size_t iface_size = strlen(iface);
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 del dead:beef:0:cafe:fed1::d0/64 >/dev/null 2>&1", iface);
+    system(cmd);
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 add dead:beef:0:cafe:fed1::d0/64", iface);
+    CUTE_ASSERT(system(cmd) == 0);
+    CUTE_ASSERT(macgonuts_get_netmask_from_iface(NULL, iface_size, netmask, 4) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_netmask_from_iface(iface, 0, netmask, 4) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_netmask_from_iface(iface, iface_size, NULL, 4) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_netmask_from_iface(iface, iface_size, netmask, 7) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_netmask_from_iface(iface, iface_size, netmask, 4) == EXIT_SUCCESS);
+    CUTE_ASSERT(get_netmask4_from_iface(expected, iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(memcmp(&netmask[0], &expected[0], 4) == 0);
+    CUTE_ASSERT(get_netmask6_from_iface(expected, iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_netmask_from_iface(iface, iface_size, netmask, 6) == EXIT_SUCCESS);
+    CUTE_ASSERT(memcmp(&netmask[0], &expected[0], 16) == 0);
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 del dead:beef:0:cafe:fed1::d0/64", iface);
+    CUTE_ASSERT(system(cmd) == 0);
 CUTE_TEST_CASE_END

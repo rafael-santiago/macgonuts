@@ -157,6 +157,7 @@ void get_gateway_iface(char *iface) {
     memcpy(iface, gw_iface, strlen(gw_iface));
 }
 
+/*
 int get_maxaddr4_from_iface(uint8_t *addr, const char *iface) {
     FILE *proc = NULL;
     char cmd[1<<10] = "";
@@ -179,6 +180,72 @@ int get_maxaddr4_from_iface(uint8_t *addr, const char *iface) {
     }
     *p = 0;
     return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], buf_size - 2);
+}
+*/
+
+int get_netmask4_from_iface(uint8_t *addr, const char *iface) {
+    FILE *proc = NULL;
+    char cmd[1<<10] = "";
+    char buf[1<<10] = "";
+    size_t buf_size;
+    char *p = NULL;
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*netmask | sed s/.*netmask// | sed s/broadcast.*//", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        return EPIPE;
+    }
+    buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+    pclose(proc);
+    if (buf[0] != ' ') {
+        return EFAULT;
+    }
+    p = strstr(&buf[1], " ");
+    if (p == NULL) {
+        return EFAULT;
+    }
+    *p = 0;
+    return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], strlen(&buf[1]));
+}
+
+static void shiftl128b(uint32_t *value, const size_t n) {
+    unsigned char b = 0;
+    size_t c;
+    for (c = 0; c < n; c++) {
+        b = (value[1] >> 31) & 1;
+        value[0] = (value[0] << 1) | (uint32_t)b;
+        b = (value[2] >> 31) & 1;
+        value[1] = (value[1] << 1) | (uint32_t)b;
+        b = (value[3] >> 31) & 1;
+        value[2] = (value[2] << 1) | (uint32_t)b;
+        value[3] = (value[3] << 1);
+    }
+}
+
+int get_netmask6_from_iface(uint8_t *addr, const char *iface) {
+    FILE *proc = NULL;
+    char cmd[1<<10] = "";
+    char buf[1<<10] = "";
+    size_t buf_size;
+    char *p = NULL;
+    uint32_t mask[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*prefixlen.*scopeid.*global | sed s/.*prefixlen// | sed s/scopeid.*//", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        return EPIPE;
+    }
+    buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+    pclose(proc);
+    if (buf[0] != ' ') {
+        return EFAULT;
+    }
+    p = strstr(&buf[1], " ");
+    if (p == NULL) {
+        return EFAULT;
+    }
+    *p = 0;
+    shiftl128b(mask, atoi(&buf[1]));
+    memcpy(addr, &mask[0], sizeof(mask));
+    return EXIT_SUCCESS;
 }
 
 int get_maxaddr6_from_iface(uint8_t *addr, const char *iface) {

@@ -20,8 +20,14 @@ void get_gateway_addr(uint8_t *addr);
 
 void get_gateway_iface(char *iface);
 
+/*
 int get_maxaddr4_from_iface(uint8_t *addr, const char *iface);
 
 int get_maxaddr6_from_iface(uint8_t *addr, const char *iface);
+*/
+
+int get_netmask4_from_iface(uint8_t *addr, const char *iface);
+
+int get_netmask6_from_iface(uint8_t *addr, const char *iface);
 
 #endif // MACGONUTS_TEST_MACGONUTS_TEST_UTILS_H
