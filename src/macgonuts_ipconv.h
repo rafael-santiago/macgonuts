@@ -28,5 +28,8 @@ int macgonuts_raw_ip2literal(char *out, const size_t max_out, const uint8_t *raw
 
 void macgonuts_inc_raw_ip(uint8_t *raw, const size_t raw_size);
 
+int macgonuts_addrs_from_same_network(const uint8_t *addr_a, const uint8_t *addr_b,
+                                      const uint8_t *netmask, const int ip_version);
+
 #endif // MACGONUTS_IPCONV_H
 

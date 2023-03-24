@@ -216,6 +216,39 @@ void macgonuts_inc_raw_ip(uint8_t *raw, const size_t raw_size) {
     }
 }
 
+int macgonuts_addrs_from_same_network(const uint8_t *addr_a, const uint8_t *addr_b,
+                                      const uint8_t *netmask, const int ip_version) {
+    size_t addr_size;
+    uint8_t mask[2][16] = { 0 };
+    const uint8_t *ap = NULL;
+    const uint8_t *ap_end = NULL;
+    const uint8_t *np = NULL;
+    uint8_t *mp = NULL;
+    const uint8_t *addrs[2] = { addr_a, addr_b };
+    size_t a;
+
+    if (addr_a == NULL || addr_b == NULL || netmask == NULL || (ip_version != 4 && ip_version != 6)) {
+        return 0;
+    }
+
+    addr_size = (ip_version == 4) ? 4 : 16;
+
+    for (a = 0; a < 2; a++) {
+        ap = addrs[a];
+        ap_end = ap + addr_size;
+        np = &netmask[0];
+        mp = &mask[a][0];
+        while (ap != ap_end) {
+            *mp = *ap & *np;
+            ap++;
+            np++;
+            mp++;
+        }
+    }
+
+    return (memcmp(&mask[0], &mask[1], addr_size) == 0);
+}
+
 static int chk_ipv4_addr(const char *ip, const size_t ip_size) {
     const char *p = ip, *lp = p;
     const char *p_end = p + ip_size;

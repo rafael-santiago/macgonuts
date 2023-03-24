@@ -28,5 +28,7 @@ CUTE_DECLARE_TEST_CASE(macgonuts_get_cidr_version_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_last_net_addr_tests);
 
-#endif // MACGONUTS_TEST_MACGONUTS_IPCONV_TESTS_H
+CUTE_DECLARE_TEST_CASE(macgonuts_addrs_from_same_network_tests);
+
+#endif // MACGONUTS_TEST_MACGONUTS_IPCONV_TESTS]_H
 
