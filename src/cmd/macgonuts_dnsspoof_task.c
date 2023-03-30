@@ -8,13 +8,20 @@
 #include <cmd/macgonuts_dnsspoof_task.h>
 #include <cmd/macgonuts_option.h>
 #include <cmd/macgonuts_misc_utils.h>
+#include <cmd/hooks/macgonuts_dnsspoof_init_hook.h>
+#include <cmd/hooks/macgonuts_dnsspoof_deinit_hook.h>
+#include <cmd/hooks/macgonuts_dnsspoof_done_hook.h>
+#include <cmd/hooks/macgonuts_dnsspoof_redirect_hook.h>
 #include <macgonuts_ipconv.h>
 #include <macgonuts_socket_common.h>
 #include <macgonuts_socket.h>
+#include <macgonuts_thread.h>
 #include <macgonuts_iplist.h>
 #include <macgonuts_etc_hoax.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_status_info.h>
+
+#define DEFAULT_ETC_HOAX_PATH "/usr/local/share/macgonuts/etc/hoax"
 
 struct dnsspoof_task_ctx {
     macgonuts_etc_hoax_handle *etc_hoax_handle;
@@ -24,7 +31,6 @@ struct dnsspoof_task_ctx {
     char spoof_address[256];
     struct macgonuts_spoofing_guidance_ctx spfgd;
 };
-
 
 static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                                                                const char *iface,
@@ -36,14 +42,12 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                                                                const size_t dns_addrs_nr,
                                                                const size_t hoax_ttl);
 
-void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr);
+static void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr);
 
-#define DEFAULT_ETC_HOAX_PATH "/usr/local/share/macgonuts/etc/hoax"
+static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr);
 
 int macgonuts_dnsspoof_task(void) {
     struct dnsspoof_task_ctx **dnsspoof_tasks = NULL;
-    //struct dnsspoof_task_ctx *task = NULL;
-    //struct dnsspoof_task_ctx *task_end = NULL;
     size_t tasks_nr = 0;
     const char *lo_iface = NULL;
     const char *etc_hoax = NULL;
@@ -113,6 +117,13 @@ int macgonuts_dnsspoof_task(void) {
         goto macgonuts_dnsspoof_task_epilogue;
     }
 
+    macgonuts_free_array_option_value(target_addrs, target_addrs_nr);
+    target_addrs = NULL;
+    macgonuts_free_array_option_value(dns_addrs, dns_addrs_nr);
+    dns_addrs = NULL;
+
+    err = execute_dnsspoof_tasks(dnsspoof_tasks, tasks_nr);
+
 macgonuts_dnsspoof_task_epilogue:
 
     if (dnsspoof_tasks != NULL) {
@@ -140,8 +151,6 @@ int macgonyts_dnspoof_task_help(void) {
                        "                        --undo-spoof]\n");
     return EXIT_SUCCESS;
 }
-
-// iplist_handle precisa reunir a lista de dns-addrs, target-address serao tg_addr
 
 static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                                                                const char *iface,
@@ -240,8 +249,16 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
             goto alloc_dnsspoof_tasks_contexts_epilogue;
         }
         memset((*tp), 0, sizeof(struct dnsspoof_task_ctx));
+        if (macgonuts_mutex_init(&(*tp)->spfgd.handles.lock) != EXIT_SUCCESS) {
+            macgonuts_si_error("unable to initialize task mutex.\n");
+            goto alloc_dnsspoof_tasks_contexts_epilogue;
+        }
         (*tp)->etc_hoax_handle = etc_hoax_handle;
         (*tp)->hoax_ttl = hoax_ttl;
+        (*tp)->spfgd.hooks.init = macgonuts_dnsspoof_init_hook;
+        (*tp)->spfgd.hooks.deinit = macgonuts_dnsspoof_deinit_hook;
+        (*tp)->spfgd.hooks.done = macgonuts_dnsspoof_done_hook;
+        (*tp)->spfgd.hooks.redirect = macgonuts_dnsspoof_redirect_hook;
         tp++;
     } while (tp != tp_end);
 
@@ -384,7 +401,26 @@ alloc_dnsspoof_tasks_contexts_epilogue:
     return tasks;
 }
 
-void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr) {
+static void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr) {
+    struct dnsspoof_task_ctx **tp = tasks;
+    struct dnsspoof_task_ctx **tp_end = tp + tasks_nr;
+    while (tp != tp_end) {
+        if ((*tp)->spfgd.handles.wire != -1) {
+            macgonuts_release_spoof_layers_ctx(&(*tp)->spfgd.layers);
+            macgonuts_release_socket((*tp)->spfgd.handles.wire);
+            if (macgonuts_mutex_destroy(&(*tp)->spfgd.handles.lock) != EXIT_SUCCESS) {
+                macgonuts_si_warn("unable to deinitilize task mutex.\n");
+            }
+        }
+        tp++;
+        free(tp[-1]);
+    }
+    free(tasks);
+}
+
+static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr) {
+    // TODO(Rafael): Install a SIGINT watchdog, run the tasks, join waiting for each one.
+    return ENOTSUP;
 }
 
 #undef DEFAULT_ETC_HOAX_PATH
