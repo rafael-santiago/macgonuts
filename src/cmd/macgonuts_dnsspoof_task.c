@@ -19,11 +19,15 @@
 #include <macgonuts_iplist.h>
 #include <macgonuts_etc_hoax.h>
 #include <macgonuts_spoof.h>
+#include <macgonuts_metaspoofer.h>
 #include <macgonuts_status_info.h>
 
 #define DEFAULT_ETC_HOAX_PATH "/usr/local/share/macgonuts/etc/hoax"
 
+static int gShouldExit = 0;
+
 struct dnsspoof_task_ctx {
+    macgonuts_thread_t th;
     macgonuts_etc_hoax_handle *etc_hoax_handle;
     size_t hoax_ttl;
     char lo_iface[256];
@@ -45,6 +49,10 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
 static void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr);
 
 static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr);
+
+static void sigint_watchdog(int signal);
+
+void *run_metaspoofer(void *arg);
 
 int macgonuts_dnsspoof_task(void) {
     struct dnsspoof_task_ctx **dnsspoof_tasks = NULL;
@@ -255,8 +263,10 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
         }
         (*tp)->etc_hoax_handle = etc_hoax_handle;
         (*tp)->hoax_ttl = hoax_ttl;
-        (*tp)->spfgd.hooks.init = macgonuts_dnsspoof_init_hook;
-        (*tp)->spfgd.hooks.deinit = macgonuts_dnsspoof_deinit_hook;
+        if (tp == tasks) {
+            (*tp)->spfgd.hooks.init = macgonuts_dnsspoof_init_hook;
+            (*tp)->spfgd.hooks.deinit = macgonuts_dnsspoof_deinit_hook;
+        }
         (*tp)->spfgd.hooks.done = macgonuts_dnsspoof_done_hook;
         (*tp)->spfgd.hooks.redirect = macgonuts_dnsspoof_redirect_hook;
         tp++;
@@ -419,8 +429,50 @@ static void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const 
 }
 
 static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t tasks_nr) {
-    // TODO(Rafael): Install a SIGINT watchdog, run the tasks, join waiting for each one.
-    return ENOTSUP;
+    struct dnsspoof_task_ctx **task = tasks;
+    struct dnsspoof_task_ctx **tasks_end = tasks + tasks_nr;
+    int err = EXIT_FAILURE;
+    signal(SIGINT, sigint_watchdog);
+    signal(SIGTERM, sigint_watchdog);
+
+    do {
+        err = macgonuts_create_thread(&(*task)->th, run_metaspoofer, &(*task)->spfgd);
+        task++;
+    } while (task != tasks_end && err == EXIT_SUCCESS);
+
+    if (err != EXIT_SUCCESS) {
+        return err;
+    }
+
+    while (!gShouldExit) {
+        usleep(10);
+    }
+
+    for (task = tasks; task != tasks_end; task++) {
+        macgonuts_mutex_lock(&(*task)->spfgd.handles.lock);
+        (*task)->spfgd.spoofing.abort = 1;
+        macgonuts_mutex_unlock(&(*task)->spfgd.handles.lock);
+    }
+
+    task = tasks;
+    do {
+        macgonuts_thread_join(&(*task)->th, NULL);
+        task++;
+    } while (task != tasks_end);
+
+    return EXIT_SUCCESS;
+}
+
+static void sigint_watchdog(int signal) {
+    gShouldExit = 1;
+}
+
+void *run_metaspoofer(void *arg) {
+    struct macgonuts_spoofing_guidance_ctx *spfgd = (struct macgonuts_spoofing_guidance_ctx *)arg;
+    if (macgonuts_run_metaspoofer(spfgd) != EXIT_SUCCESS) {
+        macgonuts_si_error("when trying to run metaspoofer for spoofing task at [%p].\n", spfgd);
+    }
+    return NULL;
 }
 
 #undef DEFAULT_ETC_HOAX_PATH
