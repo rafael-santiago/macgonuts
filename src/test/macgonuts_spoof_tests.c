@@ -136,6 +136,10 @@ CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_tests)
     size_t addr2spoof_size = 4;
     uint8_t expected_hw_addr[6] = { 0x08, 0x00, 0x27, 0x97, 0x64, 0x91 };
     CUTE_ASSERT(rsk != -1);
+    target_addr = "10.0.0.1";
+    target_addr_size = strlen(target_addr);
+    addr2spoof = "10.0.0.2";
+    addr2spoof_size = strlen(addr2spoof);
     CUTE_ASSERT(macgonuts_get_spoof_layers_info(-1,
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
@@ -178,4 +182,67 @@ CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_tests)
                                                 &spf_layers,
                                                 target_addr, target_addr_size,
                                                 addr2spoof, addr2spoof_size, "blau0") != EXIT_SUCCESS);
+    // TODO(Rafael): Mock ARP and NDP replies in order to test whole function.
+    macgonuts_release_socket(rsk);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_spoof_layers_info_ex_tests)
+    struct macgonuts_get_spoof_layers_info_ex_ctx sk_info[1] = { 0 };
+    struct macgonuts_spoof_layers_ctx spf_layers = { 0 };
+    char *target_addr = NULL;
+    size_t target_addr_size = 0;
+    char *addr2spoof = NULL;
+    size_t addr2spoof_size = 0;
+    target_addr = "127.0.0.1";
+    target_addr_size = strlen(target_addr);
+    addr2spoof = "127.0.0.13";
+    addr2spoof_size = strlen(addr2spoof);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(NULL, 2,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    sk_info[0].rsk = -1;
+    sk_info[0].iface = (char *)get_default_iface_name();
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    sk_info[0].rsk = macgonuts_create_socket(get_default_iface_name(), 0);
+    CUTE_ASSERT(sk_info[0].rsk > -1);
+    sk_info[0].iface = NULL;
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    sk_info[0].iface = (char *)get_default_iface_name();
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 0,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   NULL,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   NULL, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   target_addr, 0,
+                                                   addr2spoof, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   NULL, addr2spoof_size, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, 0, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_spoof_layers_info_ex(&sk_info[0], 2,
+                                                   &spf_layers,
+                                                   target_addr, target_addr_size,
+                                                   addr2spoof, addr2spoof_size, NULL) == EINVAL);
+    // TODO(Rafael): Mock ARP and NDP replies in order to test whole function.
+    macgonuts_release_socket(sk_info[0].rsk);
 CUTE_TEST_CASE_END

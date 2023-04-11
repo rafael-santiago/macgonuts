@@ -72,6 +72,18 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip4_tests)
     rsk = macgonuts_create_socket(get_default_iface_name(), 1);
     CUTE_ASSERT(rsk != -1);
     CUTE_ASSERT(macgonuts_set_iface_promisc_on(get_default_iface_name()) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_ethaddr(NULL, sizeof(hw_addr),
+                                      ip, strlen(ip), rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, 0,
+                                      ip, strlen(ip), rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      NULL, strlen(ip), rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, 0, rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, strlen(ip), -1, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, strlen(ip), rsk, NULL) == EINVAL);
     CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
                                       ip, strlen(ip), rsk, get_default_iface_name()) == EXIT_SUCCESS);
     macgonuts_release_socket(rsk);
@@ -95,6 +107,18 @@ CUTE_TEST_CASE(macgonuts_get_ethaddr_ip6_tests)
     rsk = macgonuts_create_socket(get_default_iface_name(), 1);
     CUTE_ASSERT(rsk != -1);
     CUTE_ASSERT(macgonuts_set_iface_promisc_on(get_default_iface_name()) == EXIT_SUCCESS);
+    CUTE_ASSERT(macgonuts_get_ethaddr(NULL, sizeof(hw_addr),
+                                      ip, strlen(ip), rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, 0,
+                                      ip, strlen(ip), rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      NULL, strlen(ip), rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, 0, rsk, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, strlen(ip), -1, get_default_iface_name()) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
+                                      ip, strlen(ip), rsk, NULL) == EINVAL);
     CUTE_ASSERT(macgonuts_get_ethaddr(hw_addr, sizeof(hw_addr),
                                       ip, strlen(ip), rsk, get_default_iface_name()) == EXIT_SUCCESS);
     macgonuts_release_socket(rsk);

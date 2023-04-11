@@ -34,6 +34,7 @@ struct dnsspoof_task_ctx {
     char tg_address[256];
     char spoof_address[256];
     struct macgonuts_spoofing_guidance_ctx spfgd;
+    macgonuts_socket_t gw_wire;
 };
 
 static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
@@ -153,7 +154,7 @@ macgonuts_dnsspoof_task_epilogue:
     return err;
 }
 
-int macgonyts_dnspoof_task_help(void) {
+int macgonuts_dnsspoof_task_help(void) {
     macgonuts_si_print("use: macgonuts dnsspoof --lo-iface=<label> --target-addrs=<ip4|ip6 list>\n"
                        "                       [--etc-hoax=<filepath> --hoax-ttl=<secs> --dns-addrs=<ip4|ip6 list>\n"
                        "                        --undo-spoof]\n");
@@ -196,6 +197,7 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
     char lit_gw_addr[256] = "";
     size_t lit_gw_addr_size;
     int err = EXIT_FAILURE;
+    struct macgonuts_get_spoof_layers_info_ex_ctx sk_info[2] = { 0 };
 
     assert(tasks_nr != NULL
            && iface != NULL
@@ -306,11 +308,22 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                 macgonuts_si_error("unable to create socket.\n");
                 goto alloc_dnsspoof_tasks_contexts_epilogue;
             }
-            if (macgonuts_get_spoof_layers_info((*tp)->spfgd.handles.wire,
-                                                &(*tp)->spfgd.layers,
-                                                (*tp)->tg_address, target_addr_size,
-                                                (*tp)->spoof_address, lit_gw_addr_size,
-                                                (*tp)->lo_iface) != EXIT_SUCCESS) {
+            // INFO(Rafael): This socket will be used to communicate with external DNS.
+            (*tp)->gw_wire = macgonuts_create_socket(iface_buf, 1);
+            sk_info[0].rsk = (*tp)->spfgd.handles.wire;
+            sk_info[0].iface = (*tp)->lo_iface;
+            sk_info[1].rsk = (*tp)->gw_wire;
+            sk_info[1].iface = iface_buf;
+            if ((*tp)->gw_wire == -1) {
+                macgonuts_si_error("unable to create socket.\n");
+                goto alloc_dnsspoof_tasks_contexts_epilogue;
+            }
+            if (macgonuts_get_spoof_layers_info_ex(&sk_info[0],
+                                                   sizeof(sk_info) / sizeof(sk_info[0]),
+                                                   &(*tp)->spfgd.layers,
+                                                   (*tp)->tg_address, target_addr_size,
+                                                   (*tp)->spoof_address, lit_gw_addr_size,
+                                                   (*tp)->lo_iface) != EXIT_SUCCESS) {
                 macgonuts_si_error("unable to fill up task's spoofing layer information.\n");
                 goto alloc_dnsspoof_tasks_contexts_epilogue;
             }
@@ -378,13 +391,37 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                         macgonuts_si_error("unable to create socket.\n");
                         goto alloc_dnsspoof_tasks_contexts_epilogue;
                     }
-                    if (macgonuts_get_spoof_layers_info((*tp)->spfgd.handles.wire,
-                                                        &(*tp)->spfgd.layers,
-                                                        (*tp)->tg_address, target_addr_size,
-                                                        (*tp)->spoof_address, dns_addr_size,
-                                                        (*tp)->lo_iface) != EXIT_SUCCESS) {
+                    // INFO(Rafael): If the DNS is internal we will use the same socket from the lo_iface,
+                    //               otherwise we will create a socket at the wire of the interface that
+                    //               we use to reach the gateway.
+                    (*tp)->gw_wire = ((*tp)->spfgd.layers.spoofing_gateway) ?
+                                        macgonuts_create_socket(iface_buf, 1) : (*tp)->spfgd.handles.wire;
+                    if ((*tp)->gw_wire == -1) {
+                        macgonuts_si_error("unable to create socket.\n");
+                        goto alloc_dnsspoof_tasks_contexts_epilogue;
+                    }
+                    if (!(*tp)->spfgd.layers.spoofing_gateway
+                        && macgonuts_get_spoof_layers_info((*tp)->spfgd.handles.wire,
+                                                           &(*tp)->spfgd.layers,
+                                                           (*tp)->tg_address, target_addr_size,
+                                                           (*tp)->spoof_address, dns_addr_size,
+                                                           (*tp)->lo_iface) != EXIT_SUCCESS) {
                         macgonuts_si_error("unable to fill up task's spoofing layer information.\n");
                         goto alloc_dnsspoof_tasks_contexts_epilogue;
+                    } else if ((*tp)->spfgd.layers.spoofing_gateway) {
+                        sk_info[0].rsk = (*tp)->spfgd.handles.wire;
+                        sk_info[0].iface = (*tp)->lo_iface;
+                        sk_info[1].rsk = (*tp)->gw_wire;
+                        sk_info[1].iface = iface_buf;
+                        if (macgonuts_get_spoof_layers_info_ex(&sk_info[0],
+                                                               sizeof(sk_info) / sizeof(sk_info[0]),
+                                                               &(*tp)->spfgd.layers,
+                                                               (*tp)->tg_address, target_addr_size,
+                                                               (*tp)->spoof_address, lit_gw_addr_size,
+                                                               (*tp)->lo_iface) != EXIT_SUCCESS) {
+                            macgonuts_si_error("unable to fill up task's spoofing layer information.\n");
+                            goto alloc_dnsspoof_tasks_contexts_epilogue;
+                        }
                     }
                     tp++;
                 }
@@ -459,6 +496,19 @@ static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t
         macgonuts_thread_join(&(*task)->th, NULL);
         task++;
     } while (task != tasks_end);
+
+    if (macgonuts_get_bool_option("undo-spoof", 0)) {
+        task = tasks;
+        do {
+            if (macgonuts_undo_spoof((*task)->spfgd.handles.wire, &(*task)->spfgd.layers) == EXIT_SUCCESS) {
+                macgonuts_si_info("spoof undone at `%s`, muahauhahauhauahuah, you have chances of "
+                                  "staying incognito.\n", (*task)->spfgd.usrinfo.tg_address);
+            } else {
+                macgonuts_si_warn("unable to undo spoof at `%s`, maybe you better run...\n",
+                                  (*task)->spfgd.usrinfo.tg_address);
+            }
+        } while (task != tasks_end);
+    }
 
     return EXIT_SUCCESS;
 }

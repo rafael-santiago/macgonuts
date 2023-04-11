@@ -39,7 +39,12 @@ int macgonuts_get_ethaddr(uint8_t *hw_addr, const size_t hw_addr_size,
     get_ethaddr_handler_func get_ethaddr = NULL;
     int l3addr_version = 0;
 
-    if (hw_addr == NULL || hw_addr_size != 6 || layer3addr == NULL || layer3addr_size == 0) {
+    if (hw_addr == NULL
+        || hw_addr_size != 6
+        || layer3addr == NULL
+        || layer3addr_size == 0
+        || rsk == -1
+        || iface == NULL) {
         return EINVAL;
     }
 

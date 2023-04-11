@@ -11,6 +11,7 @@
 #include <cmd/macgonuts_eavesdrop_task.h>
 #include <cmd/macgonuts_isolate_task.h>
 #include <cmd/macgonuts_mayhem_task.h>
+#include <cmd/macgonuts_dnsspoof_task.h>
 #include <cmd/macgonuts_version_task.h>
 #include <cmd/macgonuts_banners.h>
 #include <macgonuts_status_info.h>
@@ -36,6 +37,7 @@ struct macgonuts_task_ctx {
     MACGONUTS_CMD_REGISTER_TASK(eavesdrop),
     MACGONUTS_CMD_REGISTER_TASK(isolate),
     MACGONUTS_CMD_REGISTER_TASK(mayhem),
+    MACGONUTS_CMD_REGISTER_TASK(dnsspoof),
     MACGONUTS_CMD_REGISTER_TASK(version),
     MACGONUTS_CMD_REGISTER_TASK(help),
 };

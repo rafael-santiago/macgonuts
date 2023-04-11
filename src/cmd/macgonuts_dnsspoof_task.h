@@ -12,6 +12,6 @@
 
 int macgonuts_dnsspoof_task(void);
 
-int macgonyts_dnspoof_task_help(void);
+int macgonuts_dnsspoof_task_help(void);
 
 #endif // MACGONUTS_CMD_MACGONUTS_DNSSPOOF_TASK_H

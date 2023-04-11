@@ -11,5 +11,6 @@
 #define macgonuts_dnsspoof_etc_hoax(s) ((macgonuts_etc_hoax_handle *)(s)->metainfo.arg[0])
 #define macgonuts_dnsspoof_iplist(s) ((macgonuts_iplist_handle *)(s)->metainfo.arg[1])
 #define macgonuts_dnsspoof_ttl(s) (*(uint32_t *)(s)->metainfo.arg[2])
+#define macgonuts_dnsspoof_gw_wire(s) (*(macgonuts_socket_t *)(s)->metainfo.arg[3])
 
 #endif // MACGONUTS_CMD_MACGONUTS_DNSSPOOF_DEFS_H
