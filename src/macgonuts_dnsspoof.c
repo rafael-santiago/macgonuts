@@ -99,6 +99,8 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
     unsigned char *spoofed_answer = NULL;
     size_t spoofed_answer_size = 0;
+    uint8_t temp_mac[6] = { 0 };
+    uint32_t temp_addr = 0;
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof4_epilogue;
@@ -115,15 +117,31 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         goto do_dnsspoof4_epilogue;
     }
 
-    memcpy(&ip4p.src_addr[0], &ip4.src_addr, sizeof(ip4p.src_addr));
-    memcpy(&ip4p.dest_addr[0], &ip4.dest_addr, sizeof(ip4p.dest_addr));
+    ip4p.dest_addr[0] = (ip4.src_addr >> 24) & 0xFF;
+    ip4p.dest_addr[1] = (ip4.src_addr >> 16) & 0xFF;
+    ip4p.dest_addr[2] = (ip4.src_addr >>  8) & 0xFF;
+    ip4p.dest_addr[3] =  ip4.src_addr & 0xFF;
+
+    ip4p.src_addr[0] = (ip4.dest_addr >> 24) & 0xFF;
+    ip4p.src_addr[1] = (ip4.dest_addr >> 16) & 0xFF;
+    ip4p.src_addr[2] = (ip4.dest_addr >>  8) & 0xFF;
+    ip4p.src_addr[3] =  ip4.dest_addr & 0xFF;
+
     ip4p.zprotolen[1] = 0x11;
     ip4p.zprotolen[2] = (udp.len >> 8) & 0xFF;
     ip4p.zprotolen[3] = udp.len & 0xFF;
 
     assert(ip4.payload != NULL);
-
     free(ip4.payload);
+
+    ip4.id++;
+    ip4.ttl -= 12;
+    ip4.tlen = udp.payload_size + (ip4.ihl<<2) + 8;
+
+    temp_addr = ip4.src_addr;
+    ip4.src_addr = ip4.dest_addr;
+    ip4.dest_addr = temp_addr;
+
     ip4.payload = macgonuts_make_udp_pkt(&udp, &ip4.payload_size, &ip4p, sizeof(ip4p));
     if (ip4.payload == NULL) {
         err = ENOMEM;
@@ -132,11 +150,16 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
 
     assert(eth.data != NULL);
     free(eth.data);
+    ip4.chsum = 0;
     eth.data = macgonuts_make_ip4_pkt(&ip4, &eth.data_size, 1);
     if (eth.data == NULL) {
         err = ENOMEM;
         goto do_dnsspoof4_epilogue;
     }
+
+    memcpy(&temp_mac[0], &eth.dest_hw_addr[0], sizeof(temp_mac));
+    memcpy(&eth.dest_hw_addr[0], &eth.src_hw_addr[0], sizeof(eth.dest_hw_addr));
+    memcpy(&eth.src_hw_addr[0], &temp_mac[0], sizeof(eth.src_hw_addr));
 
     spoofed_answer = macgonuts_make_ethernet_frm(&eth, &spoofed_answer_size);
     if (spoofed_answer == NULL) {
@@ -181,9 +204,10 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     struct macgonuts_udphdr_ctx udp = { 0 };
     struct macgonuts_dnshdr_ctx dns = { 0 };
     size_t payload_size = 0;
-    int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
     unsigned char *spoofed_answer = NULL;
     size_t spoofed_answer_size = 0;
+    uint8_t temp_mac[6] = { 0 };
+    int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof6_epilogue;
@@ -200,8 +224,8 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         goto do_dnsspoof6_epilogue;
     }
 
-    memcpy(&ip6p.src_addr[0], ip6.src_addr, sizeof(ip6p.src_addr));
-    memcpy(&ip6p.dest_addr[0], ip6.dest_addr, sizeof(ip6p.dest_addr));
+    memcpy(&ip6p.src_addr[0], &ip6.dest_addr[0], sizeof(ip6p.src_addr));
+    memcpy(&ip6p.dest_addr[0], &ip6.src_addr[0], sizeof(ip6p.dest_addr));
     ip6p.upper_layer_pkt_len[2] = (udp.len >> 8) & 0xFF;
     ip6p.upper_layer_pkt_len[3] = udp.len & 0xFF;
     ip6p.next_header[3] = ip6.next_header;
@@ -214,19 +238,26 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         err = ENOMEM;
         goto do_dnsspoof6_epilogue;
     }
+    ip6.hop_limit -= 12;
     ip6.payload_length = payload_size & 0xFFFF;
 
     assert(eth.data != NULL);
 
     free(eth.data);
+    memcpy(&ip6.src_addr[0], &ip6p.src_addr[0], sizeof(ip6.src_addr));
+    memcpy(&ip6.dest_addr[0], &ip6p.dest_addr[0], sizeof(ip6.dest_addr));
     eth.data = macgonuts_make_ip6_pkt(&ip6, &eth.data_size);
     if (eth.data == NULL) {
         err = ENOMEM;
         goto do_dnsspoof6_epilogue;
     }
 
+    memcpy(&temp_mac[0], &eth.dest_hw_addr[0], sizeof(temp_mac));
+    memcpy(&eth.dest_hw_addr[0], &eth.src_hw_addr[0], sizeof(eth.dest_hw_addr));
+    memcpy(&eth.src_hw_addr[0], &temp_mac[0], sizeof(eth.src_hw_addr));
+
     spoofed_answer = macgonuts_make_ethernet_frm(&eth, &spoofed_answer_size);
-    if (spoofed_answer == NULL) {
+        if (spoofed_answer == NULL) {
         err = ENOMEM;
         goto do_dnsspoof6_epilogue;
     }
@@ -269,6 +300,7 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
     struct macgonuts_dns_rr_hdr_ctx *qp = NULL;
     uint8_t in_addr[16] = { 0 };
     size_t in_addr_size = 0;
+    uint16_t temp_port = 0;
 
     err = macgonuts_read_udp_pkt(udphdr, data4, data4_size);
     if (err != EXIT_SUCCESS) {
@@ -300,11 +332,26 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
     }
 
     assert(udphdr->payload != NULL);
-
     free(udphdr->payload);
+
+    dnshdr->qr = 1;
+    dnshdr->rd = 0;
+    dnshdr->ra = 0;
+    dnshdr->aa = 0;
+    dnshdr->tc = 0;
+    dnshdr->ra = 0;
+    dnshdr->rcode = 0;
+    dnshdr->arcount = 0;
+
     udphdr->payload = macgonuts_make_dns_pkt(dnshdr, &udphdr->payload_size);
+
     if (udphdr->payload == NULL) {
         err = ENOMEM;
+    } else {
+        temp_port = udphdr->dest_port;
+        udphdr->len = 8 + udphdr->payload_size;
+        udphdr->dest_port = udphdr->src_port;
+        udphdr->src_port = temp_port;
     }
 
     return err;

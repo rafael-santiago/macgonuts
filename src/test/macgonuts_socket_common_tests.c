@@ -91,3 +91,29 @@ CUTE_TEST_CASE(macgonuts_get_netmask_from_iface_tests)
     snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 del dead:beef:0:cafe:fed1::d0/64", iface);
     CUTE_ASSERT(system(cmd) == 0);
 CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_get_gateway_addr_info_from_iface_tests)
+    uint8_t addr[16] = { 0 };
+    size_t addr_size = 0;
+    const char *iface = get_default_iface_name();
+    uint8_t expected_addr[16] = { 0 };
+    char cmd[1<<10] = "";
+    CUTE_ASSERT(macgonuts_get_gateway_addr_info_from_iface(NULL, &addr_size, 4, iface) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_gateway_addr_info_from_iface(&addr[0], NULL, 4, iface) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_gateway_addr_info_from_iface(&addr[0], &addr_size, 3, iface) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_gateway_addr_info_from_iface(&addr[0], &addr_size, 6, NULL) == EINVAL);
+    CUTE_ASSERT(macgonuts_get_gateway_addr_info_from_iface(&addr[0], &addr_size, 4, iface) == EXIT_SUCCESS);
+    get_gateway_addr4_from_iface(expected_addr, iface);
+    CUTE_ASSERT(addr_size == 4);
+    CUTE_ASSERT(memcmp(&addr[0], &expected_addr, addr_size) == 0);
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 del dead:beef:0:cafe:fed1::d0/64 >/dev/null 2>&1", iface);
+    system(cmd);
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 add dead:beef:0:cafe:fed1::d0/64", iface);
+    CUTE_ASSERT(system(cmd) == 0);
+    get_gateway_addr6_from_iface(expected_addr, iface);
+    CUTE_ASSERT(macgonuts_get_gateway_addr_info_from_iface(&addr[0], &addr_size, 6, iface) == EXIT_SUCCESS);
+    CUTE_ASSERT(addr_size == 16);
+    CUTE_ASSERT(memcmp(&addr[0], &expected_addr[0], addr_size) == 0);
+    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s inet6 del dead:beef:0:cafe:fed1::d0/64", iface);
+    CUTE_ASSERT(system(cmd) == 0);
+CUTE_TEST_CASE_END

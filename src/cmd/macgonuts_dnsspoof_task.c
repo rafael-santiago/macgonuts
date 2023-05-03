@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <cmd/macgonuts_dnsspoof_task.h>
+#include <cmd/macgonuts_dnsspoof_defs.h>
 #include <cmd/macgonuts_option.h>
 #include <cmd/macgonuts_misc_utils.h>
 #include <cmd/hooks/macgonuts_dnsspoof_init_hook.h>
@@ -29,6 +30,7 @@ static int gShouldExit = 0;
 struct dnsspoof_task_ctx {
     macgonuts_thread_t th;
     macgonuts_etc_hoax_handle *etc_hoax_handle;
+    macgonuts_iplist_handle *iplist_handle;
     size_t hoax_ttl;
     char lo_iface[256];
     char tg_address[256];
@@ -63,10 +65,13 @@ int macgonuts_dnsspoof_task(void) {
     macgonuts_etc_hoax_handle *etc_hoax_handle = NULL;
     char **target_addrs = NULL;
     size_t target_addrs_nr = 0;
+    macgonuts_iplist_handle *iplist_handle = NULL;
     const char *hoax_ttl = NULL;
     size_t hoax_ttl_value = 0;
     char **dns_addrs = NULL;
     size_t dns_addrs_nr = 0;
+    const char *target_addrs_csv = NULL;
+    size_t target_addrs_csv_size = 0;
     int err = EFAULT;
 
     lo_iface = macgonuts_get_option("lo-iface", NULL);
@@ -111,12 +116,22 @@ int macgonuts_dnsspoof_task(void) {
         goto macgonuts_dnsspoof_task_epilogue;
     }
 
+    target_addrs_csv = macgonuts_get_option("target-addrs", NULL);
+    assert(target_addrs_csv != NULL);
+    target_addrs_csv_size = strlen(target_addrs_csv);
+    iplist_handle = macgonuts_iplist_parse(target_addrs_csv, target_addrs_csv_size);
+    if (iplist_handle == NULL) {
+        macgonuts_si_error("unable to parse iplist handle.\n");
+        err = EXIT_FAILURE;
+        goto macgonuts_dnsspoof_task_epilogue;
+    }
+
     dns_addrs = macgonuts_get_array_option("dns-addrs", NULL, &dns_addrs_nr);
 
     dnsspoof_tasks = alloc_dnsspoof_task_contexts(&tasks_nr,
                                                   lo_iface,
                                                   (const char **)target_addrs, target_addrs_nr,
-                                                  NULL,
+                                                  iplist_handle,
                                                   etc_hoax_handle,
                                                   (const char **)dns_addrs, dns_addrs_nr,
                                                   atoi(hoax_ttl));
@@ -151,6 +166,10 @@ macgonuts_dnsspoof_task_epilogue:
         macgonuts_close_etc_hoax(etc_hoax_handle);
     }
 
+    if (iplist_handle != NULL) {
+        macgonuts_iplist_release(iplist_handle);
+    }
+
     return err;
 }
 
@@ -177,8 +196,9 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
     const char **dns_addr = NULL;
     const char **dns_addrs_end = NULL;
     char iface_buf[256] = "";
-    uint8_t gw_addr[16] = { 0 };
-    size_t gw_addr_size = 0;
+    uint8_t gw_addr[2][16] = { 0 };
+    size_t gw_addr_size[2] = { 0 };
+    size_t gw_i = 0;
     uint8_t iface_netmask[2][16] = { 0 };
     size_t iface_size = 0;
     int ip_version;
@@ -209,7 +229,11 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
     *tasks_nr = 0;
 
     iface_size = strlen(iface);
-    if (macgonuts_get_gateway_addr_info(iface_buf, sizeof(iface_buf), &gw_addr[0], &gw_addr_size) != EXIT_SUCCESS) {
+
+    macgonuts_get_gateway_addr_info_from_iface(&gw_addr[1][0], &gw_addr_size[1], 4, iface);
+
+    if (macgonuts_get_gateway_addr_info_from_iface(&gw_addr[0][0], &gw_addr_size[0], 6, iface) != EXIT_SUCCESS
+        && gw_addr_size[0] == 0) {
         macgonuts_si_error("unable to get gateway address.\n");
         return NULL;
     }
@@ -220,12 +244,12 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
         return NULL;
     }
 
-    if (macgonuts_get_addr_from_iface_unix(iface_addr_buf, sizeof(iface_addr_buf), 4, iface_buf) == EXIT_SUCCESS
+    if (macgonuts_get_addr_from_iface_unix(iface_addr_buf, sizeof(iface_addr_buf), 4, iface) == EXIT_SUCCESS
         && macgonuts_get_raw_ip_addr(&iface_addr[1][0], 4, iface_addr_buf, strlen(iface_addr_buf)) == EXIT_SUCCESS) {
         iface_ip_support = kIPv4;
     }
 
-    if (macgonuts_get_addr_from_iface_unix(iface_addr_buf, sizeof(iface_addr_buf), 6, iface_buf) == EXIT_SUCCESS
+    if (macgonuts_get_addr_from_iface_unix(iface_addr_buf, sizeof(iface_addr_buf), 6, iface) == EXIT_SUCCESS
         && macgonuts_get_raw_ip_addr(&iface_addr[0][0], 16, iface_addr_buf, strlen(iface_addr_buf)) == EXIT_SUCCESS) {
         iface_ip_support |= kIPv6;
     }
@@ -264,6 +288,7 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
             goto alloc_dnsspoof_tasks_contexts_epilogue;
         }
         (*tp)->etc_hoax_handle = etc_hoax_handle;
+        (*tp)->iplist_handle = iplist_handle;
         (*tp)->hoax_ttl = hoax_ttl;
         if (tp == tasks) {
             (*tp)->spfgd.hooks.init = macgonuts_dnsspoof_init_hook;
@@ -271,6 +296,11 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
         }
         (*tp)->spfgd.hooks.done = macgonuts_dnsspoof_done_hook;
         (*tp)->spfgd.hooks.redirect = macgonuts_dnsspoof_redirect_hook;
+        macgonuts_dnsspoof_set_etc_hoax(&(*tp)->spfgd, (*tp)->etc_hoax_handle);
+        macgonuts_dnsspoof_set_iplist(&(*tp)->spfgd, (*tp)->iplist_handle);
+        macgonuts_dnsspoof_set_ttl(&(*tp)->spfgd, &(*tp)->hoax_ttl);
+        macgonuts_dnsspoof_set_gw_wire(&(*tp)->spfgd, &(*tp)->gw_wire);
+        (*tp)->spfgd.spoofing.timeout = 1;
         tp++;
     } while (tp != tp_end);
 
@@ -293,9 +323,10 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
             }
             memcpy(&(*tp)->lo_iface[0], iface, iface_size % sizeof((*tp)->lo_iface));
             memcpy(&(*tp)->tg_address[0], *target_addr, target_addr_size);
+            gw_i = (ip_version == 4);
             if (tp == tasks) {
                 if (macgonuts_raw_ip2literal(&(*tp)->spoof_address[0], sizeof((*tp)->spoof_address) - 1,
-                                             gw_addr, gw_addr_size) != EXIT_SUCCESS) {
+                                             gw_addr[gw_i], gw_addr_size[gw_i]) != EXIT_SUCCESS) {
                     macgonuts_si_error("unable to convert gateway address to its literal.\n");
                     goto alloc_dnsspoof_tasks_contexts_epilogue;
                 }
@@ -309,7 +340,7 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                 goto alloc_dnsspoof_tasks_contexts_epilogue;
             }
             // INFO(Rafael): This socket will be used to communicate with external DNS.
-            (*tp)->gw_wire = macgonuts_create_socket(iface_buf, 1);
+            (*tp)->gw_wire = macgonuts_create_socket(iface, 1);
             sk_info[0].rsk = (*tp)->spfgd.handles.wire;
             sk_info[0].iface = (*tp)->lo_iface;
             sk_info[1].rsk = (*tp)->gw_wire;
@@ -328,6 +359,9 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                 goto alloc_dnsspoof_tasks_contexts_epilogue;
             }
             (*tp)->spfgd.layers.spoofing_gateway = 1;
+            (*tp)->spfgd.usrinfo.lo_iface = &(*tp)->lo_iface[0];
+            (*tp)->spfgd.usrinfo.tg_address = &(*tp)->tg_address[0];
+            (*tp)->spfgd.usrinfo.spoof_address = &(*tp)->spoof_address[0];
             target_addr++;
             tp++;
         }
@@ -348,10 +382,12 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                 macgonuts_si_error("target address `%s` seems invalid.\n", *target_addr);
                 goto alloc_dnsspoof_tasks_contexts_epilogue;
             }
+            gw_i = (dns_ip_version[d] == 4);
             dns_addr = dns_addrs;
             while (dns_addr != dns_addrs_end && tp != tp_end) {
                 if (target_addr == target_addrs) {
                     d = (dns_addrs_end - dns_addrs) - (dns_addrs_end - dns_addr);
+                    dns_addr_size = strlen(*dns_addr);
                     dns_ip_version[d] = macgonuts_get_ip_version(*dns_addr, dns_addr_size);
                     if ((dns_ip_version[d] != 4 && dns_ip_version[d] != 6)
                         || (dns_ip_version[d] == 4 && !(iface_ip_support & kIPv4))
@@ -360,7 +396,7 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                         goto alloc_dnsspoof_tasks_contexts_epilogue;
                     }
                     if (macgonuts_raw_ip2literal(&lit_gw_addr[0], sizeof(lit_gw_addr) - 1,
-                                                 gw_addr, gw_addr_size) != EXIT_SUCCESS) {
+                                                 gw_addr[gw_i], gw_addr_size[gw_i]) != EXIT_SUCCESS) {
                         macgonuts_si_error("unable to convert gateway address to its literal.\n");
                         goto alloc_dnsspoof_tasks_contexts_epilogue;
                     }
@@ -376,8 +412,8 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                     }
                     (*tp)->spfgd.layers.spoofing_gateway =
                         !macgonuts_addrs_from_same_network(&(*tp)->spfgd.layers.spoof_proto_addr[0],
-                                                           &iface_addr[ip_version == 4][0],
-                                                           &iface_netmask[ip_version == 4][0],
+                                                           &iface_addr[gw_i][0],
+                                                           &iface_netmask[gw_i][0],
                                                            ip_version);
                     if (!(*tp)->spfgd.layers.spoofing_gateway) {
                         memcpy(&(*tp)->spoof_address[0], *dns_addr, dns_addr_size);
@@ -423,6 +459,10 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
                             goto alloc_dnsspoof_tasks_contexts_epilogue;
                         }
                     }
+                    (*tp)->spfgd.layers.spoofing_gateway = 1;
+                    (*tp)->spfgd.usrinfo.lo_iface = &(*tp)->lo_iface[0];
+                    (*tp)->spfgd.usrinfo.tg_address = &(*tp)->tg_address[0];
+                    (*tp)->spfgd.usrinfo.spoof_address = &(*tp)->spoof_address[0];
                     tp++;
                 }
                 dns_addr++;
@@ -454,6 +494,9 @@ static void free_dnsspoof_task_contexts(struct dnsspoof_task_ctx **tasks, const 
     while (tp != tp_end) {
         if ((*tp)->spfgd.handles.wire != -1) {
             macgonuts_release_spoof_layers_ctx(&(*tp)->spfgd.layers);
+            if ((*tp)->gw_wire != (*tp)->spfgd.handles.wire) {
+                macgonuts_release_socket((*tp)->gw_wire);
+            }
             macgonuts_release_socket((*tp)->spfgd.handles.wire);
             if (macgonuts_mutex_destroy(&(*tp)->spfgd.handles.lock) != EXIT_SUCCESS) {
                 macgonuts_si_warn("unable to deinitilize task mutex.\n");
@@ -482,7 +525,7 @@ static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t
     }
 
     while (!gShouldExit) {
-        usleep(10);
+        usleep(100);
     }
 
     for (task = tasks; task != tasks_end; task++) {

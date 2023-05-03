@@ -192,7 +192,7 @@ static size_t get_rr_hdr_size(const struct macgonuts_dnshdr_ctx *dnshdr) {
     }
 
     for (rp = dnshdr->an; rp != NULL; rp = rp->next) {
-        hdr_size += DNS_HDR_GSEC_BASE_SIZE(rp) + rp->name_size + 2 + rp->rdlength;
+        hdr_size += DNS_HDR_GSEC_BASE_SIZE(rp) + rp->name_size + /*2 +*/ rp->rdlength;
     }
 
     return hdr_size;

@@ -131,6 +131,10 @@ static int should_abort(struct macgonuts_spoofing_guidance_ctx *spfgd) {
     if (macgonuts_mutex_trylock(&spfgd->handles.lock) == EXIT_SUCCESS) {
         should = spfgd->spoofing.abort;
         macgonuts_mutex_unlock(&spfgd->handles.lock);
+        // INFO(Rafael): Otherwise it can cause thread starvation on other threads trying to abort metaspoofer thread.
+        if (!should) {
+            usleep(1);
+        }
     }
     return (should != 0);
 }

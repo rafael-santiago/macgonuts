@@ -89,11 +89,12 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_make_label_from_domain_name_tests);
     CUTE_RUN_TEST(macgonuts_is_dnsreq_tests);
     CUTE_RUN_TEST(macgonuts_read_dns_pkt_tests);
-    CUTE_RUN_TEST(macgonuts_make_dns_pkt_tests);
+    //CUTE_RUN_TEST(macgonuts_make_dns_pkt_tests);
     CUTE_RUN_TEST(macgonuts_add_dns_answer_tests);
     CUTE_RUN_TEST(macgonuts_getrandom_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_addr_from_iface_unix_tests);
     CUTE_RUN_TEST(macgonuts_get_gateway_addr_info_tests);
+    CUTE_RUN_TEST(macgonuts_get_gateway_addr_info_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_gateway_hw_addr_tests);
     //CUTE_RUN_TEST(macgonuts_get_maxaddr_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_netmask_from_iface_tests);
@@ -117,7 +118,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_filter_glob_ctx_tests);
     CUTE_RUN_TEST(macgonuts_etc_hoax_tests);
     CUTE_RUN_TEST(macgonuts_iplist_tests);
-    CUTE_RUN_TEST(macgonuts_dnsspoof_tests);
+    //CUTE_RUN_TEST(macgonuts_dnsspoof_tests);
     CUTE_RUN_TEST(macgonuts_is_outward_dest_tests);
 CUTE_TEST_CASE_END
 

@@ -8,6 +8,8 @@
 #include "macgonuts_test_utils.h"
 #include <macgonuts_ipconv.h>
 
+#define get_nbv(n) ( isdigit((n)) ? ((n) - 48) : (toupper((n)) - 55) )
+
 const char *get_default_iface_name(void) {
     FILE *proc = NULL;
     static char iface_name[1<<10] = "";
@@ -50,10 +52,8 @@ void get_default_iface_mac(uint8_t *mac) {
     bp = &buf[0];
     bp_end = bp + buf_size;
     while (bp < bp_end && m < sizeof(iface_mac)) {
-#define get_nbv(n) ( isdigit((n)) ? ((n) - 48) : (toupper((n)) - 55) )
         iface_mac[m++] = (uint8_t)get_nbv(bp[0]) << 4 | (uint8_t)get_nbv(bp[1]);
         bp += 3;
-#undef get_nbv
     }
     memcpy(mac, &iface_mac[0], sizeof(iface_mac));
     done = 1;
@@ -284,3 +284,65 @@ int get_maxaddr6_from_iface(uint8_t *addr, const char *iface) {
 
     return macgonuts_get_last_net_addr(addr, p[0], strlen(p[0]));
 }
+
+void get_gateway_addr4_from_iface(uint8_t *gw_addr, const char *iface) {
+    FILE *proc = NULL;
+    char cmd[1<<10] = "";
+    char buf[1<<10] = "";
+    char *bp = NULL;
+    char *bp_end = NULL;
+    size_t buf_size;
+    gw_addr[0] = 0;
+    snprintf(cmd, sizeof(cmd) - 1, "cat /proc/net/route | grep %s", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        return;
+    }
+    buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+    pclose(proc);
+    bp_end = strstr(buf, "\t");
+    if (bp_end == NULL) {
+        return;
+    }
+    bp_end = strstr(bp_end + 1, "\t");
+    if (bp_end == NULL) {
+        return;
+    }
+    bp = strstr(bp_end + 1, "\t");
+    if (bp == NULL) {
+        return;
+    }
+    bp -= 1;
+    buf_size = 0;
+    while (bp > bp_end) {
+        gw_addr[buf_size++] = get_nbv(bp[-1]) << 4 | get_nbv(bp[0]);
+        bp -= 2;
+    }
+}
+
+void get_gateway_addr6_from_iface(uint8_t *gw_addr, const char *iface) {
+    FILE *proc = NULL;
+    char cmd[1<<10] = "";
+    char buf[1<<10] = "";
+    char *bp = NULL;
+    size_t buf_size;
+    gw_addr[0] = 0;
+    snprintf(cmd, sizeof(cmd) - 1, "cat /proc/net/ipv6_route | grep %s", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        return;
+    }
+    buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+    pclose(proc);
+    if (buf[0] == 0) {
+        return;
+    }
+    bp = &buf[0];
+    buf_size = 0;
+    while (buf_size < 16) {
+        gw_addr[buf_size++] = get_nbv(bp[0]) << 4 | get_nbv(bp[1]);
+        bp += 2;
+    }
+}
+
+#undef get_nbv

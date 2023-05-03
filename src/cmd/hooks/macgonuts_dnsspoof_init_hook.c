@@ -20,7 +20,7 @@ int macgonuts_dnsspoof_init_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
     macgonuts_si_print(">>> Monitoring any DNS request with `%s` (looking for pkts to `%s`).\n", spfgd->usrinfo.lo_iface,
                                                                                            spfgd->usrinfo.spoof_address);
 
-    macgonuts_si_info("hit Ctrl + C to exit.");
+    macgonuts_si_info("hit Ctrl + C to exit.\n");
 
     return EXIT_SUCCESS;
 }
