@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_dnsspoof.h>
-#include <macgonuts_redirect.h>
+//#include <macgonuts_redirect.h>
 #include <macgonuts_ethfrm.h>
 #include <macgonuts_ip4hdr.h>
 #include <macgonuts_ip6hdr.h>
@@ -50,7 +50,7 @@ int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_laye
            && ethfrm_size > 0);
 
     if (!macgonuts_is_dnsreq(ethfrm, ethfrm_size)) {
-        return macgonuts_redirect(rsk, spf_layers, ethfrm, ethfrm_size, NULL);
+        return EPROTOTYPE;
     }
 
     ether_type = (uint16_t) ethfrm[12] << 8 | (uint16_t) ethfrm[13];
@@ -70,23 +70,18 @@ int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_laye
 
         default:
             // INFO(Rafael): It should never happen in normal conditions.
-            return macgonuts_redirect(rsk, spf_layers, ethfrm, ethfrm_size, NULL);
+            return EAFNOSUPPORT;
     }
 
     assert(do_dnsspoof != NULL);
 
     if (!macgonuts_iplist_has(iplist_handle, in_addr, in_addr_size)) {
-        return macgonuts_redirect(rsk, spf_layers, ethfrm, ethfrm_size, NULL);
+        return EADDRNOTAVAIL;
     }
 
     err = do_dnsspoof(rsk, etc_hoax_handle, dns_answer_ttl, ethfrm, ethfrm_size);
 
-    if (err == EADDRNOTAVAIL) {
-        err = macgonuts_redirect(rsk, spf_layers, ethfrm, ethfrm_size, NULL);
-    }
-
     return err;
-
 }
 
 static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_hoax,

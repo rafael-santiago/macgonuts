@@ -7,9 +7,36 @@
  */
 #include <macgonuts_dnsconv.h>
 #include <macgonuts_ethfrm.h>
+#include <macgonuts_ip4hdr.h>
+#include <macgonuts_ip6hdr.h>
+#include <macgonuts_udphdr.h>
+#include <macgonuts_dnshdr.h>
 
 static size_t get_u8str_total_size(const unsigned char *data, const size_t data_size, const size_t c_off,
                                    const int is_domain_name);
+
+static char *get_dns_qname_from_ip4(const unsigned char *dgram, const size_t dgram_size);
+
+static char *get_dns_qname_from_ip6(const unsigned char *dgram, const size_t dgram_size);
+
+char *macgonuts_get_dns_qname_from_ethernet_frame(const unsigned char *ethfrm, const size_t ethfrm_size) {
+    char *(*get_dns_qname_from_net_proto)(const unsigned char *, const size_t) = NULL;
+    uint16_t ether_type = 0;
+
+    if (ethfrm == NULL || ethfrm_size < 14) {
+        return NULL;
+    }
+
+    ether_type = (uint16_t) ethfrm[12] << 8 | (uint16_t) ethfrm[13];
+
+    get_dns_qname_from_net_proto =
+        (ether_type == MACGONUTS_ETHER_TYPE_IP4) ? get_dns_qname_from_ip4
+                                                 : get_dns_qname_from_ip6;
+
+    assert(get_dns_qname_from_net_proto != NULL);
+
+    return get_dns_qname_from_net_proto(&ethfrm[14], ethfrm_size - 14);
+}
 
 uint8_t *macgonuts_get_dns_u8str(const unsigned char *data, const size_t data_size,
                                  size_t *u8str_size, const size_t current_offset,
@@ -219,3 +246,89 @@ static size_t get_u8str_total_size(const unsigned char *data, const size_t data_
 
     return s;
 }
+
+static char *get_dns_qname_from_ip4(const unsigned char *dgram, const size_t dgram_size) {
+    struct macgonuts_ip4hdr_ctx ip4 = { 0 };
+    struct macgonuts_udphdr_ctx udp = { 0 };
+    struct macgonuts_dnshdr_ctx dns = { 0 };
+    char *qname = NULL;
+
+    if (macgonuts_read_ip4_pkt(&ip4, dgram, dgram_size) != EXIT_SUCCESS
+        || ip4.proto != 0x11) {
+        goto get_dns_qname_from_ip4_epilogue;
+    }
+
+    if (macgonuts_read_udp_pkt(&udp, ip4.payload, ip4.payload_size) != EXIT_SUCCESS) {
+        goto get_dns_qname_from_ip4_epilogue;
+    }
+
+    if (macgonuts_read_dns_pkt(&dns, udp.payload, udp.payload_size) != EXIT_SUCCESS) {
+        goto get_dns_qname_from_ip4_epilogue;
+    }
+
+    qname = (dns.qdcount > 0 && dns.qd->name != NULL) ? (char *)dns.qd->name : NULL;
+
+get_dns_qname_from_ip4_epilogue:
+
+    if (qname != NULL) {
+        dns.qd->name = NULL;
+    }
+
+    if (dns.qd != NULL || dns.an != NULL) {
+        macgonuts_release_dnshdr(&dns);
+    }
+
+    if (udp.payload != NULL) {
+        macgonuts_release_udphdr(&udp);
+    }
+
+    if (ip4.payload != NULL) {
+        macgonuts_release_ip4hdr(&ip4);
+    }
+
+    return qname;
+}
+
+static char *get_dns_qname_from_ip6(const unsigned char *dgram, const size_t dgram_size) {
+    struct macgonuts_ip6hdr_ctx ip6 = { 0 };
+    struct macgonuts_udphdr_ctx udp = { 0 };
+    struct macgonuts_dnshdr_ctx dns = { 0 };
+    char *qname = NULL;
+
+    if (macgonuts_read_ip6_pkt(&ip6, dgram, dgram_size) != EXIT_SUCCESS
+        || ip6.next_header != 0x11) {
+        goto get_dns_qname_from_ip6_epilogue;
+    }
+
+    if (macgonuts_read_udp_pkt(&udp, ip6.payload, ip6.payload_length) != EXIT_SUCCESS) {
+        goto get_dns_qname_from_ip6_epilogue;
+    }
+
+    if (macgonuts_read_dns_pkt(&dns, udp.payload, udp.payload_size) != EXIT_SUCCESS) {
+        goto get_dns_qname_from_ip6_epilogue;
+    }
+
+    qname = (dns.qdcount > 0 && dns.qd->name != NULL) ? (char *)dns.qd->name : NULL;
+
+get_dns_qname_from_ip6_epilogue:
+
+    if (qname != NULL) {
+        dns.qd->name = NULL;
+    }
+
+    if (dns.qd != NULL || dns.an != NULL) {
+        macgonuts_release_dnshdr(&dns);
+    }
+
+    if (udp.payload != NULL) {
+        macgonuts_release_udphdr(&udp);
+    }
+
+    if (ip6.payload != NULL) {
+        macgonuts_release_ip6hdr(&ip6);
+    }
+
+    return qname;
+}
+
+

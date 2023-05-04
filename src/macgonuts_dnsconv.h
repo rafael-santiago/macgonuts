@@ -21,4 +21,6 @@ uint8_t *macgonuts_make_label_from_domain_name(const uint8_t *domain_name,
 
 int macgonuts_is_dnsreq(const unsigned char *ethfrm, const size_t ethfrm_size);
 
+char *macgonuts_get_dns_qname_from_ethernet_frame(const unsigned char *ethfrm, const size_t ethfrm_size);
+
 #endif // MACGONUTS_DNSCONV_H
