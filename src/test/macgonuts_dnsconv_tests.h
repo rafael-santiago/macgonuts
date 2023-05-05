@@ -18,4 +18,6 @@ CUTE_DECLARE_TEST_CASE(macgonuts_make_label_from_domain_name_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_is_dnsreq_tests);
 
+CUTE_DECLARE_TEST_CASE(macgonuts_get_dns_qname_from_ethernet_frame_tests);
+
 #endif // MACGONUTS_TEST_MACGONUTS_DNSCONV_TESTS_H

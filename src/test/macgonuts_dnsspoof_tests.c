@@ -310,23 +310,13 @@ CUTE_TEST_CASE(macgonuts_dnsspoof_tests)
 
     CUTE_ASSERT(macgonuts_dnsspoof(rsk, &spf_layers,
                                    iplist, etc_hoax,
-                                   dns_answer_ttl, non_dns_req_dgram4, non_dns_req_dgram4_size) == EXIT_SUCCESS);
-
-    sent_buf = mock_get_send_buf(&sent_buf_size);
-    CUTE_ASSERT(sent_buf != NULL);
-    CUTE_ASSERT(sent_buf_size == expected_non_dns_req_dgram_redir4_size);
-    CUTE_ASSERT(memcmp(sent_buf, expected_non_dns_req_dgram_redir4, sent_buf_size) == 0);
+                                   dns_answer_ttl, non_dns_req_dgram4, non_dns_req_dgram4_size) == EPROTOTYPE);
 
     CUTE_ASSERT(macgonuts_dnsspoof(rsk, &spf_layers,
                                    iplist, etc_hoax,
                                    dns_answer_ttl,
                                    dns_req_dgram_no_relevant_query4,
-                                   dns_req_dgram_no_relevant_query4_size) == EXIT_SUCCESS);
-
-    sent_buf = mock_get_send_buf(&sent_buf_size);
-    CUTE_ASSERT(sent_buf != NULL);
-    CUTE_ASSERT(sent_buf_size == expected_dns_req_dgram_no_relevant_query_redir4_size);
-    CUTE_ASSERT(memcmp(sent_buf, expected_dns_req_dgram_no_relevant_query_redir4, sent_buf_size) == 0);
+                                   dns_req_dgram_no_relevant_query4_size) == EADDRNOTAVAIL);
 
     CUTE_ASSERT(macgonuts_dnsspoof(rsk, &spf_layers,
                                    iplist, etc_hoax,
@@ -340,11 +330,17 @@ CUTE_TEST_CASE(macgonuts_dnsspoof_tests)
 
     CUTE_ASSERT(macgonuts_read_ethernet_frm(&eth, sent_buf, sent_buf_size) == EXIT_SUCCESS);
     CUTE_ASSERT(eth.ether_type == MACGONUTS_ETHER_TYPE_IP4);
+    CUTE_ASSERT(memcmp(&eth.src_hw_addr[0], &dns_req_dgram_relevant_query4[0], sizeof(eth.src_hw_addr)) == 0);
+    CUTE_ASSERT(memcmp(&eth.dest_hw_addr[0], &dns_req_dgram_relevant_query4[6], sizeof(eth.dest_hw_addr)) == 0);
     CUTE_ASSERT(macgonuts_read_ip4_pkt(&ip4, eth.data, eth.data_size) == EXIT_SUCCESS);
+    CUTE_ASSERT(ip4.dest_addr == 0xC01E4602);
+    CUTE_ASSERT(ip4.src_addr == 0x08080808);
     CUTE_ASSERT(ip4.proto == 17);
     CUTE_ASSERT(macgonuts_read_udp_pkt(&udp, ip4.payload, ip4.payload_size) == EXIT_SUCCESS);
-    CUTE_ASSERT(udp.dest_port == 53);
+    CUTE_ASSERT(udp.src_port == 53);
+    CUTE_ASSERT(udp.dest_port == 1024);
     CUTE_ASSERT(macgonuts_read_dns_pkt(&dns, udp.payload, udp.payload_size) == EXIT_SUCCESS);
+    CUTE_ASSERT(dns.id == 0xAA85);
     CUTE_ASSERT(dns.ancount == 1);
     CUTE_ASSERT(dns.an != NULL);
     CUTE_ASSERT(dns.an->name_size == 18);
@@ -392,23 +388,13 @@ CUTE_TEST_CASE(macgonuts_dnsspoof_tests)
                                    iplist, etc_hoax,
                                    dns_answer_ttl,
                                    non_dns_req_dgram6,
-                                   non_dns_req_dgram6_size) == EXIT_SUCCESS);
-
-    sent_buf = mock_get_send_buf(&sent_buf_size);
-    CUTE_ASSERT(sent_buf != NULL);
-    CUTE_ASSERT(sent_buf_size == expected_non_dns_req_dgram_redir6_size);
-    CUTE_ASSERT(memcmp(sent_buf, expected_non_dns_req_dgram_redir6, sent_buf_size) == 0);
+                                   non_dns_req_dgram6_size) == EPROTOTYPE);
 
     CUTE_ASSERT(macgonuts_dnsspoof(rsk, &spf_layers,
                                    iplist, etc_hoax,
                                    dns_answer_ttl,
                                    dns_req_dgram_no_relevant_query6,
-                                   dns_req_dgram_no_relevant_query6_size) == EXIT_SUCCESS);
-
-    sent_buf = mock_get_send_buf(&sent_buf_size);
-    CUTE_ASSERT(sent_buf != NULL);
-    CUTE_ASSERT(sent_buf_size == expected_dns_req_dgram_no_relevant_query6_size);
-    CUTE_ASSERT(memcmp(sent_buf, expected_dns_req_dgram_no_relevant_query6, sent_buf_size) == 0);
+                                   dns_req_dgram_no_relevant_query6_size) == EADDRNOTAVAIL);
 
     CUTE_ASSERT(macgonuts_dnsspoof(rsk, &spf_layers,
                                    iplist, etc_hoax,
@@ -422,11 +408,17 @@ CUTE_TEST_CASE(macgonuts_dnsspoof_tests)
 
     CUTE_ASSERT(macgonuts_read_ethernet_frm(&eth, sent_buf, sent_buf_size) == EXIT_SUCCESS);
     CUTE_ASSERT(eth.ether_type == MACGONUTS_ETHER_TYPE_IP6);
+    CUTE_ASSERT(memcmp(&eth.src_hw_addr[0], &dns_req_dgram_relevant_query6[0], sizeof(eth.src_hw_addr)) == 0);
+    CUTE_ASSERT(memcmp(&eth.dest_hw_addr[0], &dns_req_dgram_relevant_query6[6], sizeof(eth.dest_hw_addr)) == 0);
     CUTE_ASSERT(macgonuts_read_ip6_pkt(&ip6, eth.data, eth.data_size) == EXIT_SUCCESS);
+    CUTE_ASSERT(memcmp(&ip6.src_addr[0], &dns_req_dgram_relevant_query6[38], sizeof(ip6.src_addr)) == 0);
+    CUTE_ASSERT(memcmp(&ip6.dest_addr[0], &dns_req_dgram_relevant_query6[22], sizeof(ip6.dest_addr)) == 0);
     CUTE_ASSERT(ip6.next_header == 17);
     CUTE_ASSERT(macgonuts_read_udp_pkt(&udp, ip6.payload, ip6.payload_length) == EXIT_SUCCESS);
-    CUTE_ASSERT(udp.dest_port == 53);
+    CUTE_ASSERT(udp.src_port == 53);
+    CUTE_ASSERT(udp.dest_port == 1024);
     CUTE_ASSERT(macgonuts_read_dns_pkt(&dns, udp.payload, udp.payload_size) == EXIT_SUCCESS);
+    CUTE_ASSERT(dns.id == 0xAA85);
     CUTE_ASSERT(dns.ancount == 1);
     CUTE_ASSERT(dns.an != NULL);
     CUTE_ASSERT(dns.an->name_size == 18);

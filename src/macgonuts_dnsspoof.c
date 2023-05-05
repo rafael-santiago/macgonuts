@@ -6,7 +6,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <macgonuts_dnsspoof.h>
-//#include <macgonuts_redirect.h>
 #include <macgonuts_ethfrm.h>
 #include <macgonuts_ip4hdr.h>
 #include <macgonuts_ip6hdr.h>

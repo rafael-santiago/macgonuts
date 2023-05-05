@@ -39,111 +39,6 @@ int macgonuts_get_gateway_addr_info_from_iface(uint8_t *raw, size_t *raw_size, c
     return get_gw_addr_info(raw, raw_size, iface);
 }
 
-static int get_gw_addr6_info(uint8_t *raw, size_t *raw_size, const char *iface) {
-    int fd = -1;
-    char buf[64<<10] = "";
-    ssize_t buf_size = 0;
-    char *bp = NULL;
-    uint8_t *rp = NULL;
-    uint8_t *rp_end = NULL;
-
-    *raw_size = 0;
-
-    if (strcmp(iface, "lo") == 0) {
-        return EXIT_FAILURE;
-    }
-
-    fd = open("/proc/net/ipv6_route", O_RDONLY);
-    if (fd == -1) {
-        return EXIT_FAILURE;
-    }
-
-    buf_size = read(fd, buf, sizeof(buf));
-    close(fd);
-
-    if (buf_size == -1) {
-        return EXIT_FAILURE;
-    }
-
-    bp = strstr(buf, iface);
-    if (bp == NULL) {
-        return EXIT_FAILURE;
-    }
-
-    while (bp != &buf[0] && bp[-1] != '\n') {
-        bp--;
-    }
-
-    if (bp == &buf[0]) {
-        return EXIT_FAILURE;
-    }
-
-    rp = raw;
-    rp_end = rp + 16;
-    while (rp != rp_end) {
-        *rp = get_nbvalue(bp[0]) << 4 | get_nbvalue(bp[1]);
-        bp += 2;
-        rp++;
-    }
-
-    *raw_size = 16;
-
-    return EXIT_SUCCESS;
-}
-
-static int get_gw_addr4_info(uint8_t *raw, size_t *raw_size, const char *iface) {
-    int fd = -1;
-    char buf[64<<10] = "";
-    ssize_t buf_size = 0;
-    char *bp = NULL;
-    char *bp_end = NULL;
-    uint8_t *rp = NULL;
-    uint8_t *rp_end = NULL;
-
-    *raw_size = 0;
-
-    fd = open("/proc/net/route", O_RDONLY);
-    if (fd == -1) {
-        return EXIT_FAILURE;
-    }
-
-    buf_size = read(fd, buf, sizeof(buf));
-    close(fd);
-
-    if (buf_size == -1) {
-        return EXIT_FAILURE;
-    }
-
-    bp = strstr(buf, iface);
-    if (bp == NULL) {
-        return EXIT_FAILURE;
-    }
-
-    bp_end = &buf[0] + buf_size;
-    buf_size = 0;
-    while (buf_size < 3 && bp != bp_end) {
-        buf_size += (*bp == '\t');
-        bp++;
-    }
-
-    if (buf_size != 3 || bp == bp_end) {
-        return EXIT_FAILURE;
-    }
-
-    rp = &raw[0];
-    rp_end = rp + 5;
-    bp -= 2;
-    while (rp != rp_end) {
-        *rp = get_nbvalue(bp[-1]) << 4 | get_nbvalue(bp[0]);
-        bp -= 2;
-        rp++;
-    }
-
-    *raw_size = 4;
-
-    return EXIT_SUCCESS;
-}
-
 int macgonuts_get_addr_from_iface_unix(char *addr_buf, const size_t max_addr_buf_size,
                                        const int addr_version, const char *iface) {
     get_addr_from_iface_func get_addr_from_iface = NULL;
@@ -529,6 +424,111 @@ get_netmask6_epilogue:
     }
 
     return err;
+}
+
+static int get_gw_addr6_info(uint8_t *raw, size_t *raw_size, const char *iface) {
+    int fd = -1;
+    char buf[64<<10] = "";
+    ssize_t buf_size = 0;
+    char *bp = NULL;
+    uint8_t *rp = NULL;
+    uint8_t *rp_end = NULL;
+
+    *raw_size = 0;
+
+    if (strcmp(iface, "lo") == 0) {
+        return EXIT_FAILURE;
+    }
+
+    fd = open("/proc/net/ipv6_route", O_RDONLY);
+    if (fd == -1) {
+        return EXIT_FAILURE;
+    }
+
+    buf_size = read(fd, buf, sizeof(buf));
+    close(fd);
+
+    if (buf_size == -1) {
+        return EXIT_FAILURE;
+    }
+
+    bp = strstr(buf, iface);
+    if (bp == NULL) {
+        return EXIT_FAILURE;
+    }
+
+    while (bp != &buf[0] && bp[-1] != '\n') {
+        bp--;
+    }
+
+    if (bp == &buf[0]) {
+        return EXIT_FAILURE;
+    }
+
+    rp = raw;
+    rp_end = rp + 16;
+    while (rp != rp_end) {
+        *rp = get_nbvalue(bp[0]) << 4 | get_nbvalue(bp[1]);
+        bp += 2;
+        rp++;
+    }
+
+    *raw_size = 16;
+
+    return EXIT_SUCCESS;
+}
+
+static int get_gw_addr4_info(uint8_t *raw, size_t *raw_size, const char *iface) {
+    int fd = -1;
+    char buf[64<<10] = "";
+    ssize_t buf_size = 0;
+    char *bp = NULL;
+    char *bp_end = NULL;
+    uint8_t *rp = NULL;
+    uint8_t *rp_end = NULL;
+
+    *raw_size = 0;
+
+    fd = open("/proc/net/route", O_RDONLY);
+    if (fd == -1) {
+        return EXIT_FAILURE;
+    }
+
+    buf_size = read(fd, buf, sizeof(buf));
+    close(fd);
+
+    if (buf_size == -1) {
+        return EXIT_FAILURE;
+    }
+
+    bp = strstr(buf, iface);
+    if (bp == NULL) {
+        return EXIT_FAILURE;
+    }
+
+    bp_end = &buf[0] + buf_size;
+    buf_size = 0;
+    while (buf_size < 3 && bp != bp_end) {
+        buf_size += (*bp == '\t');
+        bp++;
+    }
+
+    if (buf_size != 3 || bp == bp_end) {
+        return EXIT_FAILURE;
+    }
+
+    rp = &raw[0];
+    rp_end = rp + 5;
+    bp -= 2;
+    while (rp != rp_end) {
+        *rp = get_nbvalue(bp[-1]) << 4 | get_nbvalue(bp[0]);
+        bp -= 2;
+        rp++;
+    }
+
+    *raw_size = 4;
+
+    return EXIT_SUCCESS;
 }
 
 #undef get_nbvalue
