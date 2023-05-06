@@ -18,6 +18,7 @@ CUTE_TEST_CASE(macgonuts_etc_hoax_tests)
                                 "192.30.70.7\t\t\t\t    \t www.404.com ftp.yyz.org\twww.the-[123456789].blau\n"
                                 "\n\n\n\n\n\n\n\n\n"
                                 "cafe::fed1:d000\tkizmiaz\n"
+                                "8.8.8.8 kizmiaz\n"
                                 "# 192.30.70.1 commented.io\n";
     FILE *fp = NULL;
     uint8_t in_addr[16] = { 0 };
@@ -53,6 +54,8 @@ CUTE_TEST_CASE(macgonuts_etc_hoax_tests)
                                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
         { "kizmiaz", 16, { 0xCA, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                                  0x00, 0x00, 0x00, 0x00, 0xFE, 0xD1, 0xD0, 0x00 } },
+        { "kizmiaz", 4, { 0x08, 0x08, 0x08, 0x08, 0x00, 0x00, 0x00, 0x00,
+                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
     }, *test = &test_vector[0], *test_end = test + sizeof(test_vector) / sizeof(test_vector[0]);
     CUTE_ASSERT(macgonuts_open_etc_hoax(NULL) == NULL);
     remove("etc-hoax");
@@ -70,7 +73,7 @@ CUTE_TEST_CASE(macgonuts_etc_hoax_tests)
     CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax_handle, NULL, 3) == EINVAL);
     CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax_handle, "abc", 0) == EINVAL);
     while (test != test_end) {
-        CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size,
+        CUTE_ASSERT(macgonuts_gethostbyname(in_addr, test->expected_in_addr_size, &in_addr_size,
                                             etc_hoax_handle, test->name, strlen(test->name)) == EXIT_SUCCESS);
         CUTE_ASSERT(in_addr_size == test->expected_in_addr_size);
         CUTE_ASSERT(memcmp(in_addr, test->expected_in_addr, in_addr_size) == 0);

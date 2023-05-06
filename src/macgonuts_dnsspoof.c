@@ -29,7 +29,8 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
                                  struct macgonuts_dnshdr_ctx *dnshdr,
                                  macgonuts_etc_hoax_handle *etc_hoax,
                                  const uint32_t dns_answer_ttl,
-                                 uint8_t *data4, const size_t data4_size);
+                                 uint8_t *data4, const size_t data4_size,
+                                 const int ip_version);
 
 int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_layers_ctx *spf_layers,
                        macgonuts_iplist_handle *iplist_handle,
@@ -105,7 +106,7 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         goto do_dnsspoof4_epilogue;
     }
 
-    err = do_dnsspoof_layer4to7(&udp, &dns, etc_hoax, dns_answer_ttl, ip4.payload, ip4.payload_size);
+    err = do_dnsspoof_layer4to7(&udp, &dns, etc_hoax, dns_answer_ttl, ip4.payload, ip4.payload_size, 4);
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof4_epilogue;
@@ -212,7 +213,7 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         goto do_dnsspoof6_epilogue;
     }
 
-    err = do_dnsspoof_layer4to7(&udp, &dns, etc_hoax, dns_answer_ttl, ip6.payload, ip6.payload_length);
+    err = do_dnsspoof_layer4to7(&udp, &dns, etc_hoax, dns_answer_ttl, ip6.payload, ip6.payload_length, 6);
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof6_epilogue;
@@ -289,12 +290,14 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
                                  struct macgonuts_dnshdr_ctx *dnshdr,
                                  macgonuts_etc_hoax_handle *etc_hoax,
                                  const uint32_t dns_answer_ttl,
-                                 uint8_t *data4, const size_t data4_size) {
+                                 uint8_t *data4, const size_t data4_size,
+                                 const int ip_version) {
     int err = EADDRNOTAVAIL;
     struct macgonuts_dns_rr_hdr_ctx *qp = NULL;
     uint8_t in_addr[16] = { 0 };
     size_t in_addr_size = 0;
     uint16_t temp_port = 0;
+    const size_t kWantedInAddrSize[2] = { 16, 4 };
 
     err = macgonuts_read_udp_pkt(udphdr, data4, data4_size);
     if (err != EXIT_SUCCESS) {
@@ -312,7 +315,7 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
 
     err = ENOENT;
     for (qp = dnshdr->qd; qp != NULL && err != EXIT_SUCCESS; qp = qp->next) {
-        err = macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax,
+        err = macgonuts_gethostbyname(in_addr, kWantedInAddrSize[(ip_version == 4)], &in_addr_size, etc_hoax,
                                       (char *)qp->name, qp->name_size);
     }
 

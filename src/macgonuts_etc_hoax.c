@@ -207,8 +207,12 @@ int macgonuts_gethostbyname(uint8_t *in_addr, const size_t in_addr_max_size, siz
     const struct macgonuts_ht_glob_ctx *hp = NULL;
     int err = ENOENT;
 
-    if (in_addr == NULL || in_addr_max_size != 16 || in_addr_size == NULL
-        || etc_hoax == NULL || name == NULL || name_size == 0) {
+    if (in_addr == NULL
+        || (in_addr_max_size != 4 && in_addr_max_size != 16)
+        || in_addr_size == NULL
+        || etc_hoax == NULL
+        || name == NULL
+        || name_size == 0) {
         return EINVAL;
     }
 
@@ -218,7 +222,8 @@ int macgonuts_gethostbyname(uint8_t *in_addr, const size_t in_addr_max_size, siz
 
     for (ep = etc_hoax; ep != NULL && err == ENOENT; ep = ep->next) {
         for (hp = ep->ht_globs; hp != NULL && err == ENOENT; hp = hp->next) {
-            if (macgonuts_memglob((const unsigned char *)name, name_size, hp->ht_glob, hp->ht_glob_size)) {
+            if (ep->in_addr_size == in_addr_max_size
+                && macgonuts_memglob((const unsigned char *)name, name_size, hp->ht_glob, hp->ht_glob_size)) {
                 memcpy(in_addr, ep->in_addr, ep->in_addr_size);
                 *in_addr_size = ep->in_addr_size;
                 err = EXIT_SUCCESS;
