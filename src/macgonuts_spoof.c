@@ -385,7 +385,6 @@ static int macgonuts_spoof6(const macgonuts_socket_t rsk,
         if (err != EXIT_SUCCESS) {
             return err;
         }
-        //memcpy(&ip6hdr.dest_addr[0], &spf_layers->tg_proto_addr[0], sizeof(ip6hdr.dest_addr));
 
         release_memory = 1;
 

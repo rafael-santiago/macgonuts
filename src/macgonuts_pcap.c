@@ -48,14 +48,11 @@ FILE *macgonuts_pcapfile_open(const char *filepath) {
     if (stat(filepath, &st) != 0) {
         pcapfile = fopen(filepath, "wb");
         should_init = 1;
+    } else if (macgonuts_is_pcapfile(filepath)) {
+        pcapfile = fopen(filepath, "ab");
     } else {
-        // TODO(Rafael): Verify if it is a pcap file, if not, fail.
-        if (macgonuts_is_pcapfile(filepath)) {
-            pcapfile = fopen(filepath, "ab");
-        } else {
-            macgonuts_si_error("the existent file `%s` does not seem to be a valid pcap.\n", filepath);
-            return NULL;
-        }
+        macgonuts_si_error("the existent file `%s` does not seem to be a valid pcap.\n", filepath);
+        return NULL;
     }
 
     if (pcapfile == NULL) {

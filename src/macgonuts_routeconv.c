@@ -59,8 +59,7 @@ static int is_outward_dest6(const uint8_t *dest_addr, const uint8_t *net_mask, c
             || andmskbytene(net_mask[12], dest_addr[12], lo_addr[12])
             || andmskbytene(net_mask[13], dest_addr[13], lo_addr[13])
             || andmskbytene(net_mask[14], dest_addr[14], lo_addr[14])
-            || andmskbytene(net_mask[15], dest_addr[15], lo_addr[15])
-);
+            || andmskbytene(net_mask[15], dest_addr[15], lo_addr[15]));
 }
 
 #undef andmskbytene

@@ -49,10 +49,6 @@ int macgonuts_spoof_task(void) {
 
     n = macgonuts_get_option("fake-pkts-amount", NULL);
     if (n != NULL) {
-        /*if (should_redirect) {
-            macgonuts_si_error("--fake-pkts-amount is pointless if you want to redirect.\n");
-            return EXIT_FAILURE;
-        }*/
         if (macgonuts_is_valid_number(n)) {
             g_Spfgd.spoofing.total = atoi(n);
         } else {

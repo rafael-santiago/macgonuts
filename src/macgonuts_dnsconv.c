@@ -331,5 +331,3 @@ get_dns_qname_from_ip6_epilogue:
 
     return qname;
 }
-
-
