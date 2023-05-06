@@ -58,7 +58,7 @@ CUTE_TEST_CASE(macgonuts_pcap_tests)
         CUTE_ASSERT(pcapfile != NULL);
         CUTE_ASSERT(macgonuts_pcapfile_write(pcapfile, &frame_from_wire4[0], sizeof(frame_from_wire4)) == EXIT_SUCCESS);
         macgonuts_pcapfile_close(pcapfile);
-        CUTE_ASSERT(system("tcpdump -r test.pcap --immediate-mode > tcpdump-out.txt") == 0);
+        CUTE_ASSERT(system("tcpdump -n -r test.pcap --immediate-mode > tcpdump-out.txt") == 0);
         CUTE_ASSERT(stat("tcpdump-out.txt", &st) == 0);
         data = (char *)malloc(st.st_size);
         CUTE_ASSERT(data != NULL);
@@ -66,12 +66,12 @@ CUTE_TEST_CASE(macgonuts_pcap_tests)
         fread(&data[0], st.st_size, 1, pcapfile);
         fclose(pcapfile);
         remove("tcpdump-out.txt");
-        CUTE_ASSERT(strstr(data, "10.0.2.15.40899 > 192.168.5.1.domain") != NULL);
+        CUTE_ASSERT(strstr(data, "10.0.2.15.40899 > 192.168.5.1.53") != NULL);
         free(data);
         pcapfile = macgonuts_pcapfile_open("test.pcap");
         CUTE_ASSERT(macgonuts_pcapfile_write(pcapfile, &frame_from_wire6[0], sizeof(frame_from_wire6)) == EXIT_SUCCESS);
         macgonuts_pcapfile_close(pcapfile);
-        CUTE_ASSERT(system("tcpdump -r test.pcap --immediate-mode > tcpdump-out.txt") == 0);
+        CUTE_ASSERT(system("tcpdump -n -r test.pcap --immediate-mode > tcpdump-out.txt") == 0);
         remove("test.pcap");
         CUTE_ASSERT(stat("tcpdump-out.txt", &st) == 0);
         data = (char *)malloc(st.st_size);
@@ -80,7 +80,7 @@ CUTE_TEST_CASE(macgonuts_pcap_tests)
         fread(&data[0], st.st_size, 1, pcapfile);
         fclose(pcapfile);
         remove("tcpdump-out.txt");
-        next_data = strstr(data, "10.0.2.15.40899 > 192.168.5.1.domain");
+        next_data = strstr(data, "10.0.2.15.40899 > 192.168.5.1.53");
         CUTE_ASSERT(next_data != NULL);
         CUTE_ASSERT(strstr(next_data, "IP6 2001:cafe::2 > baba:ca00::1:ff00:3: ICMP6, neighbor solicitation") != NULL);
         free(data);
