@@ -550,6 +550,7 @@ static int execute_dnsspoof_tasks(struct dnsspoof_task_ctx **tasks, const size_t
                 macgonuts_si_warn("unable to undo spoof at `%s`, maybe you better run...\n",
                                   (*task)->spfgd.usrinfo.tg_address);
             }
+            task++;
         } while (task != tasks_end);
     }
 

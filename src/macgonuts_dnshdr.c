@@ -47,6 +47,7 @@ unsigned char *macgonuts_make_dns_pkt(const struct macgonuts_dnshdr_ctx *dnshdr,
         *pkt_size = 0;
         return NULL;
     }
+    memset(pkt, 0, *pkt_size);
 
     pkt[ 0] = (dnshdr->id >> 8) & 0xFF;
     pkt[ 1] = dnshdr->id & 0xFF;

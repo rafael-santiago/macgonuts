@@ -146,11 +146,12 @@ uint8_t *macgonuts_make_label_from_domain_name(const uint8_t *domain_name,
     *label_size = macgonuts_get_qname_size_from_dname(domain_name, domain_name_size);
 
     if (*label_size > 0) {
-        label = (uint8_t *)malloc(*label_size);
+        label = (uint8_t *)malloc(*label_size + 1);
         if (label == NULL) {
             *label_size = 0;
             return NULL;
         }
+        memset(label, 0, *label_size + 1);
         lp = label;
         while (d_name != d_name_end) {
             if (*d_name == '.' || (d_name + 1) == d_name_end) {

@@ -10,11 +10,16 @@
 #include <macgonuts_dnsspoof.h>
 #include <macgonuts_redirect.h>
 #include <macgonuts_dnsconv.h>
+#include <macgonuts_etc_hoax.h>
+#include <macgonuts_ipconv.h>
 #include <macgonuts_status_info.h>
 
 int macgonuts_dnsspoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spfgd,
                                      const unsigned char *ethfrm, const size_t ethfrm_size) {
     char *spoofed_hostname = NULL;
+    uint8_t in_addr[16] = { 0 };
+    size_t in_addr_size;
+    char lit_addr[64];
     assert(spfgd != NULL
            && spfgd->handles.wire > -1);
 
@@ -28,9 +33,18 @@ int macgonuts_dnsspoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spf
                                  ethfrm, ethfrm_size, NULL);
     } else {
         spoofed_hostname = macgonuts_get_dns_qname_from_ethernet_frame(ethfrm, ethfrm_size);
+        if (spoofed_hostname != NULL
+            && !(macgonuts_gethostbyname(&in_addr[0], spfgd->layers.proto_addr_size, &in_addr_size,
+                                      macgonuts_dnsspoof_etc_hoax(spfgd),
+                                      spoofed_hostname, strlen(spoofed_hostname)) == EXIT_SUCCESS
+                 && macgonuts_raw_ip2literal(&lit_addr[0], sizeof(lit_addr) - 1,
+                                             in_addr, in_addr_size) == EXIT_SUCCESS)) {
+            strncpy(lit_addr, "(null)", 6);
+        }
         if (spoofed_hostname != NULL) {
-            macgonuts_si_info("spoofed resolution for host name <%s> sent to `%s`.\n", spoofed_hostname,
-                                                                                       spfgd->usrinfo.tg_address);
+            macgonuts_si_info("spoofed DNS resolution (<%s@%s>) sent to `%s`.\n", spoofed_hostname,
+                                                                                  lit_addr,
+                                                                                  spfgd->usrinfo.tg_address);
             free(spoofed_hostname);
         } else {
             macgonuts_si_warn("unable to get hostname from ethernet frame.\n");

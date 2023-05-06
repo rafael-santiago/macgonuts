@@ -25,6 +25,8 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
 static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_hoax,
                         const uint32_t dns_answer_ttl, const unsigned char *ethfrm, const size_t ethfrm_size);
 
+static uint8_t get_random_ttl(void);
+
 static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
                                  struct macgonuts_dnshdr_ctx *dnshdr,
                                  macgonuts_etc_hoax_handle *etc_hoax,
@@ -130,7 +132,7 @@ static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
     free(ip4.payload);
 
     ip4.id++;
-    ip4.ttl -= 12;
+    ip4.ttl = get_random_ttl();
     ip4.tlen = udp.payload_size + (ip4.ihl<<2) + 8;
 
     temp_addr = ip4.src_addr;
@@ -233,7 +235,7 @@ static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_h
         err = ENOMEM;
         goto do_dnsspoof6_epilogue;
     }
-    ip6.hop_limit -= 12;
+    ip6.hop_limit = get_random_ttl();
     ip6.payload_length = payload_size & 0xFFFF;
 
     assert(eth.data != NULL);
@@ -352,6 +354,21 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
     }
 
     return err;
+}
+
+static uint8_t get_random_ttl(void) {
+    uint8_t ttl = 0;
+    int fd = open("/dev/urandom", O_RDONLY);
+    if (fd == -1) {
+        return 42;
+    }
+    while (read(fd, &ttl, sizeof(ttl)) != sizeof(ttl)
+        || ttl == 0
+        || ttl == 255) {
+        usleep(10);
+    }
+    close(fd);
+    return ttl;
 }
 
 #undef ETH_FRM_SIZE
