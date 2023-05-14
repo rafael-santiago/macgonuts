@@ -16,7 +16,7 @@ CUTE_DECLARE_TEST_CASE(macgonuts_get_gateway_addr_info_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_gateway_hw_addr_tests);
 
-//CUTE_DECLARE_TEST_CASE(macgonuts_get_maxaddr_from_iface_tests);
+CUTE_DECLARE_TEST_CASE(macgonuts_get_maxaddr_from_iface_tests);
 
 CUTE_DECLARE_TEST_CASE(macgonuts_get_netmask_from_iface_tests);
 

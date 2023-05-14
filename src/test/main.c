@@ -97,7 +97,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_get_gateway_addr_info_tests);
     CUTE_RUN_TEST(macgonuts_get_gateway_addr_info_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_gateway_hw_addr_tests);
-    //CUTE_RUN_TEST(macgonuts_get_maxaddr_from_iface_tests);
+    CUTE_RUN_TEST(macgonuts_get_maxaddr_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_get_netmask_from_iface_tests);
     CUTE_RUN_TEST(macgonuts_create_release_socket_tests);
     CUTE_RUN_TEST(macgonuts_set_iface_promisc_on_off_tests);

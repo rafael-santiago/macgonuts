@@ -20,11 +20,9 @@ void get_gateway_addr(uint8_t *addr);
 
 void get_gateway_iface(char *iface);
 
-/*
 int get_maxaddr4_from_iface(uint8_t *addr, const char *iface);
 
 int get_maxaddr6_from_iface(uint8_t *addr, const char *iface);
-*/
 
 int get_netmask4_from_iface(uint8_t *addr, const char *iface);
 

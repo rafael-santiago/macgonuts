@@ -24,11 +24,10 @@ int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size
 int macgonuts_get_gateway_addr_info_from_iface(uint8_t *raw, size_t *raw_size, const int ip_version, const char *iface);
 
 int macgonuts_get_gateway_hw_addr(uint8_t *hw_addr, const size_t hw_addr_size);
-/*
+
 int macgonuts_get_maxaddr_from_iface(const char *iface_buf,
                                      const size_t iface_buf_size,
                                      uint8_t *raw, const int ip_version);
-*/
 
 int macgonuts_get_netmask_from_iface(const char *iface_buf, const size_t iface_buf_size,
                                      uint8_t *raw, const int ip_version);

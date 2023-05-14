@@ -157,7 +157,6 @@ void get_gateway_iface(char *iface) {
     memcpy(iface, gw_iface, strlen(gw_iface));
 }
 
-/*
 int get_maxaddr4_from_iface(uint8_t *addr, const char *iface) {
     FILE *proc = NULL;
     char cmd[1<<10] = "";
@@ -181,7 +180,6 @@ int get_maxaddr4_from_iface(uint8_t *addr, const char *iface) {
     *p = 0;
     return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], buf_size - 2);
 }
-*/
 
 int get_netmask4_from_iface(uint8_t *addr, const char *iface) {
     FILE *proc = NULL;

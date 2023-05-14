@@ -46,7 +46,6 @@ CUTE_TEST_CASE(macgonuts_get_gateway_hw_addr_tests)
     CUTE_ASSERT(macgonuts_get_gateway_hw_addr(&hw_addr[0], 0) == EINVAL);
 CUTE_TEST_CASE_END
 
-/*
 CUTE_TEST_CASE(macgonuts_get_maxaddr_from_iface_tests)
     uint8_t netmask[16] = { 0 };
     uint8_t expected[16] = { 0 };
@@ -66,7 +65,6 @@ CUTE_TEST_CASE(macgonuts_get_maxaddr_from_iface_tests)
     CUTE_ASSERT(system(cmd) == 0);
     CUTE_ASSERT(memcmp(&netmask[0], &expected[0], 16) == 0);
 CUTE_TEST_CASE_END
-*/
 
 CUTE_TEST_CASE(macgonuts_get_netmask_from_iface_tests)
     uint8_t netmask[16] = { 0 };
