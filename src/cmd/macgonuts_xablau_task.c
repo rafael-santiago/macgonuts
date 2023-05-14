@@ -11,22 +11,36 @@
 #include <macgonuts_socket.h>
 #include <macgonuts_ipconv.h>
 #include <macgonuts_get_ethaddr.h>
+#include <macgonuts_oui_lookup.h>
 #include <macgonuts_status_info.h>
 
 #define XABLAU_DO_ARP                   1
 #define XABLAU_DO_NDP (XABLAU_DO_ARP << 1)
 #define XABLAU_WTF2DO                   0
+#define OUI_DBPATH                      "/usr/local/share/macgonuts/etc/oui"
 
-static int do_xablau(const char *lo_iface, const size_t lo_iface_size, const unsigned char discover_type, FILE *out);
+static int do_xablau(const char *lo_iface, const size_t lo_iface_size,
+                     const unsigned char discover_type,
+                     const int oui, const char *oui_dbpath,
+                     FILE *out);
 
 static unsigned char discover_wtf2do(const char *lo_iface);
 
-int do_arp_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, const size_t lo_iface_size);
+int do_arp_hunt(FILE *out,
+                const int oui, const char *oui_dbpath,
+                const macgonuts_socket_t rsk,
+                const char *lo_iface, const size_t lo_iface_size);
 
-int do_ndp_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, const size_t lo_iface_size);
+int do_ndp_hunt(FILE *out,
+                const int oui, const char *oui_dbpath,
+                const macgonuts_socket_t rsk,
+                const char *lo_iface, const size_t lo_iface_size);
 
-int do_meta_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, const size_t lo_iface_size,
-                 size_t proto_size);
+int do_meta_hunt(FILE *out,
+                 const int oui, const char *oui_dbpath,
+                 const macgonuts_socket_t rsk,
+                 const char *lo_iface, const size_t lo_iface_size,
+                 const size_t proto_size);
 
 static void sigint_watchdog(int signo);
 
@@ -38,6 +52,9 @@ int macgonuts_xablau_task(void) {
     const char *out = NULL;
     FILE *out_fp = NULL;
     int err = EXIT_FAILURE;
+    int oui = 0;
+    const char *oui_dbpath = NULL;
+    struct stat st = { 0 };
 
     if (lo_iface == NULL) {
         macgonuts_si_error("--lo-iface option is missing.\n");
@@ -49,6 +66,15 @@ int macgonuts_xablau_task(void) {
 
     if (discover_type == 0) {
         discover_type = XABLAU_WTF2DO;
+    }
+
+    oui = macgonuts_get_bool_option("oui", 0);
+    if (oui) {
+        oui_dbpath = macgonuts_get_option("oui-dbpath", OUI_DBPATH);
+        if (stat(oui_dbpath, &st) != EXIT_SUCCESS) {
+            macgonuts_si_error("unable to open oui vendor database at `%s`.\n", oui_dbpath);
+            return EXIT_FAILURE;
+        }
     }
 
     out = macgonuts_get_option("out", NULL);
@@ -64,7 +90,10 @@ int macgonuts_xablau_task(void) {
 
     assert(out_fp != NULL);
 
-    err = do_xablau(lo_iface, strlen(lo_iface), discover_type, out_fp);
+    err = do_xablau(lo_iface, strlen(lo_iface),
+                    discover_type,
+                    oui, oui_dbpath,
+                    out_fp);
 
     if (out_fp != NULL && out_fp != stdout) {
         fclose(out_fp);
@@ -74,11 +103,15 @@ int macgonuts_xablau_task(void) {
 }
 
 int macgonuts_xablau_task_help(void) {
-    macgonuts_si_print("use: macgonuts xablau --lo-iface=<label> [--ipv4 --ipv6 --out=<filepath>]\n");
+    macgonuts_si_print("use: macgonuts xablau --lo-iface=<label> [--ipv4 --ipv6 --oui --oui-dbpath=<filepath> "
+                       "--out=<filepath>]\n");
     return EXIT_SUCCESS;
 }
 
-static int do_xablau(const char *lo_iface, const size_t lo_iface_size, const unsigned char discover_type, FILE *out) {
+static int do_xablau(const char *lo_iface, const size_t lo_iface_size,
+                     const unsigned char discover_type,
+                     const int oui, const char *oui_dbpath,
+                     FILE *out) {
     unsigned char temp = discover_type;
     int err_ct = 0;
     macgonuts_socket_t rsk = -1;
@@ -111,14 +144,20 @@ static int do_xablau(const char *lo_iface, const size_t lo_iface_size, const uns
     macgonuts_si_info("hit Ctrl + C to interrupt the targets hunting...\n%s", (out == stdout) ? "\n" : "");
 
     if (temp & XABLAU_DO_ARP) {
-        if (do_arp_hunt(out, rsk, lo_iface, lo_iface_size) != EXIT_SUCCESS) {
+        if (do_arp_hunt(out,
+                        oui, oui_dbpath,
+                        rsk,
+                        lo_iface, lo_iface_size) != EXIT_SUCCESS) {
             err_ct++;
             macgonuts_si_error("unable to find out ipv4 targets.\n");
         }
     }
 
     if (!g_ShouldExit && (temp & XABLAU_DO_NDP)) {
-        if (do_ndp_hunt(out, rsk, lo_iface, lo_iface_size) != EXIT_SUCCESS) {
+        if (do_ndp_hunt(out,
+                        oui, oui_dbpath,
+                        rsk,
+                        lo_iface, lo_iface_size) != EXIT_SUCCESS) {
             err_ct++;
             macgonuts_si_error("unable to find out ipv6 targets.\n");
         }
@@ -146,16 +185,25 @@ static unsigned char discover_wtf2do(const char *lo_iface) {
     return discover_type;
 }
 
-int do_arp_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, const size_t lo_iface_size) {
-    return do_meta_hunt(out, rsk, lo_iface, lo_iface_size, 4);
+int do_arp_hunt(FILE *out,
+                const int oui, const char *oui_dbpath,
+                const macgonuts_socket_t rsk,
+                const char *lo_iface, const size_t lo_iface_size) {
+    return do_meta_hunt(out, oui, oui_dbpath, rsk, lo_iface, lo_iface_size, 4);
 }
 
-int do_ndp_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, const size_t lo_iface_size) {
-    return do_meta_hunt(out, rsk, lo_iface, lo_iface_size, 16);
+int do_ndp_hunt(FILE *out,
+                const int oui, const char *oui_dbpath,
+                const macgonuts_socket_t rsk,
+                const char *lo_iface, const size_t lo_iface_size) {
+    return do_meta_hunt(out, oui, oui_dbpath, rsk, lo_iface, lo_iface_size, 16);
 }
 
-int do_meta_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, const size_t lo_iface_size,
-                 size_t proto_size) {
+int do_meta_hunt(FILE *out,
+                 const int oui, const char *oui_dbpath,
+                 const macgonuts_socket_t rsk,
+                 const char *lo_iface, const size_t lo_iface_size,
+                 const size_t proto_size) {
     uint8_t last_addr[16] = { 0 };
     uint8_t curr_addr[16] = { 0 };
     uint8_t netmask[16] = { 0 };
@@ -168,6 +216,7 @@ int do_meta_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, 
     const char status[2][4] = { { '?', ' ', '?', ' ' }, { ' ', '?', ' ', '?' } };
     const char progress[] = { '|', '-', '\\', '/' };
     size_t p = 0;
+    char vendor_id[256] = "";
 
     if (macgonuts_get_netmask_from_iface(lo_iface,
                                          lo_iface_size,
@@ -210,14 +259,27 @@ int do_meta_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, 
 
     macgonuts_inc_raw_ip(&last_addr[0], proto_size);
 
-    snprintf(output, sizeof(output),
-             ((proto_size == 4) ? "%-20s %-33s\n" : "%-40s %-50s\n"), "IP Address", "MAC Address");
+    if (!oui) {
+        snprintf(output, sizeof(output),
+                 ((proto_size == 4) ? "%-20s %-33s\n" : "%-40s %-50s\n"), "IP Address", "MAC Address");
+    } else {
+        snprintf(output, sizeof(output),
+                 ((proto_size == 4) ? "%-20s %-33s %-33s\n" : "%-40s %-25s %-25s\n"),
+                 "IP Address", "MAC Address", "Vendor");
+    }
 
     fprintf(out, "%s", output);
 
-    fprintf(out, (proto_size == 4) ? "--------------------------------------\n"
-                                   : "--------------------------------------"
-                                     "--------------------\n");
+    if (!oui) {
+        fprintf(out, (proto_size == 4) ? "--------------------------------------\n"
+                                       : "--------------------------------------"
+                                         "--------------------\n");
+    } else {
+        fprintf(out, (proto_size == 4) ? "------------------------------------------------------------------------"
+                                         "----------------------------\n"
+                                       : "--------------------------------------"
+                                         "------------------------------------------------------------------------\n");
+    }
 
     do {
         if (macgonuts_raw_ip2literal(lit_addr, sizeof(lit_addr) - 1, &curr_addr[0], proto_size) != EXIT_SUCCESS) {
@@ -232,8 +294,21 @@ int do_meta_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, 
                                                                                       hw_addr[3],
                                                                                       hw_addr[4],
                                                                                       hw_addr[5]);
-            snprintf(output, sizeof(output) - 1,
-                    ((proto_size == 4) ? "%-20s %-33s\n" : "%-40s %-50s\n"), lit_addr, mac_addr);
+            if (!oui) {
+                snprintf(output, sizeof(output) - 1,
+                        ((proto_size == 4) ? "%-20s %-33s\n" : "%-40s %-50s\n"), lit_addr, mac_addr);
+            } else {
+                if (macgonuts_oui_lookup(vendor_id, sizeof(vendor_id) - 1,
+                                         &hw_addr[0], sizeof(hw_addr),
+                                         oui_dbpath) == ENOENT) {
+                    snprintf(vendor_id, sizeof(vendor_id) - 1, "(unk)");
+                }
+                snprintf(output, sizeof(output) - 1,
+                        ((proto_size == 4) ? "%-20s %-33s %-33s\n" : "%-40s %-25s %-25s\n"), lit_addr,
+                                                                                             mac_addr,
+                                                                                             vendor_id);
+
+            }
             if (out == stdout) {
                 fprintf(out, "\r                                                                               \r");
             }
@@ -250,9 +325,16 @@ int do_meta_hunt(FILE *out, const macgonuts_socket_t rsk, const char *lo_iface, 
         macgonuts_si_print("\r                                                                                 \r");
     }
 
-    fprintf(out, (proto_size == 4) ? "--------------------------------------\n"
-                                   : "--------------------------------------"
-                                     "--------------------\n");
+    if (!oui) {
+        fprintf(out, (proto_size == 4) ? "--------------------------------------\n"
+                                       : "--------------------------------------"
+                                         "--------------------\n");
+    } else {
+        fprintf(out, (proto_size == 4) ? "------------------------------------------------------------------------"
+                                         "----------------------------\n"
+                                       : "--------------------------------------"
+                                         "------------------------------------------------------------------------\n");
+    }
 
     if (out != stdout) {
         macgonuts_si_print("\r                                                                                 \r");
@@ -268,3 +350,4 @@ static void sigint_watchdog(int signo) {
 #undef XABLAU_DO_ARP
 #undef XABLAU_DO_NDP
 #undef XABLAU_WTF2DO
+#undef OUI_DBPATH
