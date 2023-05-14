@@ -35,6 +35,7 @@
 #include "macgonuts_iplist_tests.h"
 #include "macgonuts_dnsspoof_tests.h"
 #include "macgonuts_routeconv_tests.h"
+#include "macgonuts_oui_lookup_tests.h"
 
 CUTE_TEST_CASE(macgonuts_static_lib_tests)
     // INFO(Rafael): Since all working modules can call some status info module convenience
@@ -121,6 +122,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_iplist_tests);
     CUTE_RUN_TEST(macgonuts_dnsspoof_tests);
     CUTE_RUN_TEST(macgonuts_is_outward_dest_tests);
+    CUTE_RUN_TEST(macgonuts_oui_lookup_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(macgonuts_static_lib_tests);
