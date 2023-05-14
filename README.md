@@ -31,7 +31,7 @@ Again, ``Macgonuts`` is an ``ARP/NDP`` swiss army knife with batteries included 
 **Sponsoring**:  I have not been running this project for profit. It is only a thing that I do at my spare time. It is a
 weekend project. I try to evol it according to necessities I have been facing up during my information security
 professional experience. If you liked it or it is being useful to you somehow and you really want to contribute
-with money, try to redirect it to local charity institution, a ONG of your choice or even your own community.
+with money, try to redirect it to a local charity institution, a ONG of your choice or even your own community.
 You can also do [pull requests](https://github.com/rafael-santiago/macgonuts/pulls) proposing improvements.
 Do some [bug report](https://github.com/rafael-santiago/macgonuts/issues) if a bug is annoying you. Maybe you should
 also instruct people about network security issues by using this software showing them ways of being protected against
