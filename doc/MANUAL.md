@@ -14,6 +14,7 @@
     - [The isolate command](#the-isolate-command)
     - [The mayhem command](#the-mayhem-command)
     - [The dnsspoof command](#the-dnsspoof-command)
+    - [The xablau command](#the-xablau-command)
 
 ## What does ``macgonuts`` is for?
 
@@ -405,10 +406,10 @@ Well, by default ``dnsspoof`` command expects at least two options:
 - ``target-addrs``
 
 Being ``lo-iface`` option the name of your network interface card, the ``NIC`` that you will use during the
-``DNS spoof attack`` and, the ``target-addrs`` is just about a ip addresses listing that will be the potential
+``DNS spoof attack`` and, ``target-addrs`` is just about an ip addresses listing that will be the potential
 targets of this attack.
 
-The core of ``dnsspoof`` command is a special file called (drum roll, one more pun) `/etc/hoax`. It is similar to
+The core of ``dnsspoof`` command is a special file called (drum roll, one more lousy pun) `/etc/hoax`. It is similar to
 your nearest ``/etc/hosts`` file. By default ``macgonuts`` will install a copy of it but you need to tune it up
 according to your interests (the default installation path is ``/usr/local/share/macgonuts/etc/hoax``).
 When you do not make the location of the ``/etc/hoax`` explicit by using ``etc-hoax`` option, ``macgonuts``
@@ -424,7 +425,7 @@ The syntax of a ``/etc/hoax`` is as follows:
 8.8.8.8                         *.fakebook.com
 ```
 
-As you see, it is quite similar to ``/etc/hosts``. The ``dnssppof`` command will use the address mappings present
+As you see, it is quite similar to ``/etc/hosts``. The ``dnsspoof`` command will use the address mappings present
 in passed ``/etc/hoax`` to base all ``DNS`` resolutions that will deceive the attacking victims.
 
 Now, story time!!!!!!
@@ -477,11 +478,11 @@ ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 \
 > --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600
 ```
 
-Now the hosts from ``192.168.142`` to ``192.168.145`` when trying to reach ``Ulisses`` by his
+Now the hosts from ``192.168.5.142`` to ``192.168.5.145`` when trying to reach ``Ulisses`` by his
 host name will reach ``Ninguém``.
 
 But ``Ulisses`` is smart and do not want to warn them of his ``FQDN escape``. Supposing that ``ulisses.lo``
-goes off it does not necessarily will do ``ninguem.lo`` goes off and, it could alarm ``Polifemo`` and his not
+goes off, it does not necessarily will do ``ninguem.lo`` goes off too, and, it could alarm ``Polifemo`` and his not
 so clever gang... Trying to make his fakery more perfect, ``Ulisses`` uses ``undo-spoof`` option:
 
 ```
@@ -521,12 +522,113 @@ By the way, it will make the attack easier to promote. The ``dns-addrs`` option 
 to spoof ``DNS`` replies that come from a specify ``DNS`` server (even external).
 
 Did you see as easy is to promote a ``DNS`` spoof attack with ``macgonuts``? You do not need to pile up ``n`` tools,
-emit ``OS`` commands to your network stack etc. You should just inform the context of your attack e tchum...
+emit ``OS`` commands to your network stack etc. You should just inform the context of your attack... e tchum!
 
 ``dnsspoof`` was a reborn of ``dnsf_ckr``. A tool of mine that I wrote some years ago but it had a lot of
 "operational gaps". This reborn works as I wanted since that time and it still supports ``IPv6`` environments! :metal:
 
 Congrats! Now you are a master of ``FQDN`` forgery and falsehoods with ``macgonuts dnsspoof`` command! ``Geppetto`` is
 proud of you ``Pinocchio``! Use it with care.
+
+[``Back``](#topics)
+
+### The xablau command
+
+>If you are looking around for possible targets to your offensive actions, maybe ``macgonuts`` features
+one command to do it and, this command is...
+
+<p align="center">
+    <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/xablau.gif" title="xablau is the key!"
+     alt="XABLAU" width="320" height2="200" />
+</p>
+
+<h1 align="center">X    A    B    L    A    U    !</h1>
+
+By using ``xablau`` you are able to discover all reachable nodes that could be potential targets to your
+``layer-2`` misconducts and, there is not much secret on using it but: story time!!!!
+
+Once upon time ``Trollman Burbank`` was looking for targets to have some fun with ``macgonuts``. He had
+just ingress into the network by getting a valid ``IP`` but he knew nothing about other hosts. Someone
+tell him to use a weird command called "xablau". "- Xa who?" he said... Even so, he gaves ``xablau``'s
+quick help a try:
+
+```
+tr011m4n@e||TV:~# macgonuts help xablau
+use: macgonuts xablau --lo-iface=<label> [--ipv4 --ipv6 --oui --oui-dbpath=<filepath> --out=<filepath>]
+```
+
+Hmmm, nice, he knew that his system was using ``eth4`` to access your ``LAN`` besides also know that this local
+network was about a ``IPv4`` network. So he ran the following ``xablau``:
+
+```
+tr011m4n@e||TV:~# macgonuts xablau --lo-iface=eth4 --ipv4
+```
+
+After a time ``macgonuts`` started discovering some network nodes and listing it to ``Trollman``:
+
+```
+tr011m4n@e||TV:~# macgonuts xablau --lo-iface=eth4 --ipv4
+(...)
+IP Address           MAC Address
+--------------------------------------
+192.168.2.1          08:71:B8:C3:FF:0B
+192.168.2.10         DE:AD:00:00:BE:EF
+192.168.2.42         BE:EF:00:00:DE:AD
+192.168.2.128        7E:57:E0:7E:57:E0
+192.168.2.192        CA:FE:FE:D1:DA:00
+192.168.2.242        BE:BA:CA:FE:CA:FE
+--------------------------------------
+```
+
+Okay, but Trollman was also accessing a ``IPv6`` local network through ``eth6`` interface. He also wanted
+to have some fun with this ``IPv6``:
+
+```
+tr011m4n@e||TV:~# macgonuts xablau --lo-iface=eth6 --ipv6
+(...)
+IP Address                               MAC Address
+----------------------------------------------------------
+2001:db8:0:f101::3                       08:00:27:97:64:91
+----------------------------------------------------------
+```
+
+Now, nice facts about ``xablau`` command:
+
+- ``Trollman`` could have interrupted the process of discovering any time just by hitting ``Ctrl + C``, too.
+- ``Trollman`` could have redirected the discovering output to a file by using ``--out=<filepath>`` option and,
+  the output would be appended to this indicated file.
+- If ``Trollman`` would not have passed ``--ipv4`` option, ``macgonuts`` will try all addressing versions available for the
+  indicated interface. I meant ``IPv4`` and/or ``IPv6``.
+- So passing ``--ipv4`` and ``--ipv6`` is a thing that in Portuguese we say "perfunctório", do not do that. ``Macgonuts``
+  will understand that you want both when you pass none...
+
+Now you should are asking: is there something more that I should known about ``xablau``? Well...
+
+<p align="center">
+    <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/oui.gif" title="puns, puns, lousy puns!!!"
+     alt="OUI" width="320" height2="200" />
+</p>
+
+If you want to get information about vendor of the prey ``NICs`` found out in your ``LAN`` the ``--oui`` option
+is what you are looking for:
+
+```
+tr011m4n@e||TV:~# macgonuts xablau --lo-iface=eth0 --ipv4 --oui
+(...)
+IP Address           MAC Address                       Vendor
+----------------------------------------------------------------------------------------------------
+192.168.5.1          D8:77:01:19:91:BD                 Intelbras
+----------------------------------------------------------------------------------------------------
+```
+
+By default, ``macgonuts`` will use the standard installed ``OUI`` database at ``/usr/local/share/macgonuts/etc/oui``.
+If you want to override it you can pass the path of the new database by using ``--oui-dbpath=<filepath>``.
+
+Done! Now you know how to sniff your prey through the wire. You are a ``xablau`` master!
+
+Maybe you are still asking ``WTF "xablau" does mean??!``. ``Xablau`` is a kind of "meta-expression" that I picked
+from one brazilian TV show favorite of mine, called ``Larica Total``. A kind of tribute for the best food TV show
+in the Universe. A no-frills food TV show I would say... If you did not understand, relax, ``xablau`` is ``xablau``
+and even, not knowing, you are from now on a ``f_cking-amazing-xablau-master``. Congrats!
 
 [``Back``](#topics)
