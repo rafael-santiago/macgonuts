@@ -309,8 +309,11 @@ macgonuts_get_spoof_layers_basic_info_epilogue:
 
 static int macgonuts_spoof4(const macgonuts_socket_t rsk,
                             struct macgonuts_spoof_layers_ctx *spf_layers) {
-    struct macgonuts_ethfrm_ctx ethfrm = { 0 };
-    struct macgonuts_arphdr_ctx arphdr = { 0 };
+    struct macgonuts_ethfrm_ctx ethfrm;
+    struct macgonuts_arphdr_ctx arphdr;
+
+    memset(&ethfrm, 0, sizeof(ethfrm));
+    memset(&arphdr, 0, sizeof(arphdr));
 
     if (spf_layers->spoof_frm == NULL || spf_layers->spoof_frm_size == 0) {
         assert(sizeof(ethfrm.dest_hw_addr) == sizeof(spf_layers->tg_hw_addr));
@@ -358,14 +361,20 @@ static int macgonuts_spoof4(const macgonuts_socket_t rsk,
 
 static int macgonuts_spoof6(const macgonuts_socket_t rsk,
                             struct macgonuts_spoof_layers_ctx *spf_layers) {
-    struct macgonuts_ethfrm_ctx ethfrm = { 0 };
-    struct macgonuts_ip6hdr_ctx ip6hdr = { 0 };
-    struct macgonuts_ip6_pseudo_hdr_ctx ip6phdr = { 0 };
-    struct macgonuts_icmphdr_ctx icmphdr = { 0 };
-    struct macgonuts_ndp_nsna_hdr_ctx uns_na_hdr = { 0 };
+    struct macgonuts_ethfrm_ctx ethfrm;
+    struct macgonuts_ip6hdr_ctx ip6hdr;
+    struct macgonuts_ip6_pseudo_hdr_ctx ip6phdr;
+    struct macgonuts_icmphdr_ctx icmphdr;
+    struct macgonuts_ndp_nsna_hdr_ctx uns_na_hdr;
     int err = EFAULT;
     size_t icmp_pkt_size = 0;
     uint8_t release_memory = 0;
+
+    memset(&ethfrm, 0, sizeof(ethfrm));
+    memset(&ip6hdr, 0, sizeof(ip6hdr));
+    memset(&ip6phdr, 0, sizeof(ip6phdr));
+    memset(&icmphdr, 0, sizeof(icmphdr));
+    memset(&uns_na_hdr, 0, sizeof(uns_na_hdr));
 
     if (spf_layers->spoof_frm == NULL || spf_layers->spoof_frm_size == 0) {
         assert(sizeof(ethfrm.dest_hw_addr) == sizeof(spf_layers->tg_hw_addr));

@@ -105,6 +105,10 @@ static int macgonuts_help_task(void) {
                            "eavesdropping people's communication\nwithout them knowing is wrong and a crime. Do "
                            "not be a jerk, respect people rights. Macgonuts is an\nARP/NDP swiss army knife with "
                            "batteries included but ethics you need to bring it from home!! ;)\n\n");
+        macgonuts_si_print("Remember to be ethical when using it. Macgonuts is a tool designed to ethical hacking, "
+                           "pentests and\nred teams. Once it stated, when using this tool you are assuming that any "
+                           "damage, data loss or even\nlaw infringements that some wrong action taken by you could "
+                           "cause is of your entire resposibility.\n\n");
         macgonuts_si_print("Bug reports, feedback etc: <https://github.com/rafael-santiago/macgonuts/issues>.\n\n");
         return EXIT_SUCCESS;
     }

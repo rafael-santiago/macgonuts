@@ -23,7 +23,8 @@ unsigned char *macgonuts_format_filter(const char *filter_str, const size_t filt
     if (fmt_filter == NULL) {
         return NULL;
     }
-    memset(fmt_filter, 0, filter_str_size);
+
+    memset(fmt_filter, 0, temp_fmt_filter_size);
 
     fp = filter_str;
     fp_end = fp + filter_str_size;
@@ -61,7 +62,7 @@ unsigned char *macgonuts_format_filter(const char *filter_str, const size_t filt
                     break;
 
                 default:
-                    *f_fp = *fp;
+                    *f_fp = (unsigned char)*fp;
                     break;
             }
         } else {
@@ -73,6 +74,7 @@ unsigned char *macgonuts_format_filter(const char *filter_str, const size_t filt
 
     *fmt_filter_size = f_fp - fmt_filter;
     fmt_filter = (unsigned char *)realloc(fmt_filter, *fmt_filter_size);
+
     if (fmt_filter == NULL) {
         *fmt_filter_size = 0;
     }
@@ -103,7 +105,7 @@ struct macgonuts_filter_glob_ctx **macgonuts_get_filter_glob_ctx(char **filters,
     curr_filter_glob = filter_globs;
 
     while (curr_filter != filters_end) {
-        (*curr_filter_glob) = (struct macgonuts_filter_glob_ctx *)malloc(sizeof(struct macgonuts_filter_glob_ctx *));
+        (*curr_filter_glob) = (struct macgonuts_filter_glob_ctx *)malloc(sizeof(struct macgonuts_filter_glob_ctx));
         if (curr_filter_glob == NULL) {
             macgonuts_release_filter_glob_ctx(filter_globs, filters_nr);
             return NULL;

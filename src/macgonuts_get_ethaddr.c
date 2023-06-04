@@ -62,8 +62,8 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
                            const char *layer3addr, const size_t layer3addr_size,
                            const macgonuts_socket_t rsk, const char *iface) {
     int err = EFAULT;
-    struct macgonuts_ethfrm_ctx ethfrm = { 0 };
-    struct macgonuts_arphdr_ctx arp_req_hdr = { 0 }, arp_rep_hdr = { 0 };
+    struct macgonuts_ethfrm_ctx ethfrm;
+    struct macgonuts_arphdr_ctx arp_req_hdr, arp_rep_hdr;
     char src_hw_addr[20] = { 0 };
     char src_ip_addr[20] = { 0 };
     int ntry = 10;
@@ -72,6 +72,10 @@ static int get_ethaddr_ip4(uint8_t *hw_addr, const size_t hw_addr_size,
     unsigned char *arp_req_pkt = NULL;
     size_t arp_req_pkt_size = 0;
     unsigned char arp_rep_pkt[1<<10] = { 0 };
+
+    memset(&ethfrm, 0, sizeof(ethfrm));
+    memset(&arp_req_hdr, 0, sizeof(arp_req_hdr));
+    memset(&arp_rep_hdr, 0, sizeof(arp_rep_hdr));
 
     // INFO(Rafael): Crafting ethernet frame.
     err = macgonuts_get_raw_ether_addr(ethfrm.dest_hw_addr, sizeof(ethfrm.dest_hw_addr),
@@ -220,11 +224,11 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
     char src_hw_addr[20] = { 0 };
     char src_ip_addr[50] = { 0 };
     int err = EFAULT;
-    struct macgonuts_ethfrm_ctx ethfrm_req = { 0 }, ethfrm_rep = { 0 };
-    struct macgonuts_ip6hdr_ctx ip6hdr_req = { 0 }, ip6hdr_rep = { 0 };
-    struct macgonuts_icmphdr_ctx icmphdr_req = { 0 }, icmphdr_rep = { 0 };
-    struct macgonuts_ndp_nsna_hdr_ctx ndp_ns_hdr = { 0 }, ndp_na_hdr = { 0 };
-    struct macgonuts_ip6_pseudo_hdr_ctx ip6phdr_req = { 0 };
+    struct macgonuts_ethfrm_ctx ethfrm_req, ethfrm_rep;
+    struct macgonuts_ip6hdr_ctx ip6hdr_req, ip6hdr_rep;
+    struct macgonuts_icmphdr_ctx icmphdr_req, icmphdr_rep;
+    struct macgonuts_ndp_nsna_hdr_ctx ndp_ns_hdr, ndp_na_hdr;
+    struct macgonuts_ip6_pseudo_hdr_ctx ip6phdr_req;
     unsigned char *ns_pkt = NULL;
     size_t ns_pkt_size = 0, icmp_pkt_size = 0;
     int done = 0;
@@ -232,6 +236,16 @@ static int get_ethaddr_ip6(uint8_t *hw_addr, const size_t hw_addr_size,
     unsigned char na_pkt[1<<10] = { 0 };
     ssize_t na_pkt_size = 0;
     uint8_t unicast_dest_addr[16] = { 0 };
+
+    memset(&ethfrm_req, 0, sizeof(ethfrm_req));
+    memset(&ethfrm_rep, 0, sizeof(ethfrm_rep));
+    memset(&ip6hdr_req, 0, sizeof(ip6hdr_req));
+    memset(&ip6hdr_rep, 0, sizeof(ip6hdr_rep));
+    memset(&icmphdr_req, 0, sizeof(icmphdr_req));
+    memset(&icmphdr_rep, 0, sizeof(icmphdr_rep));
+    memset(&ndp_ns_hdr, 0, sizeof(ndp_ns_hdr));
+    memset(&ndp_na_hdr, 0, sizeof(ndp_na_hdr));
+    memset(&ip6phdr_req, 0, sizeof(ip6phdr_req));
 
     err = macgonuts_get_mac_from_iface(src_hw_addr, sizeof(src_hw_addr), iface);
     if (err != EXIT_SUCCESS) {

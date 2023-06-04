@@ -219,7 +219,7 @@ void macgonuts_inc_raw_ip(uint8_t *raw, const size_t raw_size) {
 int macgonuts_addrs_from_same_network(const uint8_t *addr_a, const uint8_t *addr_b,
                                       const uint8_t *netmask, const int ip_version) {
     size_t addr_size;
-    uint8_t mask[2][16] = { 0 };
+    uint8_t mask[2][16] = { { 0 }, { 0 } };
     const uint8_t *ap = NULL;
     const uint8_t *ap_end = NULL;
     const uint8_t *np = NULL;

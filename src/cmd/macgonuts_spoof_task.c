@@ -18,7 +18,7 @@
 #include <macgonuts_metaspoofer.h>
 #include <macgonuts_status_info.h>
 
-static struct macgonuts_spoofing_guidance_ctx g_Spfgd = { 0 };
+static struct macgonuts_spoofing_guidance_ctx g_Spfgd;
 
 static void sigint_watchdog(int signo);
 
@@ -26,6 +26,8 @@ int macgonuts_spoof_task(void) {
     const char *n = NULL;
     int err = EFAULT;
     int should_redirect = 0;
+
+    memset(&g_Spfgd, 0, sizeof(g_Spfgd));
 
     g_Spfgd.usrinfo.lo_iface = macgonuts_get_option("lo-iface", NULL);
     if (g_Spfgd.usrinfo.lo_iface == NULL) {

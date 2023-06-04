@@ -254,9 +254,13 @@ local function build_install() : result type int {
 
     $pkg_artifacts_dest.add_item("/usr/local/bin/macgonuts");
     $pkg_artifacts_dest.add_item("/usr/local/man/man1/macgonuts.1");
+    $pkg_artifacts_dest.add_item("/usr/local/share/macgonuts/etc/hoax");
+    $pkg_artifacts_dest.add_item("/usr/local/share/macgonuts/etc/oui");
 
     $pkg_artifacts_src.add_item("../bin/macgonuts");
     $pkg_artifacts_src.add_item("../doc/man1/macgonuts.1");
+    $pkg_artifacts_src.add_item("../etc/hoax");
+    $pkg_artifacts_src.add_item("../etc/oui");
 
     var a type int;
     $a = 0;
@@ -287,6 +291,8 @@ local function build_uninstall() : result type int {
 
     $pkg_artifacts_src.add_item("/usr/local/bin/macgonuts");
     $pkg_artifacts_src.add_item("/usr/local/man/man1/macgonuts.1");
+    $pkg_artifacts_src.add_item("/usr/local/share/macgonuts/etc/hoax");
+    $pkg_artifacts_src.add_item("/usr/local/share/macgonuts/etc/oui");
 
     var a type int;
     $a = 0;

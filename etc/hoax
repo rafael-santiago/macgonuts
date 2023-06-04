@@ -1,0 +1,23 @@
+# Copyright (c) 2023, Rafael Santiago
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+#
+# Hi there! This is an example of what is the syntax of a etc/hoax file.
+# In general it is quite similar to the classic etc/hosts but here
+# each entry can be associated to one explicit FQDN or a glob-based FQDN
+#
+# Remember to be ethical when using it. I am not responsible for any
+# misuse of this file or even a misuse of Macgonuts as whole. Macgonuts is
+# a tool designed to ethical hacking, pentests and red teams. Once it stated,
+# when using this tool you are assuming that any damage, data loss or even
+# law infringements that some wrong action taken by you could cause is of
+# your entire resposibility.
+
+# IPv6 or IPv4 address          FQDN or a glob based on a FQDN, btw, this is a commentary! ;)
+
+# 7357:7357:0:7357::5           faketory.socialnetworkingsite.com
+# 7357:7357:0:7357::5           *.login[123456789].socialmediasite.com
+# 1.2.3.4                       fakelife?.socialnetworkingsite.com
+# 171.171.171.171               fake-plastic-tree.socialmediasite.com

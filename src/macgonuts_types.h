@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -33,6 +34,11 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <signal.h>
+#if defined(__FreeBSD__)
+# include <sys/param.h>
+# include <sys/sysctl.h>
+# include <net/route.h>
+#endif // defined(__FreeBSD__)
 
 #if defined(__unix__)
 # define MACGONUTS_DEFAULT_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
@@ -41,6 +47,10 @@
 #define MACGONUTS_VERSION "v1"
 
 #define MACGONUTS_METAINFO_NR 16
+
+#if defined(__FreeBSD__)
+# define ENODATA ENOATTR
+#endif // defined(__FreeBSD__)
 
 typedef int macgonuts_socket_t;
 

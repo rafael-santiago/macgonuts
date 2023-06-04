@@ -56,6 +56,8 @@ int macgonuts_get_addr_from_iface_unix(char *addr_buf, const size_t max_addr_buf
     return get_addr_from_iface(addr_buf, max_addr_buf_size, iface);
 }
 
+#if defined(__linux__)
+
 int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size,
                                     uint8_t *raw, size_t *raw_size) {
     char buf[64<<10] = "";
@@ -110,6 +112,73 @@ int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size
     *raw_size = (rp - raw);
     return EXIT_SUCCESS;
 }
+
+#elif defined(__FreeBSD__)
+
+int macgonuts_get_gateway_addr_info(char *iface_buf, const size_t iface_buf_size,
+                                    uint8_t *raw, size_t *raw_size) {
+    int err = EXIT_FAILURE;
+    int mib[6];
+    size_t buf_size = 0;
+    char *buf = NULL;
+    struct rt_msghdr *rtp = NULL;
+    struct sockaddr *sa = NULL;
+    struct sockaddr_in *sk_in = NULL;
+
+    if (iface_buf == NULL
+        || iface_buf_size == 0
+        || raw == 0
+        || raw_size == NULL) {
+        return EINVAL;
+    }
+
+    *raw_size = 0;
+
+    mib[0] = CTL_NET;
+    mib[1] = AF_ROUTE;
+    mib[2] = 0;
+    mib[3] = 0;
+    mib[4] = NET_RT_DUMP;
+    mib[5] = 0;
+
+    if (sysctl(mib, 6, NULL, &buf_size, NULL, 0) == -1) {
+        goto macgonuts_get_gateway_addr_info_epilogue;
+    }
+
+    buf = (char *)malloc(buf_size);
+
+    if (sysctl(mib, 6, buf, &buf_size, NULL, 0) == -1) {
+        goto macgonuts_get_gateway_addr_info_epilogue;
+    }
+
+    rtp = (struct rt_msghdr *)buf;
+    sa = (struct sockaddr *) (rtp + 1);
+    sa = (struct sockaddr *)(SA_SIZE(sa) + (char *)sa);
+    sk_in = (struct sockaddr_in *)sa;
+    memcpy(&raw[0], &sk_in->sin_addr.s_addr, 4);
+    *raw_size = 4;
+
+    if (iface_buf_size < IFNAMSIZ
+        || if_indextoname(rtp->rtm_index, iface_buf) == NULL) {
+        *raw_size = 0;
+        memset(&raw[0], 0, 4);
+        goto macgonuts_get_gateway_addr_info_epilogue;
+    }
+
+    err = EXIT_SUCCESS;
+
+macgonuts_get_gateway_addr_info_epilogue:
+
+    if (buf != NULL) {
+        free(buf);
+    }
+
+    return err;
+}
+
+#else
+# error Some code wanted.
+#endif // defined(__linux__)
 
 int macgonuts_get_netmask_from_iface(const char *iface_buf, const size_t iface_buf_size,
                                      uint8_t *raw, const int ip_version) {
@@ -204,14 +273,16 @@ int macgonuts_get_gateway_hw_addr(uint8_t *hw_addr, const size_t hw_addr_size) {
     return err;
 }
 
-
 static int get_addr4_from_iface(char *addr_buf, const size_t max_addr_buf_size, const char *iface) {
     int sockfd = -1;
-    struct ifreq req = { 0 };
+    struct ifreq req;
     struct sockaddr *addr = NULL;
     int err = EFAULT;
 
+    memset(&req, 0, sizeof(req));
+
     sockfd = socket(PF_INET, SOCK_DGRAM, 0);
+
     if (sockfd == -1) {
         err = errno;
         goto get_addr4_from_iface_epilogue;
@@ -272,10 +343,15 @@ get_addr6_from_iface_epilogue:
 }
 
 static int get_maxaddr4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
-    struct ifreq ifr = { 0 };
+    struct ifreq ifr;
     int err = EFAULT;
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    int sockfd = -1;
     uint8_t netmask[4] = { 0 };
+
+    memset(&ifr, 0, sizeof(ifr));
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
     if (sockfd == -1) {
         err = errno;
         goto get_maxaddr4_epilogue;
@@ -336,6 +412,9 @@ static int get_maxaddr6(const char *iface_buf, const size_t iface_buf_size, uint
         if (ifp->ifa_addr->sa_family == AF_INET6
             && strcmp(ifp->ifa_name, iface_buf) == 0) {
             memcpy(&in_addr[0], &(((struct sockaddr_in6 *)(ifp->ifa_addr)))->sin6_addr.s6_addr, 16);
+            if (in_addr[0] == 0xFE && in_addr[1] == 0x80) {
+                continue;
+            }
             memcpy(&netmask[0], &(((struct sockaddr_in6 *)(ifp->ifa_netmask)))->sin6_addr.s6_addr, 16);
             for (n = 0; n < 16; n++) {
                 prefixlen += ((netmask[n] >> 7) & 1) +
@@ -371,9 +450,14 @@ get_maxaddr6_epilogue:
 }
 
 static int get_netmask4(const char *iface_buf, const size_t iface_buf_size, uint8_t *raw) {
-    struct ifreq ifr = { 0 };
+    struct ifreq ifr;
     int err = EFAULT;
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    int sockfd = -1;
+
+    memset(&ifr, 0, sizeof(ifr));
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
     if (sockfd == -1) {
         err = errno;
         goto get_netmask4_epilogue;
@@ -425,6 +509,8 @@ get_netmask6_epilogue:
 
     return err;
 }
+
+#if defined(__linux__)
 
 static int get_gw_addr6_info(uint8_t *raw, size_t *raw_size, const char *iface) {
     int fd = -1;
@@ -530,5 +616,107 @@ static int get_gw_addr4_info(uint8_t *raw, size_t *raw_size, const char *iface) 
 
     return EXIT_SUCCESS;
 }
+
+#elif defined(__FreeBSD__)
+
+static int get_gw_addr4_info(uint8_t *raw, size_t *raw_size, const char *iface) {
+    int err = EXIT_FAILURE;
+    int mib[6];
+    size_t buf_size = 0;
+    char *buf = NULL;
+    char *bp = NULL;
+    char *bp_end = NULL;
+    struct rt_msghdr *rtp = NULL;
+    struct sockaddr *sa = NULL;
+    struct sockaddr_in *sk_in = NULL;
+    unsigned int if_index = if_nametoindex(iface);
+
+    if (if_index == 0) {
+        goto get_gw_addr4_info_epilogue;
+    }
+
+    *raw_size = 0;
+
+    mib[0] = CTL_NET;
+    mib[1] = AF_ROUTE;
+    mib[2] = 0;
+    mib[3] = 0;
+    mib[4] = NET_RT_DUMP;
+    mib[5] = 0;
+
+    if (sysctl(mib, 6, NULL, &buf_size, NULL, 0) == -1) {
+        goto get_gw_addr4_info_epilogue;
+    }
+
+    buf = (char *)malloc(buf_size);
+
+    if (sysctl(mib, 6, buf, &buf_size, NULL, 0) == -1) {
+        goto get_gw_addr4_info_epilogue;
+    }
+
+    bp = buf;
+    bp_end = bp + buf_size;
+
+    while (bp < bp_end && err != EXIT_SUCCESS) {
+        rtp = (struct rt_msghdr *)bp;
+        if (rtp->rtm_index == if_index) {
+            sa = (struct sockaddr *) (rtp + 1);
+            sa = (struct sockaddr *)(SA_SIZE(sa) + (char *)sa);
+            sk_in = (struct sockaddr_in *)sa;
+            memcpy(&raw[0], &sk_in->sin_addr.s_addr, 4);
+            *raw_size = 4;
+            err = EXIT_SUCCESS;
+        }
+        bp += rtp->rtm_msglen;
+    }
+
+get_gw_addr4_info_epilogue:
+
+    if (buf != NULL) {
+        free(buf);
+    }
+
+    return err;
+}
+
+static int get_gw_addr6_info(uint8_t *raw, size_t *raw_size, const char *iface) {
+    char cmd[1<<10] = "";
+    FILE *proc = NULL;
+    char *cp = NULL;
+    int err = EXIT_FAILURE;
+    uint8_t dummy[16] = { 0 };
+
+    *raw_size = 0;
+
+    snprintf(cmd, sizeof(cmd) - 1, "netstat -6rn | grep %s", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        goto get_gw_addr6_info_epilogue;
+    }
+
+    fread(cmd, 1, sizeof(cmd), proc);
+    cp = strstr(cmd, " ");
+    if (cp != NULL) {
+        *cp = 0;
+    }
+
+    err = macgonuts_get_raw_cidr(raw, dummy, cmd, strlen(cmd));
+
+    if (err == EXIT_SUCCESS) {
+        *raw_size = 16;
+    }
+
+get_gw_addr6_info_epilogue:
+
+    if (proc != NULL) {
+        pclose(proc);
+    }
+
+    return err;
+}
+
+#else
+# error Some code wanted.
+#endif
 
 #undef get_nbvalue

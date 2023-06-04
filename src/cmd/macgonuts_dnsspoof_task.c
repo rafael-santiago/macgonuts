@@ -196,13 +196,13 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
     const char **dns_addr = NULL;
     const char **dns_addrs_end = NULL;
     char iface_buf[256] = "";
-    uint8_t gw_addr[2][16] = { 0 };
-    size_t gw_addr_size[2] = { 0 };
+    uint8_t gw_addr[2][16];
+    size_t gw_addr_size[2];
     size_t gw_i = 0;
-    uint8_t iface_netmask[2][16] = { 0 };
+    uint8_t iface_netmask[2][16];
     size_t iface_size = 0;
     int ip_version;
-    uint8_t iface_addr[2][16] = { 0 };
+    uint8_t iface_addr[2][16];
     char iface_addr_buf[256] = "";
     typedef enum {
         kNone = 0,
@@ -225,6 +225,11 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
            && target_addrs_nr > 0
            && etc_hoax_handle != NULL
            && hoax_ttl > 0);
+
+    memset(&gw_addr[0], 0, sizeof(gw_addr));
+    memset(&iface_netmask[0], 0, sizeof(iface_netmask));
+    memset(&iface_addr[0], 0, sizeof(iface_addr));
+    memset(&sk_info[0], 0, sizeof(sk_info));
 
     *tasks_nr = 0;
 

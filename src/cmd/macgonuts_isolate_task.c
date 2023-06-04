@@ -21,7 +21,7 @@
 #include <macgonuts_spoof.h>
 #include <macgonuts_metaspoofer.h>
 
-static struct macgonuts_spoofing_guidance_ctx g_Spfgd = { 0 };
+static struct macgonuts_spoofing_guidance_ctx g_Spfgd;
 
 static int do_isolate(void);
 
@@ -44,6 +44,8 @@ int macgonuts_isolate_task(void) {
     const char *fake_pkts_amount = NULL;
     char **no_route_to = NULL;
     size_t no_route_to_nr = 0;
+
+    memset(&g_Spfgd, 0, sizeof(g_Spfgd));
 
     g_Spfgd.usrinfo.lo_iface = macgonuts_get_option("lo-iface", NULL);
     if (g_Spfgd.usrinfo.lo_iface == NULL) {

@@ -506,11 +506,15 @@ sched_mayhem_unicast_epilogue:
 }
 
 static int sched_mayhem_range(struct macgonuts_spoofing_guidance_ctx **spfgd, const size_t spoof_threads_nr) {
-    uint8_t curr_tg_addr[16] = { 0 };
-    uint8_t end_tg_addr[16] = { 0 };
+    uint8_t curr_tg_addr[16];
+    uint8_t end_tg_addr[16];
     size_t proto_addr_size = (*spfgd)->layers.proto_addr_size;
     int err = EXIT_SUCCESS;
-    uint8_t addr[2][16] = { 0 };
+    uint8_t addr[2][16];
+
+    memset(&curr_tg_addr[0], 0, sizeof(curr_tg_addr));
+    memset(&end_tg_addr[0], 0, sizeof(end_tg_addr));
+    memset(&addr[0], 0, sizeof(addr));
 
     memcpy(&curr_tg_addr[0], (*spfgd)->metainfo.arg[2], proto_addr_size);
     memcpy(&end_tg_addr[0], ((*spfgd)->metainfo.arg[2] + 16), proto_addr_size);

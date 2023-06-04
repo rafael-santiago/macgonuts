@@ -29,6 +29,8 @@ macgonuts-cmdtool-tests.prologue() {
     $ldflags = hefesto.sys.get_option("ldflags");
     if (hefesto.sys.os_name() == "linux") {
         $ldflags.add_item("-ldl");
+    } else if (hefesto.sys.os_name() == "freebsd") {
+        $ldflags.add_item("-lexecinfo");
     }
     $sources.ls(".*\\.c$");
     $appname = "macgonuts-cmdtool-tests";

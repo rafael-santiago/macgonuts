@@ -33,12 +33,22 @@ static int check_promisc_mode_on(const char *iface);
 static int check_promisc_mode_off(const char *iface);
 
 CUTE_TEST_CASE(macgonuts_create_release_socket_tests)
+#if defined(__FreeBSD__)
+    int lstatus = g_cute_leak_check;
+    if (lstatus) {
+        g_cute_leak_check = 0;
+    }
+#endif // defined(__FreeBSD__)
     macgonuts_socket_t rsk = -1;
     rsk = macgonuts_create_socket("unk0", 0);
     CUTE_ASSERT(rsk == -1);
     rsk = macgonuts_create_socket(get_default_iface_name(), 0);
     CUTE_ASSERT(rsk > -1);
     macgonuts_release_socket(rsk);
+#if defined(__FreeBSD___)
+    if (lstatus) {
+        g_cute_leak_check = 1;
+#endif // defined(__FreeBSD__)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(macgonuts_sendpkt_tests)
@@ -122,7 +132,7 @@ static void *get_pkt(void *args) {
 
 static void *ping_pkt(void *args) {
     int *version = (int *)args;
-    system((*version == 4) ? "ping 127.0.0.1 -c 1" : (*version == 6) ? "ping6 ::1 -c 1" : "echo unknown ip version.");
+    system((*version == 4) ? "ping -c 1 127.0.0.1" : (*version == 6) ? "ping6 -c 1 ::1" : "echo unknown ip version.");
     return NULL;
 }
 

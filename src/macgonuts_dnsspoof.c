@@ -88,16 +88,24 @@ int macgonuts_dnsspoof(const macgonuts_socket_t rsk, struct macgonuts_spoof_laye
 
 static int do_dnsspoof4(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_hoax,
                         const uint32_t dns_answer_ttl, const unsigned char *ethfrm, const size_t ethfrm_size) {
-    struct macgonuts_ethfrm_ctx eth = { 0 };
-    struct macgonuts_ip4hdr_ctx ip4 = { 0 };
-    struct macgonuts_ip4_pseudo_hdr_ctx ip4p = { 0 };
-    struct macgonuts_udphdr_ctx udp = { 0 };
-    struct macgonuts_dnshdr_ctx dns = { 0 };
-    int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
+    struct macgonuts_ethfrm_ctx eth;
+    struct macgonuts_ip4hdr_ctx ip4;
+    struct macgonuts_ip4_pseudo_hdr_ctx ip4p;
+    struct macgonuts_udphdr_ctx udp;
+    struct macgonuts_dnshdr_ctx dns;
+    int err = EXIT_FAILURE;
     unsigned char *spoofed_answer = NULL;
     size_t spoofed_answer_size = 0;
     uint8_t temp_mac[6] = { 0 };
     uint32_t temp_addr = 0;
+
+    memset(&eth, 0, sizeof(eth));
+    memset(&ip4, 0, sizeof(ip4));
+    memset(&ip4p, 0, sizeof(ip4p));
+    memset(&udp, 0, sizeof(udp));
+    memset(&dns, 0, sizeof(dns));
+
+    err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof4_epilogue;
@@ -195,16 +203,24 @@ do_dnsspoof4_epilogue:
 
 static int do_dnsspoof6(macgonuts_socket_t rsk, macgonuts_etc_hoax_handle *etc_hoax,
                         const uint32_t dns_answer_ttl, const unsigned char *ethfrm, const size_t ethfrm_size) {
-    struct macgonuts_ethfrm_ctx eth = { 0 };
-    struct macgonuts_ip6hdr_ctx ip6 = { 0 };
-    struct macgonuts_ip6_pseudo_hdr_ctx ip6p = { 0 };
-    struct macgonuts_udphdr_ctx udp = { 0 };
-    struct macgonuts_dnshdr_ctx dns = { 0 };
+    struct macgonuts_ethfrm_ctx eth;
+    struct macgonuts_ip6hdr_ctx ip6;
+    struct macgonuts_ip6_pseudo_hdr_ctx ip6p;
+    struct macgonuts_udphdr_ctx udp;
+    struct macgonuts_dnshdr_ctx dns;
     size_t payload_size = 0;
     unsigned char *spoofed_answer = NULL;
     size_t spoofed_answer_size = 0;
     uint8_t temp_mac[6] = { 0 };
-    int err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
+    int err = EXIT_FAILURE;
+
+    memset(&eth, 0, sizeof(eth));
+    memset(&ip6, 0, sizeof(ip6));
+    memset(&ip6p, 0, sizeof(ip6p));
+    memset(&udp, 0, sizeof(udp));
+    memset(&dns, 0, sizeof(dns));
+
+    err = macgonuts_read_ethernet_frm(&eth, ethfrm, ethfrm_size);
 
     if (err != EXIT_SUCCESS) {
         goto do_dnsspoof6_epilogue;
