@@ -74,8 +74,6 @@ static int sync_macgonuts_bpf_fifo_create(const macgonuts_socket_t sockfd);
 
 static size_t flush_bpf_device(struct socket_fifo_ctx *skf, const macgonuts_socket_t sockfd);
 
-static int get_blen(macgonuts_socket_t sockfd);
-
 int macgonuts_bpf_fifo_init(void) {
     g_MacgonutsBPFFifo.sk_head = NULL;
     g_MacgonutsBPFFifo.sk_tail = NULL;
@@ -160,42 +158,32 @@ int macgonuts_bpf_fifo_create(const macgonuts_socket_t sockfd) {
     return err;
 }
 
-static int get_blen(const macgonuts_socket_t sockfd) {
-    int value = -1;
-    return (ioctl(sockfd, BIOCGBLEN, &value) != -1) ? value : 0;
-}
-
 static size_t flush_bpf_device(struct socket_fifo_ctx *skf, const macgonuts_socket_t sockfd) {
-    struct bpf_hdr *bpf_buf = NULL;
+    unsigned char *bpf_buf = NULL;
     struct bpf_hdr *bpf_pkt = NULL;
-    char *p = NULL;
-    char *p_end = NULL;
-    int buf_len = get_blen(sockfd);
+    unsigned char *p = NULL;
+    unsigned char *p_end = NULL;
     ssize_t bytes_total = -1;
     size_t flushes_nr = 0;
 
-    if (buf_len == 0) {
-        return 0;
-    }
-
-    bpf_buf = (struct bpf_hdr *)malloc(buf_len);
+    bpf_buf = (unsigned char *)malloc(MACGONUTS_BPF_BLEN);
     if (bpf_buf == NULL) {
         return 0;
     }
 
-    memset(bpf_buf, 0, buf_len);
+    memset(bpf_buf, 0, MACGONUTS_BPF_BLEN);
 
-    bytes_total = read(sockfd, bpf_buf, buf_len);
+    bytes_total = read(sockfd, bpf_buf, MACGONUTS_BPF_BLEN);
     if (bytes_total <= 0) {
         goto flush_bpf_device_epilogue;
     }
 
-    p = (char *)bpf_buf;
-    p_end = (char *)bpf_buf + bytes_total;
+    p = bpf_buf;
+    p_end = bpf_buf + bytes_total;
     while (p < p_end) {
         bpf_pkt = (struct bpf_hdr *)p;
         flushes_nr += (ethframe_fifo_ctx_enqueue(&skf->fifo.tail,
-                                                 (unsigned char *)(bpf_pkt + bpf_pkt->bh_hdrlen),
+                                                 (unsigned char *)(p + bpf_pkt->bh_hdrlen),
                                                  bpf_pkt->bh_datalen) == EXIT_SUCCESS);
         p += BPF_WORDALIGN(bpf_pkt->bh_hdrlen + bpf_pkt->bh_caplen);
     }
@@ -299,7 +287,6 @@ static int ethframe_fifo_ctx_dequeue(struct ethframe_fifo_ctx **eff, unsigned ch
     struct ethframe_fifo_ctx *next_frame = NULL;
 
     if ((*eff) == NULL) {
-        // TODO(Rafael): Read from BPF device all available packet by enqueueing them all.
         *frame_size = 0;
         return ENODATA;
     }

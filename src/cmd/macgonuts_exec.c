@@ -6,6 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 #include <cmd/macgonuts_exec.h>
+#if defined(__FreeBSD__)
+# include <freebsd/macgonuts_bpf_fifo.h>
+#endif // defined(__FreeBSD__)
 #include <cmd/macgonuts_option.h>
 #include <cmd/macgonuts_spoof_task.h>
 #include <cmd/macgonuts_eavesdrop_task.h>
@@ -53,25 +56,43 @@ int macgonuts_exec(const int argc, const char **argv) {
             sizeof(g_MacgonutsCmdTasks) / sizeof(g_MacgonutsCmdTasks[0]);
     macgonuts_set_argc_argv(argc, argv);
     task = macgonuts_get_raw_option(1);
+#if defined(__FreeBSD__)
+    int err = EXIT_FAILURE;
+#endif // defined(__FreeBSD__)
+
     if (task == NULL) {
         macgonuts_si_error("no task informed.\n");
         return EXIT_FAILURE;
     }
+
     if (strcmp(task, "--version") == 0) {
         return macgonuts_version_task();
     }
+
     do {
         if (strcmp(tp->name, task) == 0) {
             task_subprogram = tp->task;
         }
         tp++;
     } while (tp != tp_end && task_subprogram == macgonuts_unknown_task);
+
     if (task_subprogram != macgonuts_unknown_task
         && task_subprogram != macgonuts_help_task
         && task_subprogram != macgonuts_version_task) {
         macgonuts_print_random_banner();
     }
+
+#if defined(__FreeBSD__)
+    err = macgonuts_bpf_fifo_init();
+    if (err == EXIT_SUCCESS) {
+        err = task_subprogram();
+        macgonuts_bpf_fifo_deinit();
+    }
+
+    return err;
+#else
     return task_subprogram();
+#endif // defined(__FreeBSD__)
 }
 
 static int macgonuts_unknown_task(void) {
@@ -100,7 +121,7 @@ static int macgonuts_help_task(void) {
         macgonuts_si_print("Macgonuts is Copyright (C) 2022-2023 by Rafael Santiago and licensed under BSD-4.\n"
                            "This is a free software. You can redistribute it and/or modify under the terms of "
                            "BSD-4 license.\n\n");
-        macgonuts_si_print("Use this software at your own responsability and risk. I am not responsible for any "
+        macgonuts_si_print("Use this software at your own responsibility and risk. I am not responsible for any "
                            "misuse of it,\nincluding some kind of damage, data loss etc. Sniffing network, "
                            "eavesdropping people's communication\nwithout them knowing is wrong and a crime. Do "
                            "not be a jerk, respect people rights. Macgonuts is an\nARP/NDP swiss army knife with "
@@ -109,7 +130,7 @@ static int macgonuts_help_task(void) {
                            "pentests and\nred teams. Once it stated, when using this tool you are assuming that any "
                            "damage, data loss or even\nlaw infringements that some wrong action taken by you could "
                            "cause is of your entire resposibility.\n\n");
-        macgonuts_si_print("Bug reports, feedback etc: <https://github.com/rafael-santiago/macgonuts/issues>.\n\n");
+        macgonuts_si_print("Bug reports, feedback etc: <https://github.com/rafael-santiago/macgonuts/issues>\n\n");
         return EXIT_SUCCESS;
     }
     do {

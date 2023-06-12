@@ -38,6 +38,10 @@
 # include <sys/param.h>
 # include <sys/sysctl.h>
 # include <net/route.h>
+# include <sys/types.h>
+# include <sys/time.h>
+# include <sys/ioctl.h>
+# include <net/bpf.h>
 #endif // defined(__FreeBSD__)
 
 #if defined(__unix__)

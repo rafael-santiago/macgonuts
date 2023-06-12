@@ -10,6 +10,8 @@
 
 #include <macgonuts_types.h>
 
+#define MACGONUTS_BPF_BLEN (1<<10)
+
 int macgonuts_bpf_fifo_init(void);
 
 int macgonuts_bpf_fifo_deinit(void);

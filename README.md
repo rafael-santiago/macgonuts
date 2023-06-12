@@ -16,7 +16,7 @@ I hope you like it, enjoy!
 
 ---
 
-**Bear in mind**: Use this software at your own responsability and risk. I am not responsible for any misuse of it,
+**Bear in mind**: Use this software at your own responsibility and risk. I am not responsible for any misuse of it,
 including some kind of damage, data loss etc. Sniffing network, eavesdropping people's communication without them
 knowing is wrong and a crime. Do not be a jerk, respect people rights. This tool was written with the intention of
 being a support tool to test and promote security on networks through pentesting stuff, ethical hacking and also a

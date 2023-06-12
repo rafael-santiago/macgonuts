@@ -7,6 +7,7 @@
  */
 #include <macgonuts_socket.h>
 #include <freebsd/macgonuts_bpf_fifo.h>
+#include <macgonuts_socket_common.h>
 #include <macgonuts_status_info.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -35,8 +36,9 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
     int devno = 0;
     struct ifreq bound_if;
     macgonuts_socket_t sockfd = -1;
-    int sk_flags = 0;
+    u_int32_t sk_flags = 0;
     int err = EXIT_FAILURE;
+    struct timeval tv;
 
     memset(&bound_if, 0, sizeof(bound_if));
 
@@ -53,8 +55,12 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
         goto macgonuts_create_socket_epilogue;
     }
 
-    sk_flags = fcntl(sockfd, F_GETFL);
-    fcntl(sockfd, sk_flags | O_NONBLOCK);
+    sk_flags = MACGONUTS_BPF_BLEN;
+    if (ioctl(sockfd, BIOCSBLEN, &sk_flags) == -1) {
+        macgonuts_si_error("unable to set buffer length : '%s'\n", strerror(errno));
+        goto macgonuts_create_socket_epilogue;
+    }
+
     strncpy(bound_if.ifr_name, iface, sizeof(bound_if.ifr_name) - 1);
     if (ioctl(sockfd, BIOCSETIF, &bound_if) == -1) {
         macgonuts_si_error("unable to bind raw socket : '%s'\n", strerror(errno));
@@ -62,13 +68,26 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
     }
 
     sk_flags = 1;
-    if (ioctl(sockfd, BIOCIMMEDIATE, &sk_flags) == -1) {
-        macgonuts_si_error("unable to set bpf socket to immediate mode : '%s'\n", strerror(errno));
+    if (ioctl(sockfd, BIOCSHDRCMPLT, &sk_flags) == -1) {
+        macgonuts_si_error("unable to set header complete flag : '%s'\n", strerror(errno));
         goto macgonuts_create_socket_epilogue;
     }
 
-    if (ioctl(sockfd, BIOCGBLEN, &sk_flags) == -1) {
-        macgonuts_si_error("unable to set get buffer size capability for bpf socket : '%s'\n", strerror(errno));
+    memset(&tv, 0, sizeof(tv));
+    tv.tv_sec = io_timeo;
+
+    if (ioctl(sockfd, BIOCSRTIMEOUT, &tv) == -1) {
+        macgonuts_si_error("unable to set receiving timeout : '%s'\n", strerror(errno));
+        goto macgonuts_create_socket_epilogue;
+    }
+
+    if (ioctl(sockfd, BIOCPROMISC, NULL) == -1) {
+        macgonuts_si_error("unable to set promisc mode for socket file descriptor : '%s'\n", strerror(errno));
+        goto macgonuts_create_socket_epilogue;
+    }
+
+    sk_flags = 1;
+    if (ioctl(sockfd, BIOCSSEESENT, &sk_flags) == -1) {
         goto macgonuts_create_socket_epilogue;
     }
 
@@ -118,6 +137,11 @@ int macgonuts_get_mac_from_iface(char *mac_buf, const size_t max_mac_buf_size, c
     freeifaddrs(ifap);
 
     return err;
+}
+
+int macgonuts_get_addr_from_iface(char *addr_buf, const size_t max_addr_buf_size,
+                                  const int addr_version, const char *iface) {
+    return macgonuts_get_addr_from_iface_unix(addr_buf, max_addr_buf_size, addr_version, iface);
 }
 
 ssize_t macgonuts_sendpkt(const macgonuts_socket_t sockfd, const void *buf, const size_t buf_size) {

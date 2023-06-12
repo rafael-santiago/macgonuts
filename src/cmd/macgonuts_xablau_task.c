@@ -133,8 +133,15 @@ static int do_xablau(const char *lo_iface, const size_t lo_iface_size,
     }
 
     tv.tv_usec = 50000;
+
+#if defined(__linux__)
     setsockopt(rsk, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     setsockopt(rsk, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+#elif defined(__FreeBSD__)
+    ioctl(rsk, BIOCSRTIMEOUT, &tv);
+#else
+# error Some code wanted.
+#endif // defined(__linux__)
 
     signal(SIGINT, sigint_watchdog);
     signal(SIGTERM, sigint_watchdog);
