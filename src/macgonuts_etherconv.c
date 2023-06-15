@@ -29,6 +29,24 @@ int macgonuts_check_ether_addr(const char *ether, const size_t ether_size) {
     return (is_valid && two_colon_nr == 5);
 }
 
+int macgonuts_getrandom_raw_ether_addr(uint8_t *raw, const size_t ether_size) {
+    int urandom = -1;
+    int err = EXIT_FAILURE;
+    if (raw == NULL || ether_size == 0) {
+        return EXIT_FAILURE;
+    }
+    urandom = open("/dev/urandom", O_RDONLY);
+    if (urandom == -1) {
+        macgonuts_si_error("unable to read /dev/urandom.\n");
+        return EXIT_FAILURE;
+    }
+    if (read(urandom, raw, ether_size) == ether_size) {
+        err = EXIT_SUCCESS;
+    }
+    close(urandom);
+    return err;
+}
+
 int macgonuts_getrandom_ether_addr(char *ether, const size_t max_ether_size) {
     char *ep;
     size_t oct_nr;

@@ -14,6 +14,8 @@ int macgonuts_check_ether_addr(const char *ether, const size_t ether_size);
 
 int macgonuts_getrandom_ether_addr(char *ether, const size_t max_ether_size);
 
+int macgonuts_getrandom_raw_ether_addr(uint8_t *raw, const size_t ether_size);
+
 int macgonuts_get_raw_ether_addr(uint8_t *raw, const size_t max_raw_size,
                                  const char *ether_addr, const size_t ether_addr_size);
 

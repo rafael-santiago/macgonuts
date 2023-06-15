@@ -73,6 +73,12 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
         goto macgonuts_create_socket_epilogue;
     }
 
+    sk_flags = BPF_D_IN;
+    if (ioctl(sockfd, BIOCSDIRECTION, &sk_flags) == -1) {
+        macgonuts_si_error("unable to set bpf direction to BPF_D_IN : '%s'\n", strerror(errno));
+        goto macgonuts_create_socket_epilogue;
+    }
+
     memset(&tv, 0, sizeof(tv));
     tv.tv_sec = io_timeo;
 
@@ -81,15 +87,7 @@ macgonuts_socket_t macgonuts_create_socket(const char *iface, const size_t io_ti
         goto macgonuts_create_socket_epilogue;
     }
 
-    if (ioctl(sockfd, BIOCPROMISC, NULL) == -1) {
-        macgonuts_si_error("unable to set promisc mode for socket file descriptor : '%s'\n", strerror(errno));
-        goto macgonuts_create_socket_epilogue;
-    }
-
-    sk_flags = 1;
-    if (ioctl(sockfd, BIOCSSEESENT, &sk_flags) == -1) {
-        goto macgonuts_create_socket_epilogue;
-    }
+    // WARN(Rafael): When BIOCPROMISC is set the socket becomes unable to receive data!
 
     err = macgonuts_bpf_fifo_create(sockfd);
 

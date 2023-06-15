@@ -39,6 +39,12 @@ static int cut_off_route(void);
 
 static int is_valid_no_route_to(const char **no_route_to, const size_t no_route_to_nr);
 
+/*
+static int send_gratuitous_arp(const macgonuts_socket_t wire,
+                               const uint8_t *tg_hw_addr, const size_t tg_hw_addr_size,
+                               const uint8_t *tg_proto_addr, const size_t tg_proto_addr_size);
+*/
+
 int macgonuts_isolate_task(void) {
     int err = EFAULT;
     const char *fake_pkts_amount = NULL;
@@ -183,6 +189,7 @@ static int do_isolate(void) {
 
     g_Spfgd.hooks.init = NULL;
     g_Spfgd.hooks.deinit = NULL;
+    g_Spfgd.layers.always_do_pktcraft = 1;
 
     assert(init != NULL && deinit != NULL);
 
@@ -202,6 +209,7 @@ static int do_isolate(void) {
         }
         do_cut_off = should_cut_off(ethbuf, ethbuf_size);
         if (do_cut_off) {
+            // TODO(Rafael): When target is accessing something over the local network spoof the gateway address.
             err = get_dest_addr(g_Spfgd.layers.spoof_proto_addr, ethbuf, ethbuf_size);
             if (no_route_to_list != NULL) {
                 do_cut_off = 0;
@@ -247,13 +255,7 @@ static void sigint_watchdog(int signo) {
 }
 
 static int fill_up_lo_info(void) {
-    // TIP(Rafael): It is not possible to generate random mac addresses and so inject them through fake
-    //              packets resolution. The network stack of majority of OSes are implemented in the right
-    //              way, so if you inform some unexistent mac address as the effective mac address of a layer-3
-    //              address to a host, it will detect that the mac address is unreachable and discard this info
-    //              by keeping the prior resolution that was working. Here to not unveil the source of attack,
-    //              let's use the network gateway mac address.
-    return macgonuts_get_gateway_hw_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
+    return macgonuts_getrandom_raw_ether_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
 }
 
 static int fill_up_tg_info(void) {
@@ -372,9 +374,20 @@ static int cut_off_route(void) {
                              g_Spfgd.layers.proto_addr_size);
     g_Spfgd.usrinfo.spoof_address = &spoof_addr[0];
 
+    macgonuts_getrandom_raw_ether_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
 
     for (t = 0; t < g_Spfgd.spoofing.total && !g_Spfgd.spoofing.abort && err == EXIT_SUCCESS; t++) {
+        // TODO(Rafael): Cut-off in both sides: spoof in target and spoof at the host is contacting target.
         err = macgonuts_spoof(g_Spfgd.handles.wire, &g_Spfgd.layers);
+        /*
+        if (err == EXIT_SUCCESS && g_Spfgd.layers.proto_addr_version == 4) {
+            err = send_gratuitous_arp(g_Spfgd.handles.wire,
+                                      &g_Spfgd.layers.lo_hw_addr[0],
+                                      sizeof(g_Spfgd.layers.lo_hw_addr),
+                                      &g_Spfgd.layers.spoof_proto_addr[0],
+                                      g_Spfgd.layers.proto_addr_size);
+        }
+        */
     }
 
     if (g_Spfgd.spoofing.abort) {
@@ -398,6 +411,35 @@ static int cut_off_route(void) {
 
     return err;
 }
+
+/*
+static int send_gratuitous_arp(const macgonuts_socket_t wire,
+                               const uint8_t *tg_hw_addr, const size_t tg_hw_addr_size,
+                               const uint8_t *tg_proto_addr, const size_t tg_proto_addr_size) {
+    struct macgonuts_spoof_layers_ctx uns_arp;
+    memset(&uns_arp, 0, sizeof(uns_arp));
+
+    uns_arp.always_do_pktcraft = 1;
+
+    assert(tg_hw_addr_size == sizeof(uns_arp.lo_hw_addr));
+    assert(tg_proto_addr_size == 4);
+
+    uns_arp.proto_addr_size = 4;
+    uns_arp.proto_addr_version = 4;
+    memcpy(&uns_arp.lo_hw_addr[0], tg_hw_addr, tg_hw_addr_size);
+    memcpy(&uns_arp.lo_proto_addr[0], tg_proto_addr, tg_proto_addr_size);
+    memcpy(&uns_arp.spoof_proto_addr[0], tg_proto_addr, tg_proto_addr_size);
+    memcpy(&uns_arp.tg_proto_addr[0], tg_proto_addr, tg_proto_addr_size);
+    uns_arp.tg_hw_addr[0] =
+    uns_arp.tg_hw_addr[1] =
+    uns_arp.tg_hw_addr[2] =
+    uns_arp.tg_hw_addr[3] =
+    uns_arp.tg_hw_addr[4] =
+    uns_arp.tg_hw_addr[5] = 0xFF;
+
+    return macgonuts_spoof(wire, &uns_arp);
+}
+*/
 
 static int is_valid_no_route_to(const char **no_route_to, const size_t no_route_to_nr) {
     const char **curr_entry = no_route_to;

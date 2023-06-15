@@ -115,7 +115,9 @@ ssize_t macgonuts_bpf_fifo_dequeue(const macgonuts_socket_t sockfd, void *buf, c
 
     if (skf->fifo.head == NULL) {
         if (flush_bpf_device(skf, sockfd) == 0) {
-            return 0;
+            bytes_total = 0;
+            err = EXIT_SUCCESS;
+            goto macgonuts_bpf_fifo_dequeue_epilogue;
         }
         skf->fifo.head = skf->fifo.tail;
     }
@@ -125,6 +127,8 @@ ssize_t macgonuts_bpf_fifo_dequeue(const macgonuts_socket_t sockfd, void *buf, c
     if (skf->fifo.head == NULL) {
         skf->fifo.tail = NULL;
     }
+
+macgonuts_bpf_fifo_dequeue_epilogue:
 
     macgonuts_mutex_unlock(&g_MacgonutsBPFFifo.giant_lock);
 
@@ -182,6 +186,10 @@ static size_t flush_bpf_device(struct socket_fifo_ctx *skf, const macgonuts_sock
     p_end = bpf_buf + bytes_total;
     while (p < p_end) {
         bpf_pkt = (struct bpf_hdr *)p;
+        /*for (size_t x = 0; x < bpf_pkt->bh_datalen; x++) {
+            printf("%.2X", ((unsigned char *)p + bpf_pkt->bh_hdrlen)[x]);
+        }
+        printf("--\n");*/
         flushes_nr += (ethframe_fifo_ctx_enqueue(&skf->fifo.tail,
                                                  (unsigned char *)(p + bpf_pkt->bh_hdrlen),
                                                  bpf_pkt->bh_datalen) == EXIT_SUCCESS);
@@ -193,6 +201,8 @@ flush_bpf_device_epilogue:
     if (bpf_buf != NULL) {
         free(bpf_buf);
     }
+
+    //printf("added %lu packets.\n", flushes_nr);
 
     return flushes_nr;
 }
