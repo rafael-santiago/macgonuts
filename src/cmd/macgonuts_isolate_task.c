@@ -21,7 +21,7 @@
 #include <macgonuts_spoof.h>
 #include <macgonuts_metaspoofer.h>
 
-static struct macgonuts_spoofing_guidance_ctx g_Spfgd;
+static struct macgonuts_spoofing_guidance_ctx g_Spfgd[2];
 
 static int do_isolate(void);
 
@@ -33,11 +33,17 @@ static int fill_up_tg_info(void);
 
 static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size);
 
-static int get_dest_addr(uint8_t *src_addr, const unsigned char *ethbuf, const size_t ethbuf_size);
+static int get_dest_addr(uint8_t *dest_addr, const unsigned char *ethbuf, const size_t ethbuf_size);
 
-static int cut_off_route(void);
+//static int get_src_addr(uint8_t *src_addr, const unsigned char *ethbuf, const size_t ethbuf_size);
+
+static int get_addr(uint8_t *addr, const unsigned char *ethbuf, const size_t ethbuf_size, const int is_src);
+
+static int cut_off_route(const int should_cut_off_both);
 
 static int is_valid_no_route_to(const char **no_route_to, const size_t no_route_to_nr);
+
+static void fill_up_inv_spfgd(const unsigned char *ethbuf, const size_t ethbuf_size);
 
 /*
 static int send_gratuitous_arp(const macgonuts_socket_t wire,
@@ -53,14 +59,14 @@ int macgonuts_isolate_task(void) {
 
     memset(&g_Spfgd, 0, sizeof(g_Spfgd));
 
-    g_Spfgd.usrinfo.lo_iface = macgonuts_get_option("lo-iface", NULL);
-    if (g_Spfgd.usrinfo.lo_iface == NULL) {
+    g_Spfgd[0].usrinfo.lo_iface = macgonuts_get_option("lo-iface", NULL);
+    if (g_Spfgd[0].usrinfo.lo_iface == NULL) {
         macgonuts_si_error("--lo-iface option is missing.\n");
         return EXIT_FAILURE;
     }
 
-    g_Spfgd.usrinfo.tg_address = macgonuts_get_option("isle-addr", NULL);
-    if (g_Spfgd.usrinfo.tg_address == NULL) {
+    g_Spfgd[0].usrinfo.tg_address = macgonuts_get_option("isle-addr", NULL);
+    if (g_Spfgd[0].usrinfo.tg_address == NULL) {
         macgonuts_si_error("--isle-addr option is missing.\n");
         return EXIT_FAILURE;
     }
@@ -73,15 +79,9 @@ int macgonuts_isolate_task(void) {
 
     no_route_to = macgonuts_get_array_option("no-route-to", NULL, &no_route_to_nr);
 
-    g_Spfgd.handles.wire = macgonuts_create_socket(g_Spfgd.usrinfo.lo_iface, 1);
-    if (g_Spfgd.handles.wire == -1) {
+    g_Spfgd[0].handles.wire = macgonuts_create_socket(g_Spfgd[0].usrinfo.lo_iface, 1);
+    if (g_Spfgd[0].handles.wire == -1) {
         macgonuts_si_error("unable to create socket.\n");
-        goto macgonuts_isolate_task_epilogue;
-    }
-
-    err = fill_up_lo_info();
-    if (err != EXIT_SUCCESS) {
-        macgonuts_si_error("unable to get local host's network information.\n");
         goto macgonuts_isolate_task_epilogue;
     }
 
@@ -92,20 +92,26 @@ int macgonuts_isolate_task(void) {
 
     }
 
+    err = fill_up_lo_info();
+    if (err != EXIT_SUCCESS) {
+        macgonuts_si_error("unable to get local host's network information.\n");
+        goto macgonuts_isolate_task_epilogue;
+    }
+
     if (no_route_to != NULL) {
         if (!is_valid_no_route_to((const char **)no_route_to, no_route_to_nr)) {
             macgonuts_si_error("--no-route-to has invalid data.\n");
             return EXIT_FAILURE;
         }
-        g_Spfgd.metainfo.arg[0] = no_route_to;
-        g_Spfgd.metainfo.arg[1] = &no_route_to_nr;
+        g_Spfgd[0].metainfo.arg[0] = no_route_to;
+        g_Spfgd[0].metainfo.arg[1] = &no_route_to_nr;
     }
 
-    g_Spfgd.hooks.init = macgonuts_isolate_init_hook;
-    g_Spfgd.hooks.deinit = macgonuts_isolate_deinit_hook;
-    g_Spfgd.hooks.done = macgonuts_isolate_done_hook;
+    g_Spfgd[0].hooks.init = macgonuts_isolate_init_hook;
+    g_Spfgd[0].hooks.deinit = macgonuts_isolate_deinit_hook;
+    g_Spfgd[0].hooks.done = macgonuts_isolate_done_hook;
 
-    g_Spfgd.spoofing.total = atoi(fake_pkts_amount);
+    g_Spfgd[0].spoofing.total = atoi(fake_pkts_amount);
 
     signal(SIGINT, sigint_watchdog);
     signal(SIGTERM, sigint_watchdog);
@@ -118,7 +124,7 @@ macgonuts_isolate_task_epilogue:
         macgonuts_free_array_option_value(no_route_to, no_route_to_nr);
     }
 
-    macgonuts_release_spoof_layers_ctx(&g_Spfgd.layers);
+    macgonuts_release_spoof_layers_ctx(&g_Spfgd[0].layers);
 
     return err;
 }
@@ -138,8 +144,8 @@ static int do_isolate(void) {
     int err = EXIT_SUCCESS;
     unsigned char ethbuf[64<<10] = "";
     ssize_t ethbuf_size = 0;
-    macgonuts_hook_func init = g_Spfgd.hooks.init;
-    macgonuts_hook_func deinit = g_Spfgd.hooks.deinit;
+    macgonuts_hook_func init = g_Spfgd[0].hooks.init;
+    macgonuts_hook_func deinit = g_Spfgd[0].hooks.deinit;
     struct no_route_to_list_ctx {
         uint8_t addr_mask[16];
     } **no_route_to_list = NULL, **np = NULL, **np_end = NULL;
@@ -151,8 +157,8 @@ static int do_isolate(void) {
     uint8_t and_res[16] = { 0 };
     size_t a;
 
-    if (g_Spfgd.metainfo.arg[0] != NULL && g_Spfgd.metainfo.arg[1] != NULL) {
-        no_route_to_list_nr = *(size_t *)g_Spfgd.metainfo.arg[1];
+    if (g_Spfgd[0].metainfo.arg[0] != NULL && g_Spfgd[0].metainfo.arg[1] != NULL) {
+        no_route_to_list_nr = *(size_t *)g_Spfgd[0].metainfo.arg[1];
         no_route_to_list = (struct no_route_to_list_ctx **)
                                 malloc(sizeof(struct no_route_to_list_ctx **) * no_route_to_list_nr);
         if (no_route_to_list == NULL) {
@@ -162,7 +168,7 @@ static int do_isolate(void) {
         memset(no_route_to_list, 0, sizeof(struct no_route_to_list_ctx **) * no_route_to_list_nr);
         np = no_route_to_list;
         np_end = np + no_route_to_list_nr;
-        list_item = g_Spfgd.metainfo.arg[0];
+        list_item = g_Spfgd[0].metainfo.arg[0];
         list_end = list_item + no_route_to_list_nr;
         while (list_item != list_end) {
             *np = (struct no_route_to_list_ctx *)malloc(sizeof(struct no_route_to_list_ctx));
@@ -187,52 +193,65 @@ static int do_isolate(void) {
         }
     }
 
-    g_Spfgd.hooks.init = NULL;
-    g_Spfgd.hooks.deinit = NULL;
-    g_Spfgd.layers.always_do_pktcraft = 1;
+    g_Spfgd[0].hooks.init = NULL;
+    g_Spfgd[0].hooks.deinit = NULL;
+    g_Spfgd[0].layers.always_do_pktcraft = 1;
 
     assert(init != NULL && deinit != NULL);
 
-    err = macgonuts_set_iface_promisc_on(g_Spfgd.usrinfo.lo_iface);
+    err = macgonuts_set_iface_promisc_on(g_Spfgd[0].usrinfo.lo_iface);
 
     if (err != EXIT_SUCCESS) {
-        macgonuts_si_error("unable to set `%s` to promisc mode.\n", g_Spfgd.usrinfo.lo_iface);
+        macgonuts_si_error("unable to set `%s` to promisc mode.\n", g_Spfgd[0].usrinfo.lo_iface);
         return EXIT_FAILURE;
     }
 
-    init(&g_Spfgd, NULL, 0);
+    init(&g_Spfgd[0], NULL, 0);
 
-    while (!g_Spfgd.spoofing.abort && err == EXIT_SUCCESS) {
-        ethbuf_size = macgonuts_recvpkt(g_Spfgd.handles.wire, ethbuf, sizeof(ethbuf));
+    memset(&g_Spfgd[1], 0, sizeof(g_Spfgd));
+
+    memcpy(&g_Spfgd[1].layers.spoof_hw_addr[0],
+           &g_Spfgd[0].layers.tg_hw_addr[0], sizeof(g_Spfgd[1].layers.spoof_hw_addr));
+    g_Spfgd[1].layers.proto_addr_version = g_Spfgd[0].layers.proto_addr_version;
+    g_Spfgd[1].layers.proto_addr_size = g_Spfgd[0].layers.proto_addr_size;
+    memcpy(&g_Spfgd[1].layers.spoof_proto_addr[0],
+           &g_Spfgd[0].layers.tg_proto_addr[0], g_Spfgd[1].layers.proto_addr_size);
+    g_Spfgd[1].layers.always_do_pktcraft = 1;
+
+    while (!g_Spfgd[0].spoofing.abort && err == EXIT_SUCCESS) {
+        ethbuf_size = macgonuts_recvpkt(g_Spfgd[0].handles.wire, ethbuf, sizeof(ethbuf));
         if (ethbuf_size == -1) {
             continue;
         }
         do_cut_off = should_cut_off(ethbuf, ethbuf_size);
         if (do_cut_off) {
             // TODO(Rafael): When target is accessing something over the local network spoof the gateway address.
-            err = get_dest_addr(g_Spfgd.layers.spoof_proto_addr, ethbuf, ethbuf_size);
+            err = get_dest_addr(g_Spfgd[0].layers.spoof_proto_addr, ethbuf, ethbuf_size);
             if (no_route_to_list != NULL) {
                 do_cut_off = 0;
                 np = no_route_to_list;
                 do {
-                    for (a = 0; a < g_Spfgd.layers.proto_addr_size; a++) {
-                        and_res[a] = g_Spfgd.layers.spoof_proto_addr[a] & (*np)->addr_mask[a];
+                    for (a = 0; a < g_Spfgd[0].layers.proto_addr_size; a++) {
+                        and_res[a] = g_Spfgd[0].layers.spoof_proto_addr[a] & (*np)->addr_mask[a];
                     }
-                    do_cut_off = (memcmp(g_Spfgd.layers.spoof_proto_addr,
-                                         and_res, g_Spfgd.layers.proto_addr_size) == 0);
+                    do_cut_off = (memcmp(g_Spfgd[0].layers.spoof_proto_addr,
+                                         and_res, g_Spfgd[0].layers.proto_addr_size) == 0);
                     np++;
                 } while (np != np_end && !do_cut_off);
             }
             if (!do_cut_off || err != EXIT_SUCCESS) {
                 continue;
             }
-            err = cut_off_route();
+            fill_up_inv_spfgd(ethbuf, ethbuf_size);
+            err = cut_off_route(memcmp(&g_Spfgd[1].layers.tg_proto_addr[0],
+                                       &g_Spfgd[0].layers.lo_proto_addr[0],
+                                       g_Spfgd[0].layers.proto_addr_size) != 0);
         }
     }
 
-    deinit(&g_Spfgd, NULL, 0);
+    deinit(&g_Spfgd[0], NULL, 0);
 
-    macgonuts_set_iface_promisc_off(g_Spfgd.usrinfo.lo_iface);
+    macgonuts_set_iface_promisc_off(g_Spfgd[0].usrinfo.lo_iface);
 
 do_isolate_epilogue:
 
@@ -251,47 +270,55 @@ do_isolate_epilogue:
 }
 
 static void sigint_watchdog(int signo) {
-    g_Spfgd.spoofing.abort = 1;
+    g_Spfgd[0].spoofing.abort = 1;
 }
 
 static int fill_up_lo_info(void) {
-    return macgonuts_getrandom_raw_ether_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
+    char addr[256] = "";
+
+    if (macgonuts_get_addr_from_iface(addr, sizeof(addr) - 1,
+                                      g_Spfgd[0].layers.proto_addr_version, g_Spfgd[0].usrinfo.lo_iface) != EXIT_SUCCESS) {
+    }
+
+    return macgonuts_get_raw_ip_addr(&g_Spfgd[0].layers.lo_proto_addr[0],
+                                     g_Spfgd[0].layers.proto_addr_size,
+                                     addr, strlen(addr));
 }
 
 static int fill_up_tg_info(void) {
     char addr_buf[256] = "";
-    size_t tg_address_size = strlen(g_Spfgd.usrinfo.tg_address);
-    g_Spfgd.layers.proto_addr_version = macgonuts_get_ip_version(g_Spfgd.usrinfo.tg_address, tg_address_size);
-    if (g_Spfgd.layers.proto_addr_version != 4
-        && g_Spfgd.layers.proto_addr_version != 6) {
+    size_t tg_address_size = strlen(g_Spfgd[0].usrinfo.tg_address);
+    g_Spfgd[0].layers.proto_addr_version = macgonuts_get_ip_version(g_Spfgd[0].usrinfo.tg_address, tg_address_size);
+    if (g_Spfgd[0].layers.proto_addr_version != 4
+        && g_Spfgd[0].layers.proto_addr_version != 6) {
         macgonuts_si_error("you gave me an ip address from outter space, I only support ip version 4 or 6.\n");
         return EXIT_FAILURE;
     }
 
-    g_Spfgd.layers.proto_addr_size = (g_Spfgd.layers.proto_addr_version == 4) ? 4 : 16;
+    g_Spfgd[0].layers.proto_addr_size = (g_Spfgd[0].layers.proto_addr_version == 4) ? 4 : 16;
 
     if (macgonuts_get_addr_from_iface(addr_buf, sizeof(addr_buf) - 1,
-                                      g_Spfgd.layers.proto_addr_version,
-                                      g_Spfgd.usrinfo.lo_iface) != EXIT_SUCCESS) {
+                                      g_Spfgd[0].layers.proto_addr_version,
+                                      g_Spfgd[0].usrinfo.lo_iface) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
-    if (macgonuts_get_raw_ip_addr(g_Spfgd.layers.lo_proto_addr,
-                                  g_Spfgd.layers.proto_addr_size,
+    if (macgonuts_get_raw_ip_addr(g_Spfgd[0].layers.lo_proto_addr,
+                                  g_Spfgd[0].layers.proto_addr_size,
                                   addr_buf, strlen(addr_buf)) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
-    if (macgonuts_get_raw_ip_addr(g_Spfgd.layers.tg_proto_addr,
-                                  g_Spfgd.layers.proto_addr_size,
-                                  g_Spfgd.usrinfo.tg_address, tg_address_size) != EXIT_SUCCESS) {
+    if (macgonuts_get_raw_ip_addr(g_Spfgd[0].layers.tg_proto_addr,
+                                  g_Spfgd[0].layers.proto_addr_size,
+                                  g_Spfgd[0].usrinfo.tg_address, tg_address_size) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
-    if (macgonuts_get_ethaddr(&g_Spfgd.layers.tg_hw_addr[0],
-                              sizeof(g_Spfgd.layers.tg_hw_addr),
-                              g_Spfgd.usrinfo.tg_address, tg_address_size,
-                              g_Spfgd.handles.wire, g_Spfgd.usrinfo.lo_iface) != EXIT_SUCCESS) {
+    if (macgonuts_get_ethaddr(&g_Spfgd[0].layers.tg_hw_addr[0],
+                              sizeof(g_Spfgd[0].layers.tg_hw_addr),
+                              g_Spfgd[0].usrinfo.tg_address, tg_address_size,
+                              g_Spfgd[0].handles.wire, g_Spfgd[0].usrinfo.lo_iface) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
@@ -308,7 +335,7 @@ static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size)
     ether_type = (uint16_t)ethbuf[12] << 8 |
                  (uint16_t)ethbuf[13];
 
-    switch (g_Spfgd.layers.proto_addr_version) {
+    switch (g_Spfgd[0].layers.proto_addr_version) {
         case 4:
             if (ether_type != MACGONUTS_ETHER_TYPE_IP4) {
                 return 0;
@@ -327,14 +354,22 @@ static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size)
     }
 
     return (memcmp(&ethbuf[6],
-                   &g_Spfgd.layers.tg_hw_addr[0],
-                   sizeof(g_Spfgd.layers.tg_hw_addr)) == 0);
+                   &g_Spfgd[0].layers.tg_hw_addr[0],
+                   sizeof(g_Spfgd[0].layers.tg_hw_addr)) == 0);
 }
 
-static int get_dest_addr(uint8_t *src_addr, const unsigned char *ethbuf, const size_t ethbuf_size) {
+static int get_dest_addr(uint8_t *dest_addr, const unsigned char *ethbuf, const size_t ethbuf_size) {
+    return get_addr(dest_addr, ethbuf, ethbuf_size, 0);
+}
+
+/*static int get_src_addr(uint8_t *src_addr, const unsigned char *ethbuf, const size_t ethbuf_size) {
+    return get_addr(src_addr, ethbuf, ethbuf_size, 1);
+}*/
+
+static int get_addr(uint8_t *addr, const unsigned char *ethbuf, const size_t ethbuf_size, const int is_src) {
     uint16_t ether_type = 0;
-    const unsigned char *src_addr_p = NULL;
-    size_t src_addr_size = 0;
+    const unsigned char *addr_p = NULL;
+    ssize_t addr_size = 0;
 
     if (ethbuf_size < 14) {
         return EINVAL;
@@ -345,68 +380,70 @@ static int get_dest_addr(uint8_t *src_addr, const unsigned char *ethbuf, const s
 
     switch (ether_type) {
         case MACGONUTS_ETHER_TYPE_IP4:
-            src_addr_p = &ethbuf[14 + 16];
-            src_addr_size = 4;
+            addr_p = &ethbuf[14 + 16];
+            addr_size = 4;
             break;
 
         case MACGONUTS_ETHER_TYPE_IP6:
-            src_addr_p = &ethbuf[14 + 24];
-            src_addr_size = 16;
+            addr_p = &ethbuf[14 + 24];
+            addr_size = 16;
             break;
 
         default:
             return EINVAL;
     }
 
-    memcpy(src_addr, src_addr_p, src_addr_size);
+    memcpy(addr, &addr_p[(is_src) ? -addr_size : 0], addr_size);
 
     return EXIT_SUCCESS;
 }
 
-static int cut_off_route(void) {
+static int cut_off_route(const int should_cut_off_both) {
     char spoof_addr[100] = "";
     char spoof_mac[32] = "";
     int err = EXIT_SUCCESS;
     uint64_t t;
 
     macgonuts_raw_ip2literal(spoof_addr, sizeof(spoof_addr),
-                             g_Spfgd.layers.spoof_proto_addr,
-                             g_Spfgd.layers.proto_addr_size);
-    g_Spfgd.usrinfo.spoof_address = &spoof_addr[0];
+                             g_Spfgd[0].layers.spoof_proto_addr,
+                             g_Spfgd[0].layers.proto_addr_size);
+    g_Spfgd[0].usrinfo.spoof_address = &spoof_addr[0];
 
-    macgonuts_getrandom_raw_ether_addr(&g_Spfgd.layers.lo_hw_addr[0], sizeof(g_Spfgd.layers.lo_hw_addr));
+    macgonuts_getrandom_raw_ether_addr(&g_Spfgd[0].layers.lo_hw_addr[0], sizeof(g_Spfgd[0].layers.lo_hw_addr));
 
-    for (t = 0; t < g_Spfgd.spoofing.total && !g_Spfgd.spoofing.abort && err == EXIT_SUCCESS; t++) {
-        // TODO(Rafael): Cut-off in both sides: spoof in target and spoof at the host is contacting target.
-        err = macgonuts_spoof(g_Spfgd.handles.wire, &g_Spfgd.layers);
+    for (t = 0; t < g_Spfgd[0].spoofing.total && !g_Spfgd[0].spoofing.abort && err == EXIT_SUCCESS; t++) {
+        err = macgonuts_spoof(g_Spfgd[0].handles.wire, &g_Spfgd[0].layers);
+        if (should_cut_off_both) {
+            err = macgonuts_spoof(g_Spfgd[0].handles.wire, &g_Spfgd[1].layers);
+        }
         /*
-        if (err == EXIT_SUCCESS && g_Spfgd.layers.proto_addr_version == 4) {
-            err = send_gratuitous_arp(g_Spfgd.handles.wire,
-                                      &g_Spfgd.layers.lo_hw_addr[0],
-                                      sizeof(g_Spfgd.layers.lo_hw_addr),
-                                      &g_Spfgd.layers.spoof_proto_addr[0],
-                                      g_Spfgd.layers.proto_addr_size);
+        if (err == EXIT_SUCCESS && g_Spfgd[0].layers.proto_addr_version == 4) {
+            err = send_gratuitous_arp(g_Spfgd[0].handles.wire,
+                                      &g_Spfgd[0].layers.lo_hw_addr[0],
+                                      sizeof(g_Spfgd[0].layers.lo_hw_addr),
+                                      &g_Spfgd[0].layers.spoof_proto_addr[0],
+                                      g_Spfgd[0].layers.proto_addr_size);
         }
         */
     }
 
-    if (g_Spfgd.spoofing.abort) {
+    if (g_Spfgd[0].spoofing.abort) {
         return err;
     }
 
     if (err == EXIT_SUCCESS) {
-        err = g_Spfgd.hooks.done(&g_Spfgd, NULL, 0);
+        err = g_Spfgd[0].hooks.done(&g_Spfgd[0], NULL, 0);
     } else {
         snprintf(spoof_mac, sizeof(spoof_mac) - 1,
-                 "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", g_Spfgd.layers.lo_hw_addr[0],
-                                                  g_Spfgd.layers.lo_hw_addr[1],
-                                                  g_Spfgd.layers.lo_hw_addr[2],
-                                                  g_Spfgd.layers.lo_hw_addr[3],
-                                                  g_Spfgd.layers.lo_hw_addr[4],
-                                                  g_Spfgd.layers.lo_hw_addr[5]);
+                 "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", g_Spfgd[0].layers.lo_hw_addr[0],
+                                                  g_Spfgd[0].layers.lo_hw_addr[1],
+                                                  g_Spfgd[0].layers.lo_hw_addr[2],
+                                                  g_Spfgd[0].layers.lo_hw_addr[3],
+                                                  g_Spfgd[0].layers.lo_hw_addr[4],
+                                                  g_Spfgd[0].layers.lo_hw_addr[5]);
         macgonuts_si_error("unable to spoof `%s` as `%s` on `%s`.\n", spoof_addr,
                                                                       spoof_mac,
-                                                                      g_Spfgd.usrinfo.tg_address);
+                                                                      g_Spfgd[0].usrinfo.tg_address);
     }
 
     return err;
@@ -448,13 +485,13 @@ static int is_valid_no_route_to(const char **no_route_to, const size_t no_route_
 
     while (curr_entry != no_route_to_end) {
         curr_entry_size = strlen(*curr_entry);
-        if (macgonuts_get_ip_version(*curr_entry, curr_entry_size) == g_Spfgd.layers.proto_addr_version
+        if (macgonuts_get_ip_version(*curr_entry, curr_entry_size) == g_Spfgd[0].layers.proto_addr_version
             && macgonuts_check_ip_addr(*curr_entry, curr_entry_size)) {
             curr_entry++;
             continue;
         }
 
-        if (macgonuts_get_cidr_version(*curr_entry, curr_entry_size) == g_Spfgd.layers.proto_addr_version
+        if (macgonuts_get_cidr_version(*curr_entry, curr_entry_size) == g_Spfgd[0].layers.proto_addr_version
             && macgonuts_check_ip_cidr(*curr_entry, curr_entry_size)) {
             curr_entry++;
             continue;
@@ -465,4 +502,11 @@ static int is_valid_no_route_to(const char **no_route_to, const size_t no_route_
     }
 
     return 1;
+}
+
+static void fill_up_inv_spfgd(const unsigned char *ethbuf, const size_t ethbuf_size) {
+    assert(ethbuf_size >= sizeof(g_Spfgd[1].layers.tg_hw_addr));
+    macgonuts_getrandom_raw_ether_addr(&g_Spfgd[1].layers.lo_hw_addr[0], sizeof(g_Spfgd[1].layers.lo_hw_addr));
+    memcpy(&g_Spfgd[1].layers.tg_hw_addr[0], &ethbuf[0], sizeof(g_Spfgd[1].layers.tg_hw_addr));
+    memcpy(&g_Spfgd[1].layers.tg_proto_addr[0], &g_Spfgd[0].layers.spoof_proto_addr[0], g_Spfgd[1].layers.proto_addr_size);
 }
