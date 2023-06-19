@@ -20,8 +20,15 @@
 #include <macgonuts_get_ethaddr.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_metaspoofer.h>
+#include <macgonuts_routeconv.h>
 
 static struct macgonuts_spoofing_guidance_ctx g_Spfgd[2];
+
+static uint8_t g_GwAddr[16] = { 0 };
+
+static size_t g_GwAddrSize = 0;
+
+static uint8_t g_Netmask[16] = { 0 };
 
 static int do_isolate(void);
 
@@ -30,6 +37,8 @@ static void sigint_watchdog(int signo);
 static int fill_up_lo_info(void);
 
 static int fill_up_tg_info(void);
+
+static int fill_up_gw_info(void);
 
 static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size);
 
@@ -95,6 +104,12 @@ int macgonuts_isolate_task(void) {
     err = fill_up_lo_info();
     if (err != EXIT_SUCCESS) {
         macgonuts_si_error("unable to get local host's network information.\n");
+        goto macgonuts_isolate_task_epilogue;
+    }
+
+    err = fill_up_gw_info();
+    if (err != EXIT_SUCCESS) {
+        macgonuts_si_error("unable to get gateway's network information.\n");
         goto macgonuts_isolate_task_epilogue;
     }
 
@@ -208,7 +223,7 @@ static int do_isolate(void) {
 
     init(&g_Spfgd[0], NULL, 0);
 
-    memset(&g_Spfgd[1], 0, sizeof(g_Spfgd));
+    memset(&g_Spfgd[1], 0, sizeof(g_Spfgd[1]));
 
     memcpy(&g_Spfgd[1].layers.spoof_hw_addr[0],
            &g_Spfgd[0].layers.tg_hw_addr[0], sizeof(g_Spfgd[1].layers.spoof_hw_addr));
@@ -225,8 +240,17 @@ static int do_isolate(void) {
         }
         do_cut_off = should_cut_off(ethbuf, ethbuf_size);
         if (do_cut_off) {
-            // TODO(Rafael): When target is accessing something over the local network spoof the gateway address.
             err = get_dest_addr(g_Spfgd[0].layers.spoof_proto_addr, ethbuf, ethbuf_size);
+            if (macgonuts_is_outward_dest(&g_Spfgd[0].layers.spoof_proto_addr[0],
+                                          &g_Netmask[0],
+                                          &g_Spfgd[0].layers.lo_proto_addr[0],
+                                          g_Spfgd[0].layers.proto_addr_size)) {
+                memcpy(&g_Spfgd[0].layers.spoof_proto_addr[0], &g_GwAddr[0], g_GwAddrSize);
+            } else if (memcmp(&g_Spfgd[0].layers.spoof_proto_addr[0],
+                              &g_Spfgd[0].layers.lo_proto_addr[0],
+                              g_Spfgd[0].layers.proto_addr_size) == 0) {
+                continue;
+            }
             if (no_route_to_list != NULL) {
                 do_cut_off = 0;
                 np = no_route_to_list;
@@ -323,6 +347,18 @@ static int fill_up_tg_info(void) {
     }
 
     return EXIT_SUCCESS;
+}
+
+static int fill_up_gw_info(void) {
+    const int ip_version[2] = { 6, 4 };
+    if (macgonuts_get_gateway_addr_info_from_iface(&g_GwAddr[0], &g_GwAddrSize,
+                                                   ip_version[(g_Spfgd[0].layers.proto_addr_size == 4)],
+                                                   g_Spfgd[0].usrinfo.lo_iface) != EXIT_SUCCESS) {
+        return EXIT_FAILURE;
+    }
+    return macgonuts_get_netmask_from_iface(g_Spfgd[0].usrinfo.lo_iface,
+                                            strlen(g_Spfgd[0].usrinfo.lo_iface),
+                                            &g_Netmask[0], ip_version[(g_Spfgd[0].layers.proto_addr_size == 4)]);
 }
 
 static int should_cut_off(const unsigned char *ethbuf, const size_t ethbuf_size) {
