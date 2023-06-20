@@ -686,7 +686,30 @@ static int get_gw_addr6_info(uint8_t *raw, size_t *raw_size, const char *iface) 
     int err = EXIT_FAILURE;
     uint8_t dummy[16] = { 0 };
 
+    // TODO(Rafael): Improve it on.
+
     *raw_size = 0;
+
+    snprintf(cmd, sizeof(cmd) - 1, "netstat -6rn | grep %s | grep -v link", iface);
+    proc = popen(cmd, "r");
+    if (proc == NULL) {
+        goto get_gw_addr6_info_epilogue;
+    }
+
+    fread(cmd, 1, sizeof(cmd), proc);
+    cp = strstr(cmd, " ");
+    if (cp != NULL) {
+        *cp = 0;
+    }
+    pclose(proc);
+    proc = NULL;
+
+    err = macgonuts_get_raw_ip_addr(raw, 16, cmd, strlen(cmd));
+
+    if (err == EXIT_SUCCESS) {
+        *raw_size = 16;
+        goto get_gw_addr6_info_epilogue;
+    }
 
     snprintf(cmd, sizeof(cmd) - 1, "netstat -6rn | grep %s", iface);
     proc = popen(cmd, "r");

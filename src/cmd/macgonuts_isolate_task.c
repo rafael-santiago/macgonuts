@@ -249,6 +249,7 @@ static int do_isolate(void) {
             } else if (memcmp(&g_Spfgd[0].layers.spoof_proto_addr[0],
                               &g_Spfgd[0].layers.lo_proto_addr[0],
                               g_Spfgd[0].layers.proto_addr_size) == 0) {
+                memset(&g_Spfgd[0].layers.spoof_proto_addr[0], 0, g_Spfgd[0].layers.proto_addr_size);
                 continue;
             }
             if (no_route_to_list != NULL) {
