@@ -8,6 +8,7 @@
 #include "macgonuts_etherconv_tests.h"
 #include <macgonuts_etherconv.h>
 #include <string.h>
+#include <stdio.h>
 
 CUTE_TEST_CASE(macgonuts_check_ether_addr_tests)
     struct test_ctx {
@@ -200,4 +201,18 @@ CUTE_TEST_CASE(macgonuts_get_raw_ip6_unsolicited_mcast_ether_addr_tests)
         CUTE_ASSERT(memcmp(raw, test->expected, sizeof(raw)) == 0);
         test++;
     }
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(macgonuts_getrandom_raw_ether_addr_tests)
+    const size_t kFuzzNr = 20<<10;
+    uint8_t hw_addr[6] = { 0 };
+    size_t e;
+    CUTE_ASSERT(macgonuts_getrandom_raw_ether_addr(NULL, sizeof(hw_addr)) == EXIT_FAILURE);
+    CUTE_ASSERT(macgonuts_getrandom_raw_ether_addr(&hw_addr[0], 0) == EXIT_FAILURE);
+    for (e = 0; e < kFuzzNr; e++) {
+        CUTE_ASSERT(macgonuts_getrandom_raw_ether_addr(&hw_addr[0], sizeof(hw_addr)) == EXIT_SUCCESS);
+        printf("*** fuzzing macgonuts_getrandom_raw_ether_addr() function wait %.0f%% complete...\r",
+               ((float)e / (float)kFuzzNr) * 100);
+    }
+    printf("                                                                                \r");
 CUTE_TEST_CASE_END

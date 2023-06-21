@@ -53,6 +53,7 @@ CUTE_TEST_CASE(macgonuts_static_lib_tests)
     CUTE_RUN_TEST(macgonuts_create_join_thread_tests);
     CUTE_RUN_TEST(macgonuts_check_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_raw_ether_addr_tests);
+    CUTE_RUN_TEST(macgonuts_getrandom_raw_ether_addr_tests);
     CUTE_RUN_TEST(macgonuts_check_ip_addr_tests);
     CUTE_RUN_TEST(macgonuts_get_ip_version_tests);
     CUTE_RUN_TEST(macgonuts_get_cidr_version_tests);
