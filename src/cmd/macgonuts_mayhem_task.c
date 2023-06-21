@@ -13,6 +13,7 @@
 #include <cmd/macgonuts_misc_utils.h>
 #include <macgonuts_status_info.h>
 #include <macgonuts_get_ethaddr.h>
+#include <macgonuts_etherconv.h>
 #include <macgonuts_spoof.h>
 #include <macgonuts_ipconv.h>
 #include <macgonuts_socket.h>
@@ -326,14 +327,9 @@ static int fill_up_lo_info(struct macgonuts_spoofing_guidance_ctx *spfgd) {
         return EXIT_FAILURE;
     }
 
-    if (macgonuts_get_raw_ip_addr(&spfgd->layers.lo_proto_addr[0],
-                                  sizeof(spfgd->layers.lo_proto_addr),
-                                  addr, strlen(addr)) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
-
-    return macgonuts_get_gateway_hw_addr(&spfgd->layers.lo_hw_addr[0],
-                                         sizeof(spfgd->layers.lo_hw_addr));
+    return macgonuts_get_raw_ip_addr(&spfgd->layers.lo_proto_addr[0],
+                                     sizeof(spfgd->layers.lo_proto_addr),
+                                     addr, strlen(addr));
 }
 
 static int sched_mayhem_unicast(struct macgonuts_spoofing_guidance_ctx **spfgd, const size_t spoof_threads_nr) {
@@ -544,6 +540,13 @@ static void *mayhem_unicast_tdr(void *args) {
 
     if (err != EXIT_SUCCESS) {
         macgonuts_si_warn("unable to convert target address.\n");
+        return NULL;
+    }
+
+    err = macgonuts_getrandom_raw_ether_addr(&spfgd->layers.lo_hw_addr[0], sizeof(spfgd->layers.lo_hw_addr));
+
+    if (err != EXIT_SUCCESS) {
+        macgonuts_si_warn("unable to get random ethernet address.\n");
         return NULL;
     }
 
