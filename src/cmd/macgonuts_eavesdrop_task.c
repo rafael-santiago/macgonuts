@@ -11,6 +11,7 @@
 #include <cmd/hooks/macgonuts_eavesdrop_done_hook.h>
 #include <cmd/hooks/macgonuts_eavesdrop_redirect_hook.h>
 #include <cmd/macgonuts_printpkt.h>
+#include <cmd/macgonuts_printpkt_if.h>
 #include <cmd/macgonuts_option.h>
 #include <macgonuts_ipconv.h>
 #include <macgonuts_status_info.h>
@@ -140,6 +141,8 @@ int macgonuts_eavesdrop_task(void) {
         }
         macgonuts_free_array_option_value(filter_globs, filter_globs_nr);
         filter_globs = NULL;
+        alice->hooks.capture.printpkt_if = macgonuts_printpkt_if;
+        bob->hooks.capture.printpkt_if = macgonuts_printpkt_if;
     }
 
     err = macgonuts_get_spoof_layers_info(alice->handles.wire,
@@ -187,11 +190,17 @@ int macgonuts_eavesdrop_task(void) {
     err = run_metaspoofers(alice, bob);
 
     if (macgonuts_get_bool_option("undo-spoof", 0)) {
+#if defined(__FreeBSD__)
+        sleep(1);
+#endif // defined(__FreeBSD__)
         if (macgonuts_undo_spoof(alice->handles.wire, &alice->layers) == EXIT_SUCCESS) {
             macgonuts_si_info("spoof was undone at `%s`.\n", alice->usrinfo.tg_address);
         } else {
             macgonuts_si_warn("unable to undone spoofing at `%s`.\n", alice->usrinfo.tg_address);
         }
+#if defined(__FreeBSD__)
+        sleep(1);
+#endif // defined(__FreeBSD__)
         if (macgonuts_undo_spoof(bob->handles.wire, &bob->layers) == EXIT_SUCCESS) {
             macgonuts_si_info("spoof was undone at `%s`.\n", bob->usrinfo.tg_address);
         } else {
