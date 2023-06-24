@@ -3,11 +3,13 @@
 ``Macgonuts`` is an ``ARP/NDP`` swiss army knife to make ``MAC addresses`` going nuts on networks around!
 
 It supports ``IPv4/ARP`` and ``IPv6/NDP``.  It intends to bring you all in a shell. Anything related to
-spoofing layer-2 addresses can be done elegantly with a single f_cking nice ``non-scripted`` tool, a
+spoof `layer-2` addresses can be done elegantly with a single f_cking nice ``non-scripted`` tool, a
 badass executable without clumsy zillions of dependencies. Suckless is the key here.
 
-Anyway, if you want to do spoof from your own code, you can still use ``Macgonuts`` as a ``C library`` or ``Go``,
-``Python`` bind as well.
+Currently ``Macgonuts`` is compatible with ``Linux`` and ``FreeBSD`` platforms.
+
+Still, if you want to do spoof from your own code, you can use basic stuff from ``Macgonuts`` as a
+``C library`` or ``Go``, ``Python`` bind as well.
 
 You should take your first steps [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc/BUILD.md) and so
 buckle up and quickly mastering all the tool [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc/MANUAL.md).
@@ -30,12 +32,12 @@ Again, ``Macgonuts`` is an ``ARP/NDP`` swiss army knife with batteries included 
 
 Remember to be ethical when using it. Macgonuts is a tool designed to ethical hacking, pentests and
 red teams. *Once it stated, when using this tool you are assuming that any damage, data loss or even
-law infringements that some wrong action taken by you could cause is of your entire resposibility*.
+law infringements that some wrong action taken by you could cause is of your entire responsibility*.
 
 **Sponsoring**:  I have not been running this project for profit. It is only a thing that I do at my spare time. It is a
 weekend project. I try to evol it according to necessities I have been facing up during my information security
 professional experience. If you liked it or it is being useful to you somehow and you really want to contribute
-with money, try to redirect it to a local charity institution, a ONG of your choice or even your own community.
+with money, try to redirect it to a local charity institution, an ONG of your choice or even your own community.
 You can also do [pull requests](https://github.com/rafael-santiago/macgonuts/pulls) proposing improvements.
 Do some [bug report](https://github.com/rafael-santiago/macgonuts/issues) if a bug is annoying you. Maybe you should
 also instruct people about network security issues by using this software showing them ways of being protected against

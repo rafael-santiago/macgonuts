@@ -129,7 +129,7 @@ static int macgonuts_help_task(void) {
         macgonuts_si_print("Remember to be ethical when using it. Macgonuts is a tool designed to ethical hacking, "
                            "pentests and\nred teams. Once it stated, when using this tool you are assuming that any "
                            "damage, data loss or even\nlaw infringements that some wrong action taken by you could "
-                           "cause is of your entire resposibility.\n\n");
+                           "cause is of your entire responsibility.\n\n");
         macgonuts_si_print("Bug reports, feedback etc: <https://github.com/rafael-santiago/macgonuts/issues>\n\n");
         return EXIT_SUCCESS;
     }

@@ -2,7 +2,7 @@
 
 **Abstract**: ``Macgonuts`` main build is based on another tool of mine called [Hefesto](https://github.com/rafael-santiago/hefesto).
 If you want to contribute to ``macgnonuts`` you need to know details about it. If you are only seeking to get a
-freshly ``macgonuts`` binary to get your stuff done, you can give ``the low-cost build`` a try. It uses simply
+fresh ``macgonuts`` binary to get your stuff done, you can give ``the low-cost build`` a try. It uses simply
 ``Makefiles``. So, get your build instructions destiny below.
 
 ## Topics
@@ -29,7 +29,7 @@ you@somewhere-over-the-rainbow:~# _
 
 ``Macgonuts`` is a tool that has some points of ``suckless`` as its philosophy, so it tries to do
 more possible without making you bloat your system with tons of ``3rd party`` stuff that certainly has
-untracked bugs by us. If it is impossible to have a system without bugs, it is better to stick with your
+untracked bugs by us. If it is impossible to write a program without bugs, it is better to stick with your
 own bugs and getting (less possible) in touch with bugs from other people. Thus, all you need to
 build ``Macgonuts`` is:
 
@@ -37,7 +37,7 @@ build ``Macgonuts`` is:
 - ``libc`` (Harrrrrrd of having it on unixes, huh?).
 - ``Pthread`` libraries well installed in your system.
 - ``Hefesto`` (my build system of choice for this tool and if you want to contribute to ``Macgonuts`` you should install it).
-- ``Make`` tool (if you are intending to run low-cost build only to get your ``macgonuts`` binaries to do your own stuff).
+- ``GNUMake`` tool (if you are intending to run low-cost build only to get your ``macgonuts`` binaries to do your own stuff).
 
 Any other dependency we ship it as sub-modules and build it during build but ``DO NOT`` polute your system
 with nothing. It is used into ``src/libs`` folder of your copy. If you delete your copy, all will gone
@@ -63,10 +63,10 @@ You can also run the script ``get-hefesto.sh`` into ``src`` folder of ``Macgonut
 ## The low-cost build
 
 Well, ``low-cost build`` is only to produce libraries and the command line tool. Due to it if you are adding new
-features to macgonuts to open a pull request, better to run the developer's build based on ``Hefesto`` because it
+features to macgonuts by opening a pull request, better to run the developer's build based on ``Hefesto`` because it
 will run tests, search for memory leak and stuff. ``Low-cost build does not run any test nor do any profile``.
 
-Having ``GNU make`` tool well installed in your system, move to ``src`` toplevel subdirectory and:
+Having ``GNU make`` tool well installed in your system, move to ``src`` toplevel subdirectory and execute `make`:
 
 ```
 you@somewhere-over-the-rainbow:~# cd macgonuts/src
@@ -98,7 +98,7 @@ subdirectory is ``src/cmd``. This ``cmd`` subdirectory stands for the ``macgonut
 
 Codes directly hosted into ``src`` compound the static libraries ``libmacgonuts.a`` and ``libmacgonutssock.a``.
 The ``libmacgonutssock.a`` is a special case where all codes related to socket (into native implementations
-``macgonuts_socket.o`` and ``macgonuts_socket_common.o`` are put together into a separated ar file, this
+``macgonuts_socket.o`` and ``macgonuts_socket_common.o`` are put together into a separated `ar` file, this
 is done in order to make easy to test some communication parts).
 
 Any specific code for some platform is hosted into a subdirectory with the name of the platform, so,
@@ -123,7 +123,7 @@ If you just added a new function to some previous existent module, you only need
 by adding the test prototype and the test definition of the new stuff you added. Tests are called into every
 ``main.c``. It is present in each ``test`` subdirectory that you find. Try to keep a logical order of running.
 By running the less dependent (basic stuff) before the more dependent, it will isolate the problem ``asap`` by
-giving us the clue where the introduced bug is exactly.
+giving us the clue where the introduced bug exactly is.
 
 For tests I have been using another library of mine called [cutest](https://github.com/rafael-santiago/cutest).
 
