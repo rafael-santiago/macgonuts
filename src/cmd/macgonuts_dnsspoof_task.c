@@ -238,7 +238,7 @@ static struct dnsspoof_task_ctx **alloc_dnsspoof_task_contexts(size_t *tasks_nr,
     macgonuts_get_gateway_addr_info_from_iface(&gw_addr[1][0], &gw_addr_size[1], 4, iface);
 
     if (macgonuts_get_gateway_addr_info_from_iface(&gw_addr[0][0], &gw_addr_size[0], 6, iface) != EXIT_SUCCESS
-        && gw_addr_size[0] == 0) {
+        && gw_addr_size[1] == 0) {
         macgonuts_si_error("unable to get gateway address.\n");
         return NULL;
     }
