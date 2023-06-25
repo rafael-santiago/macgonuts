@@ -20,7 +20,7 @@
 
 Besides a lousy pun, ``macgonuts`` is also a tool to exploit address resolution on networks.
 Anyway, the main motivation to implement ``macgonuts`` was the possibility of using the lousy pun, I need to admit...
-You can also understand ``macgonuts`` as a swiss army knife to exploit addressing resolution on computer networks, but
+You can also understand ``macgonuts`` as a swiss army knife to exploit address resolution on computer networks, but
 my main goal was to have something to use the pun.
 
 [``Back``](#topics)
@@ -32,7 +32,7 @@ my main goal was to have something to use the pun.
 3. It is based on commands.
 4. When you want a quick help about a command you run: ``macgonuts help <command>``.
 5. If you do not want to read this manual by preferring poke the tool by yourself: ``macgonuts help``.
-6. If you still do not understand try to go to 1 (repeat it some couple of times).
+6. If you still do not understand, try to go to 1 (repeat it some couple of times).
 7. Open an issue asking me about, thank you for helping me to improve on the documentation! :wink:
 
 [``Back``](#topics)
@@ -63,22 +63,22 @@ Okay, it expects at least three options:
 - ``target-addr``
 - ``addr2spoff``
 
-Nice, it does support ``ARP`` and ``NDP`` because options related to addressing supports ``ipv4`` or ``ipv6``.
+Nice, it does support ``ARP`` and ``NDP`` because options related to addressing stuff supports ``ipv4`` or ``ipv6``.
 
-The option ``lo-iface`` stands for "local interface" you need to indicate the interface that your
-machine uses to access the network that you are wanting to.. err... mess up... Anyway,
-the option ``target-addr`` is where you indicate the address of the host that you want to deceive
-and ``addr2spoof`` option is where you input the address that you want to override in target host system.
+The option ``lo-iface`` stands for "local interface", thus you need to indicate the interface that your
+machine uses to access the network that you are wanting to.. err... mess up... The option ``target-addr``
+is where you indicate the address of the host that you want to deceive and ``addr2spoof`` option is where
+you input the address that you want to override in target host system.
 
 Now, story time!!!!!!
 
-Once upon time, three persons: Alice, Bob and Eve:
+Once upon time, three persons: Alice, Bob and Eve... How creative, huh?
 
 - Alice is on host ``192.30.70.8``.
 - Bob is on host ``192.30.70.10``.
 - Eve is on host ``192.30.70.9``.
 
-Eve wants to use ``macgonuts`` to make Bob thinks that she is Alice on the network. So Eve run:
+Eve wants to use ``macgonuts`` to make Bob thinks that she is Alice on the network. So Eve runs:
 
 ```
 eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
@@ -98,7 +98,7 @@ info: ARP reply -> `192.30.70.10`, MAC `08:00:27:e5:9b:4a` will override `08:00:
 ```
 
 Eve's screen will be flooded with this info, now you imagine the network... Eve the barbarian I would say...
-In fact, the spoof is done, at this moment ``192.30.70.10`` (Bob) thinks that ``192.30.70.8`` (Alice) is
+In fact, the spoof is done and, at this moment ``192.30.70.10`` (Bob) thinks that ``192.30.70.8`` (Alice) is
 ``192.30.70.9`` (Eve).
 
 If Eve wants to avoid flooding the network with so many packets she can pass ``timeout=<mss>`` option:
@@ -111,7 +111,7 @@ eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
 The same effect of the prior command but now at each half second ``macgonuts`` will inject in the network one
 fake ``ARP`` resolution.
 
-Nice, but Eve also wants to avoid interrupting any communication between ``Alice <-> Bob``, in this way she can sit on
+Nice, but Eve also wants to avoid interrupting any communication between ``Alice <-> Bob``, in this way, she can sit on
 and eavesdropping (what a nice pun, huh?!) their channel. It can be done by passing ``redirect`` flag:
 
 ```
@@ -119,7 +119,7 @@ eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
 > --target-addr=192.30.70.10 --addr2spoof=192.30.70.8 --timeout=500 --redirect
 ```
 
-Same effect, still spoofed but now redirecting packets and do not abusing network throughput.
+Same effect, still spoofed but now redirecting packets and it does not abuse network throughput.
 
 Eve hits ``ctrl+c`` to exit the application (by the way, this is how you exit spoof command, sorry!). However,
 Bob still thinks that Eve's computer is Alice's computer and at this moment he will notice that "Alice"
@@ -134,7 +134,7 @@ Once ``macgonuts`` got an exit request it will stop flooding network with fake p
 restore the ``MAC`` resolution on target host, in other words, it does some housekeeping before going home
 (...well, I think you understood).
 
-If flooding network is not an option Eve also could send only a specific amount of fake resolution
+If flooding network is not an option, Eve also could send only a specific amount of fake resolution
 packets by using ``fake-pkts-amount=<n>``:
 
 ```
@@ -146,7 +146,7 @@ eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
 **Tip**: When you do redirect it has already some implicit timeout, thus, maybe you do not have to pass an
 explicit timeout, depending on how much of timeout you are intending between fake resolution packets.
 
-Congrats! Now you are a macgonuts spoofing master!
+Congrats! Now you are a ``macgonuts spoofing`` master!
 
 [``Back``](#topics)
 
@@ -155,7 +155,7 @@ Congrats! Now you are a macgonuts spoofing master!
 >If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
 looking for...
 
-With ``eavesdrop`` command you are able to simply watch the network traffic or log it to inspect later. You can
+With ``eavesdrop`` command you are able to simply watch the network traffic or log it to later inspection. You can
 also inform to ``macgonuts`` what content is relevant to be displayed/logged.
 
 When you ask for ``eavesdrop``'s help you will be presented to something like the following:
@@ -183,7 +183,7 @@ eve@FarEastForTheTrees:~# macgonuts eavesdrop --lo-iface=eth1 \
 > --alice-addr=192.30.70.11 --bob-addr=192.30.70.12
 ```
 
-After that, all what the two talked each other begun be displayed at Eve's screen. Bang!
+After that, all what the two talked each other begun be displayed at Eve's screen. Nice!
 
 Nevertheless, in thruth, Eve was not the villain here, she was a ``sysadmin`` seeking to catch network abuses done by
 Alice and Bob. So, Eve decided to log all them traffic to use it later as proofs:
@@ -230,16 +230,16 @@ As you can see ``filter-globs`` option supports extended asciis by passing its v
 numbers in form ``\xXX``. The glob supports the classical wildcards: star (``*``), question (``?``) and
 groups (``[...]``). It is also possible to pass longer hexadecimal streams, e.g: ``\x45007238123731627320``.
 
-Congrats again! Welcome to the paradise, now you are a macgonuts eavesdrop master.
+Congrats again! Welcome to the paradise, now you are a ``macgonuts eavesdrop`` master.
 
 [``Back``](#topics)
 
 ### The isolate command
 
 >With the isolate command it is possible to make a specific host an island. Any contact done from anyone in the
-local network will be "cut off" by isolating this target node.
+local network will be "cut off" by letting that target alone.
 
-If you ask the quick help from isolate you will get the following:
+If you ask the quick help of the isolate command you will get the following:
 
 ```
 robinson@SomewhereInTheCoastOfAmerica:~# macgonuts help isolate
@@ -288,21 +288,25 @@ robinson@SomewhereInTheCoastOfAmerica:~# macgonuts isolate --lo-iface=eth1 --isl
 > --no-route-to=192.30.70.0/4,192.30.70.60
 ```
 
-In this case all between ``192.30.70.0-192.30.70.15`` and ``192.30.70.60`` will be unreachable from
+In this case all between ``192.30.70.1-192.30.70.15`` and ``192.30.70.60`` will be unreachable from
 John's host (``192.30.70.8``).
 
-Congrats! Now you are a macgonuts troll master by knowing every single thing about isolate command!
+Congrats! Now you are a ``macgonuts`` troll master by knowing every single thing about
+``macgonuts isolate`` command!
 
 [``Back``](#topics)
 
 ### The mayhem command
 
 >If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
-With mayhem you are able to make ARP/Neighbor tables a total mess. As a result the host will be unable
+With mayhem you are able to make `ARP/Neighbor` tables a total mess. As a result the host will be unable
 to communicate each other or at least unable to communicate each other without unstability.
 
-In order to work on this command needs three basic options: the local interface, a CIDR and a list of
-targets.
+In order to work on this command needs three basic options:
+
+1. The local interface
+2. A CIDR
+3. A list of targets.
 
 So, story time!!!!
 
@@ -406,11 +410,11 @@ Well, by default ``dnsspoof`` command expects at least two options:
 - ``target-addrs``
 
 Being ``lo-iface`` option the name of your network interface card, the ``NIC`` that you will use during the
-``DNS spoof attack`` and, ``target-addrs`` is just about an ip addresses listing that will be the potential
+``DNS spoof attack`` and, ``target-addrs`` is just about an ip address listing that will be the potential
 targets of this attack.
 
 The core of ``dnsspoof`` command is a special file called (drum roll, one more lousy pun) `/etc/hoax`. It is similar to
-your nearest ``/etc/hosts`` file. By default ``macgonuts`` will install a copy of it but you need to tune it up
+your nearest ``/etc/hosts`` file. By default ``macgonuts`` will install a default copy of ``/etc/hoax`` but you need to tune it up
 according to your interests (the default installation path is ``/usr/local/share/macgonuts/etc/hoax``).
 When you do not make the location of the ``/etc/hoax`` explicit by using ``etc-hoax`` option, ``macgonuts``
 will try to use the installed default one.
@@ -443,7 +447,7 @@ Facts about the network configuration:
 make ``Polifemo`` thinks that he is ``Ninguém``. Well, since everyone access the computer from the others by using names
 instead of raw IPs, ``Ulisses`` decided to use ``macgonuts dnsspoof``.
 
-So ``Ulisses`` tuned up the following ``/etc/hoax``:
+So ``Ulisses`` tuned the following ``/etc/hoax`` up:
 
 ```
 192.168.5.171           ulisses.lo
@@ -467,7 +471,7 @@ ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 --target-addrs=192.168.5.142
 > --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600
 ```
 
-Now the resolutions should last for 1 hour in ``Polifemo``'s dns cache.
+Now the resolutions should last for 1 hour in ``Polifemo``'s dns cache (but it also depends on his operation system policy about).
 
 Anyway, ``Polifemo`` has some friends in this network that should annoy ``Ulisses``, too. In this way, ``Ulisses``
 only have to indicate the ip addresss of each:
@@ -481,7 +485,7 @@ ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 \
 Now the hosts from ``192.168.5.142`` to ``192.168.5.145`` when trying to reach ``Ulisses`` by his
 host name will reach ``Ninguém``.
 
-But ``Ulisses`` is smart and do not want to warn them of his ``FQDN escape``. Supposing that ``ulisses.lo``
+But ``Ulisses`` is smart and does not want to warn them of his ``FQDN escape``. Supposing that ``ulisses.lo``
 goes off, it does not necessarily will do ``ninguem.lo`` goes off too, and, it could alarm ``Polifemo`` and his not
 so clever gang... Trying to make his fakery more perfect, ``Ulisses`` uses ``undo-spoof`` option:
 
@@ -522,13 +526,13 @@ By the way, it will make the attack easier to promote. The ``dns-addrs`` option 
 to spoof ``DNS`` replies that come from a specify ``DNS`` server (even external).
 
 Did you see as easy is to promote a ``DNS`` spoof attack with ``macgonuts``? You do not need to pile up ``n`` tools,
-emit ``OS`` commands to your network stack etc. You should just inform the context of your attack... e tchum!
+emit ``OS`` commands to your network stack etc. You should just inform the context of your attack... e tchum! [sic]
 
-``dnsspoof`` was a reborn of ``dnsf_ckr``. A tool of mine that I wrote some years ago but it had a lot of
+``dnsspoof`` was a reborn of ``dnsf_ckr``. A tool of mine that I wrote some couple of years ago but it had a lot of
 "operational gaps". This reborn works as I wanted since that time and it still supports ``IPv6`` environments! :metal:
 
 Congrats! Now you are a master of ``FQDN`` forgery and falsehoods with ``macgonuts dnsspoof`` command! ``Geppetto`` is
-proud of you ``Pinocchio``! Use it with care.
+proud of you ``Pinocchio``! You nasty busybody... Use it with care!
 
 [``Back``](#topics)
 
@@ -537,19 +541,19 @@ proud of you ``Pinocchio``! Use it with care.
 >If you are looking around for possible targets to your offensive actions, maybe ``macgonuts`` features
 one command to do it and, this command is...
 
+<h1 align="center">X    A    B    L    A    U    !</h1>
+
 <p align="center">
     <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/xablau.gif" title="xablau is the key!"
      alt="XABLAU" width="320" height2="200" />
 </p>
 
-<h1 align="center">X    A    B    L    A    U    !</h1>
-
 By using ``xablau`` you are able to discover all reachable nodes that could be potential targets to your
 ``layer-2`` misconducts and, there is not much secret on using it but: story time!!!!
 
 Once upon time ``Trollman Burbank`` was looking for targets to have some fun with ``macgonuts``. He had
-just ingress into the network by getting a valid ``IP`` but he knew nothing about other hosts. Someone
-tell him to use a weird command called "xablau". "- Xa who?" he said... Even so, he gaves ``xablau``'s
+just ingress into your hotel the network by getting a valid ``IP`` but he knew nothing about other hosts.
+Someone tell him to use a weird command called "xablau". "- Xa who?" he said... Even so, he gaves ``xablau``'s
 quick help a try:
 
 ```
@@ -597,7 +601,7 @@ Now, nice facts about ``xablau`` command:
 - ``Trollman`` could have interrupted the process of discovering any time just by hitting ``Ctrl + C``, too.
 - ``Trollman`` could have redirected the discovering output to a file by using ``--out=<filepath>`` option and,
   the output would be appended to this indicated file.
-- If ``Trollman`` would not have passed ``--ipv4`` option, ``macgonuts`` will try all addressing versions available for the
+- If ``Trollman`` would not have passed ``--ipv4`` option, ``macgonuts`` would try all addressing versions available for the
   indicated interface. I meant ``IPv4`` and/or ``IPv6``.
 - So passing ``--ipv4`` and ``--ipv6`` is a thing that in Portuguese we say "perfunctório", do not do that. ``Macgonuts``
   will understand that you want both when you pass none...
@@ -609,7 +613,7 @@ Now you should are asking: is there something more that I should known about ``x
      alt="OUI" width="320" height2="200" />
 </p>
 
-If you want to get information about vendor of the prey ``NICs`` found out in your ``LAN`` the ``--oui`` option
+If you want to get information about vendor of the prey ``NICs`` found out in your ``LAN``, the ``--oui`` option
 is what you are looking for:
 
 ```
@@ -629,6 +633,6 @@ Done! Now you know how to sniff your prey through the wire. You are a ``xablau``
 Maybe you are still asking ``WTF "xablau" does mean??!``. ``Xablau`` is a kind of "meta-expression" that I picked
 from one brazilian TV show favorite of mine, called ``Larica Total``. A kind of tribute for the best food TV show
 in the Universe. A no-frills food TV show I would say... If you did not understand, relax, ``xablau`` is ``xablau``
-and even, not knowing, you are from now on a ``f_cking-amazing-xablau-master``. Congrats!
+and even, not knowing, you are from now on a ``f_cking-amazing-macgonuts-xablau-master``. Congrats!
 
 [``Back``](#topics)

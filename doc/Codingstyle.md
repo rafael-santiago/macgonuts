@@ -26,14 +26,14 @@ Have you found some unclear point here? Help me to improve it by opening a relat
 
 ## Basic formatting
 
-1. Here we are replacing ``tabs`` with ``spaces`` and a tab is equals to ``4 spaces`` (some text editors understands 4
-as 8 spaces, maybe due to a different base, the Truth...).
+1. Here we are replacing ``tabs`` with ``spaces`` and a tab is equals to ``4 spaces`` (some text editors understand 4
+as 8 spaces, maybe due to a different "base" of Truth...).
 
 2. An indentation level is given by ``one tab``.
 
 3. Control blocks have to be always embraced with ``{ ... }``.
 
-4. Yes, ``80`` columns is a really short limit, try not to exceed ``120``!
+4. Yes, ``80`` columns is such a really short limit, try not to exceed ``120``!
 
 ## Header files
 
@@ -58,8 +58,8 @@ inconsistences. Some OSes are using newest compiler versions but their library a
 
 3. Even being ``static`` those functions must be prototyped at the beginning of the implementation file.
 
-4. Give preference for listing the public one first in the implementation file. So the public ones go at the top of
-   the implementation file the static ones after the last public one implementation.
+4. Give preference for writing the public ones first in the implementation file. So the public ones go at the top of
+   the implementation file, the static ones after the last public one implementation.
 
 [``Back``](#topics)
 
@@ -74,6 +74,8 @@ inconsistences. Some OSes are using newest compiler versions but their library a
    and so on.
 
 4. ``snake_case`` is the generic naming convention of choice here.
+
+5. Global stuff, when needed, it should be prefixed with `g_`.
 
 [``Back``](#topics)
 
@@ -131,7 +133,7 @@ int do_something(const int i_know_but_better_to_const, const char *buf, const si
 ## Gotos
 
 Since ``C language`` does not feature a deferring or ``try..finally`` statements, here we use
-``goto`` for accomplishing clean up necessities. With it you can conclude that here gotos only
+``goto`` for accomplishing clean up necessities. With it you can conclude that here ``gotos`` only
 jump forward and to the end of the function. Try to never use explicit gotos to jump backward, please.
 
 ```c
@@ -178,9 +180,10 @@ It is up to you to pick:
 /* INFO(Rafael): or this one. */
 ```
 
-However, consider ``MISRA-C`` points about ``// ... `` style one.
+However, take into consideration ``MISRA-C`` points about ``// ... `` style one.
 
-All new features must be documented by including its advantages and drawbacks. Always be fair with users.
+All new features must be documented by including its advantages and drawbacks. Always be fair with other developers
+and users.
 
 [``Back``](#topics)
 
@@ -209,12 +212,12 @@ A new feature is considered done when:
 *This is the only point that **there is no concession**. It is **NOT** about unicorns, really. Follow it or farewell.*
 
 Always try to use inclusive and neutral words/terms in your source codes and documentations. If you find something that
-for you seems to be not so correct, please, let me know by opening an issue and suggesting improvements. Thank you in
+for you seems not to be so correct, please, let me know by opening an issue and suggesting improvements. Thank you in
 advance!
 
 In general avoid using colors to name what should be "good" or "bad". Outdated terms such as ``whitelist``/``blacklist``
 are deprecated/banned here. You should use ``allowlist/denylist`` or anything more related to what you are really doing. Terms
-like ``master/slave`` are out too. You could use ``main``, ``secondary``, ``next``, ``trunk``, ``current``, ``supervisor``,
+like ``master/slave`` are out, too. You could use ``main``, ``secondary``, ``next``, ``trunk``, ``current``, ``supervisor``,
 ``worker`` in replacement.
 
 Do not use sexist and/or machist terms, too.
