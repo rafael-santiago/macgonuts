@@ -39,7 +39,7 @@ int macgonuts_dnsspoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spf
                                       spoofed_hostname, strlen(spoofed_hostname)) == EXIT_SUCCESS
                  && macgonuts_raw_ip2literal(&lit_addr[0], sizeof(lit_addr) - 1,
                                              in_addr, in_addr_size) == EXIT_SUCCESS)) {
-            strncpy(lit_addr, "(null)", 6);
+            strncpy(lit_addr, "(null)", sizeof(lit_addr) - 1);
         }
         if (spoofed_hostname != NULL) {
             macgonuts_si_info("spoofed DNS resolution (<%s@%s>) sent to `%s`.\n", spoofed_hostname,
