@@ -1,4 +1,4 @@
-# Macgonuts
+# Macgonuts ![ci-status](https://github.com/rafael-santiago/macgonuts/actions/workflows/forge-specs.yml/badge.svg)
 
 ``Macgonuts`` is an ``ARP/NDP`` swiss army knife to make ``MAC addresses`` going nuts on networks around!
 
