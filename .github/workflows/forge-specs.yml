@@ -1,0 +1,33 @@
+on: push
+name: Build
+jobs:
+  Build-Task:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install basic tools
+      shell: bash
+      run: |
+        sudo apt-get install git
+        sudo apt-get install gcc-9
+    - name: Install Hefesto
+      shell: bash
+      run: |
+        git clone https://github.com/rafael-santiago/hefesto --recursive
+        cd hefesto/src
+        printf "\n" > blau.txt
+        sudo ./build.sh < blau.txt
+        echo "HEFESTO_INCLUDES_HOME=/usr/local/share/hefesto/include" >> "$GITHUB_ENV"
+        echo "HEFESTO_MODULES_HOME=/usr/local/share/hefesto/module" >> "$GITHUB_ENV"
+        sudo chown -R runner /usr/local/share/hefesto
+        cd ../..
+        rm -rf hefesto
+    - name: Clone project repo
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Invoke Hefesto
+      shell: bash
+      run: |
+        cd src
+        sudo -E hefesto
+

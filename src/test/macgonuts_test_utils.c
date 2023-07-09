@@ -106,7 +106,7 @@ void get_gateway_addr(uint8_t *addr) {
         return;
     }
 #if defined(__linux__)
-    proc = popen("route | grep \"^default\"", "r");
+    proc = popen("ip route | sed s/default.*via.// | sed s/.dev.*//", "r");
 #elif defined(__FreeBSD__)
     proc = popen("route -4 get default | grep \"gateway\" | sed 's/.*gateway://'", "r");
 #else
@@ -117,10 +117,8 @@ void get_gateway_addr(uint8_t *addr) {
     }
     buf_size = fread(&buf[0], 1, sizeof(buf), proc);
     pclose(proc);
+#if defined(__FreeBSD__)
     bp = &buf[0];
-#if defined(__linux__)
-    bp += 7;
-#endif // defined(__linux__)
     bp_end = bp + buf_size;
     while (bp != bp_end && isblank(*bp)) {
         bp++;
@@ -134,6 +132,18 @@ void get_gateway_addr(uint8_t *addr) {
     }
     memcpy(&s_addr[0], lp, bp - lp - (bp[-1] == '\n'));
     done = (macgonuts_get_raw_ip_addr(gw_addr, sizeof(gw_addr), s_addr, bp - lp - (bp[-1] == '\n')) == EXIT_SUCCESS);
+#elif defined(__linux__)
+    bp = strstr(buf, "\n");
+    if (bp != NULL) {
+        *bp = 0;
+        buf_size = strlen(buf);
+    }
+    memcpy(&s_addr[0], buf, buf_size);
+    done = (macgonuts_get_raw_ip_addr(gw_addr, sizeof(gw_addr), s_addr, buf_size) == EXIT_SUCCESS);
+#else
+# error Some code wanted.
+#endif // defined(__FreeBSD__)
+
     if (done) {
         memcpy(addr, &gw_addr[0], sizeof(gw_addr));
     }
