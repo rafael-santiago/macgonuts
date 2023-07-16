@@ -2,3 +2,4 @@
 **/bin/*
 *.Forgefile-*
 *.o/
+coverage.info

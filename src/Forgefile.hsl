@@ -71,6 +71,19 @@ macgonuts-static-lib.epilogue() {
         $subprojects.add_item("test");
         $subprojects.add_item("cmd");
         if (build_projects($subprojects) == 0) {
+            var option type list;
+            $option = hefesto.sys.get_option("coverage");
+            if ($option.count() > 0) {
+                var report_path type string;
+                $report_path = hefesto.sys.make_path(get_coverage_report_dir(), "index.html");
+                var fcov type string;
+                $fcov = get_function_coverage($report_path);
+                var lcov type string;
+                $lcov = get_line_coverage($report_path);
+                hefesto.sys.echo("INFO: Code coverage : [ functions = " + $fcov + " % / lines = " + $lcov + " % ]\n");
+                do_break_when_low_coverage($fcov, $lcov);
+                update_coverage($fcov, $lcov);
+            }
             hefesto.sys.echo("INFO: Done.\n");
         } else {
             hefesto.project.abort(1);

@@ -1,4 +1,6 @@
-# Macgonuts ![ci-status](https://github.com/rafael-santiago/macgonuts/actions/workflows/forge-specs.yml/badge.svg)
+# Macgonuts ![ci-status](https://github.com/rafael-santiago/macgonuts/actions/workflows/forge-specs.yml/badge.svg) ![c](https://img.shields.io/badge/is_what_we_speak-black?logo=c&logoColor=white&style=plastic) ![suckless](https://img.shields.io/badge/is_what_we_seek_to_follow-white?logo=suckless&logoColor=blue&style=plastic)
+
+![linux-function-coverage](https://img.shields.io/badge/function_coverage-0%25-lime?logo=linux&logoColor=white&style=plastic) ![linux-line-coverage](https://img.shields.io/badge/line_coverage-0%25-lime?logo=linux&logoColor=white&style=plastic) ![freebsd-function-coverage](https://img.shields.io/badge/function_coverage-91.9%25-lime?logo=freebsd&logoColor=white&style=plastic) ![freebsd-line-coverage](https://img.shields.io/badge/line_coverage-82.0%25-lime?logo=freebsd&logoColor=white&style=plastic)
 
 ``Macgonuts`` is an ``ARP/NDP`` swiss army knife to make ``MAC addresses`` going nuts on networks around!
 

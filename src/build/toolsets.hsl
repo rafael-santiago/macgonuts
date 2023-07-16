@@ -9,7 +9,9 @@ include ~/toolsets/gcc/gcc-lib.hsl
 include ~/toolsets/clang/clang-app.hsl
 include ~/toolsets/clang/clang-lib.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
+include ~/toolsets/common/utils/lang/c/lcov.hsl
 include ~/fsutil.hsl
+include ~/conv.hsl
 
 function installer() : result type none {
     var option type list;
@@ -50,6 +52,20 @@ function build_projects(projects type list) : result type int {
 function runtests(binary type string, args type string) : result type none {
     if (hefesto.sys.run($binary + " " + $args) != 0) {
         hefesto.project.abort(1);
+    }
+    var option type list;
+    $option = hefesto.sys.get_option("coverage");
+    if ($option.count() > 0) {
+        var obj_output_dir type string;
+        $option = hefesto.sys.get_option("obj-output-dir");
+        if ($option.count() > 0) {
+            $obj_output_dir = $option.item(0);
+        } else {
+            $obj_output_dir = hefesto.sys.pwd();
+        }
+        if (generate_lcov_report($obj_output_dir) != 0) {
+            hefesto.project.abort(1);
+        }
     }
 }
 
@@ -171,6 +187,22 @@ local function build_accacia() : result type int {
     result $exit_code;
 }
 
+function get_coverage_report_dir() : result type string {
+    var report_path type string;
+    var option type list;
+    $option = hefesto.sys.get_option("genhtml-outpath");
+    var genhtml_outpath type string;
+    if ($option.count() == 0) {
+        $report_path = hefesto.sys.make_path(get_rootdir(),
+                       hefesto.sys.make_path("/reports/", hefesto.project.name()));
+    } else {
+        $report_path = $option.item(0);
+        $report_path = hefesto.sys.make_path($report_path,
+                                             hefesto.project.name());
+    }
+    result $report_path;
+}
+
 local function build_submodule(subdir type string) : result type int {
     var oldcwd type string;
     $oldcwd = hefesto.sys.pwd();
@@ -189,12 +221,150 @@ local function build_submodule(subdir type string) : result type int {
     $build_options.replace("--libraries=.* ", "");
     $build_options.replace("--ldflags=.* ", "");
 
+    var coverage type list;
+    $coverage = hefesto.sys.get_option("coverage");
+    var report_path type string;
+
+    var projects2cov type list;
+    # INFO(Rafael): Add to this list all projects relevant to extract coverage info.
+    #
+    #               By now we are only extracting coverage info from libmacgonuts.
+    #               The cmd-tool is rather difficult for unit testing since it depends
+    #               on promoting all attacks that its tasks implements. Automating the
+    #               execution of all them into a docker-velotrol-based-environment [sic]
+    #               would be a quixotic task. Even so, if you want to, good luck!
+    $projects2cov.add_item("macgonuts-static-lib");
+
+    if ($coverage.count() > 0
+        && $subdir == "test") {
+        var subproject type string;
+        $subproject = $subdir;
+        $subproject.replace("/", "-");
+        $coverage = hefesto.sys.get_option("genhtml-outpath");
+        var genhtml_outpath type string;
+        $report_path = get_coverage_report_dir();
+        if ($coverage.count() > 0) {
+            $report_path = $coverage.item(0);
+            $build_options.replace("--genhtml-outpath=.* ", "");
+        }
+        if ($projects2cov.index_of(hefesto.project.name()) > -1) {
+            $genhtml_outpath = " --genhtml-outpath=" + $report_path;
+        }
+        $build_options = $build_options +
+                         " --gcda-search-path=.o," + hefesto.sys.make_path($oldcwd, ".o") + " " +
+                         " --lcov-remove-patterns=*_tests.c,*src/test*,/usr/include " +
+                         " --genhtml-rendering-options=--legend" +
+                         $genhtml_outpath;
+
+    }
+
     var exit_code type int;
     $exit_code = hefesto.sys.run("hefesto " + $build_options);
 
     hefesto.sys.cd($oldcwd);
 
     result $exit_code;
+}
+
+function do_break_when_low_coverage(function_coverage type string,
+                                    line_coverage type string) : result type none {
+    var low_nr type int;
+    $low_nr = is_low_cov($function_coverage);
+    if ($low_nr > 0) {
+        hefesto.sys.echo("ERROR: Low function coverage detected (it must be >= 75) : " +
+                         $function_coverage + "%\n");
+    }
+    $low_nr = $low_nr + is_low_cov($line_coverage);
+    if ($low_nr > 0) {
+        hefesto.sys.echo("ERROR: Low line coverage detected (it must be >= 75) : " +
+                         $line_coverage + "%\n");
+    }
+    if ($low_nr > 0) {
+        hefesto.project.abort(1);
+    }
+}
+
+local function is_low_cov(coverage type string) : result type int {
+    var dec type string;
+    $dec = $coverage;
+    $dec.replace("\\..*$", "");
+    result (str2int($dec) < 75);
+}
+
+function get_function_coverage(report_path type string) : result type string {
+    result get_coverage_result($report_path, "<td.*Functions:</td>");
+}
+
+function get_line_coverage(report_path type string) : result type string {
+    result get_coverage_result($report_path, "<td.*Lines:</td>");
+}
+
+function get_function_coverage_badge(value type string) : result type string {
+    result get_coverage_badge($value, "function coverage");
+}
+
+function get_line_coverage_badge(value type string) : result type string {
+    result get_coverage_badge($value, "line coverage");
+}
+
+function update_coverage(fcov type string, lcov type string) : result type none {
+    var pattern type string;
+    $pattern = "!\\[" + hefesto.sys.os_name() + "-function-coverage\\]\\(.*=plastic.*\\)";
+    var data type string;
+    $data = "![" + hefesto.sys.os_name() + "-function-coverage](" + get_function_coverage_badge($fcov) + ")";
+    hefesto.sys.replace_in_file(hefesto.sys.make_path(get_rootdir(), "../README.md"), $pattern, $data);
+    $pattern = "!\\[" + hefesto.sys.os_name() + "-line-coverage\\]\\(.*=plastic.*\\)";
+    $data = "![" + hefesto.sys.os_name() + "-line-coverage](" + get_line_coverage_badge($lcov) + ")";
+    hefesto.sys.replace_in_file(hefesto.sys.make_path(get_rootdir(), "../README.md"), $pattern, $data);
+}
+
+local function get_coverage_badge(value type string, prefix type string) : result type string {
+    var uri type string;
+    $prefix.replace(" ", "_");
+    $uri = "https://img.shields.io/badge/" + $prefix + "-" + $value + "%25";
+    var dec type string;
+    $dec = $value;
+    $dec.replace("\\.*$", "");
+    var d type int;
+    $d = str2int($dec);
+    if ($d >= 90) {
+        $uri = $uri + "-lime";
+    } else if ($d >= 75) {
+        $uri = $uri + "-yellow";
+    } else {
+        $uri = $uri + "-red";
+    }
+    $uri = $uri + "?logo=" + hefesto.sys.os_name() + "&logoColor=white&style=plastic";
+    result $uri;
+}
+
+local function get_coverage_result(report_path type string, pattern type string) : result type string {
+    var report_data type list;
+    $report_data = hefesto.sys.lines_from_file($report_path, ".*");
+    if ($report_data.count() == 0) {
+        result "NaN";
+    }
+    var r type int;
+    $r = 0;
+    while ($r < $report_data.count()) {
+        var report_line type string;
+        $report_line = $report_data.item($r);
+        if ($report_line.match($pattern) == 1 && ($r + 3) < $report_data.count()) {
+            var rr type int;
+            $rr = $r + 1;
+            while ($rr < $r + 4) {
+                $report_line = $report_data.item($rr);
+                if ($report_line.match("%</td>$") > 0) {
+                    $report_line.replace(".*\">", "");
+                    $report_line.replace("[ &].*%</td>$", "");
+                    result $report_line;
+                }
+                $rr = $rr + 1;
+            }
+        }
+        $r = $r + 1;
+    }
+    result "NaN";
 }
 
 local function build_cutest() : result type int {
