@@ -12,6 +12,7 @@ fresh ``macgonuts`` binary to get your stuff done, you can give ``the low-cost b
     - [Installing Hefesto](#installing-hefesto)
     - [The low-cost build](#the-low-cost-build)
     - [The developer's build](#developers-build)
+        - [Extracting code coverage](#extracting-code-coverage)
     - [Installing the command line tool](#installing-the-command-line-tool)
 
 ## Getting newest macgonuts source code revision
@@ -54,6 +55,17 @@ you@somewhere-over-the-rainbow:~/hefesto/src# ./build.sh
 (...)
 you@somewhere-over-the-rainbow:~/hefesto/src# logout
 (redo login and you done)
+```
+
+Now you need to install some conveniences for code coverage extractions, so you need to clone `Helios`
+and install `lcov-generator`:
+
+```
+you@somewhere-over-the-rainbow:~# git clone https://github.com/rafael-santiago/helios
+you@somewhere-over-the-rainbow:~# cd helios
+you@somewhere-over-the-rainbow:~/helios# hefesto --install=lcov-generator
+you@somewhere-over-the-rainbow:~/helios# cd ..
+you@somewhere-over-the-rainbow:~# rm -rf helios
 ```
 
 You can also run the script ``get-hefesto.sh`` into ``src`` folder of ``Macgonuts``.
@@ -140,6 +152,36 @@ you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto
 Libraries will be built into ``../lib`` and binaries into ``../bin``. Tests will ran automatically, if you have been
 doing a good job you will not fear them and, I am pretty sure that you will like to see them running every single time
 remembering you that your code is actually working and that ``TDD`` matters. :raised_hands:
+
+[``Back``](#topics)
+
+### Extracting code coverage
+
+``Macgonuts`` build gives support for code coverage extraction, it support ``gcov`` or ``llvm-cov``. You also need to
+have ``lcov`` well-installed more on that [here](https://github.com/linux-test-project/lcov).
+
+By using ``Hefesto`` we can easily extract the code coverage of ``Macgonuts`` by invoking ``Hefesto`` as follows:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --coverage
+```
+
+By default the report will be generated under ``src/reports`` directory. If you want to specify a directory to generate
+the reports you can pass the option ``--genhtml-outpath=<directory path>`` option:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --coverage \
+> --genhtml-outpath=/mnt/tdd/rocks
+```
+
+By design we are only extracting code coverage from ``libmacgnuts`` (the main project under ``src``).
+The ``cmd-tool`` is pretty hard for unit testing since it would involve run all attacks that this tool
+implements in form of commands (a.k.a tasks) from the github actions' runner. Sincerely, it would be not
+easy to do from a rather ``restricted-docker-velotrol-like`` [sic] environment. So, *C'est la vie!*
+
+> - Wait. What does *"velotrol"* is?!
+
+Well, a image will make you understand my point much better, [look](https://duckduckgo.com/?q=velotrol&t=h_&iax=images&ia=images)! :rofl:
 
 [``Back``](#topics)
 

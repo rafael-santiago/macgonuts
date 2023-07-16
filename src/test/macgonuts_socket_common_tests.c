@@ -37,7 +37,6 @@ CUTE_TEST_CASE(macgonuts_get_gateway_addr_info_tests)
     CUTE_ASSERT(macgonuts_get_gateway_addr_info(gw_iface, sizeof(gw_iface),
                                                 gw_addr, &gw_addr_size) == EXIT_SUCCESS);
     CUTE_ASSERT(memcmp(gw_addr, expected_gw_addr, gw_addr_size) == 0);
-    printf("%s\n", expected_gw_iface);
     CUTE_ASSERT(strcmp(gw_iface, expected_gw_iface) == 0);
 CUTE_TEST_CASE_END
 

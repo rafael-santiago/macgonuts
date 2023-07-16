@@ -1,7 +1,7 @@
 on: push
-name: Build
+name: Macgonuts CI
 jobs:
-  Build-Task:
+  Build:
     runs-on: ubuntu-latest
     steps:
     - name: Install basic tools
@@ -9,6 +9,9 @@ jobs:
       run: |
         sudo apt-get install git
         sudo apt-get install gcc-9
+        sudo apt-get update
+        sudo apt-get install perl
+        sudo apt-get install lcov
     - name: Install Hefesto
       shell: bash
       run: |
@@ -21,6 +24,15 @@ jobs:
         sudo chown -R runner /usr/local/share/hefesto
         cd ../..
         rm -rf hefesto
+    - name: Install lcov-generator
+      shell: bash
+      run: |
+        git clone https://github.com/rafael-santiago/helios
+        cd helios
+        sudo -E hefesto --install=lcov-generator
+        sudo chown -R runner /usr/local/share/hefesto
+        cd ../
+        rm -rf helios
     - name: Clone project repo
       uses: actions/checkout@v3
       with:
@@ -29,5 +41,21 @@ jobs:
       shell: bash
       run: |
         cd src
-        sudo -E hefesto
-
+        sudo -E hefesto --coverage
+    - name: Tar coverage report
+      shell: bash
+      run: |
+        sudo tar -cvf /home/libmacgonuts-coverage.tar src/reports/macgonuts-static-lib
+        sudo chown runner /home/libmacgonuts-coverage.tar
+    - name: Upload LCOV results
+      uses: actions/upload-artifact@v2
+      with:
+        name: libmacgonuts-coverage-report
+        path: /home/libmacgonuts-coverage.tar
+        retention-days: 7
+    - name: Commit and push coverage info when needed
+      shell: bash
+      run: |
+        git config --global user.name "GooGooMockCIBot"
+        git config --global user.email "googoomockcibot@users.noreply.github.com"
+        git diff --exit-code --quiet README.md || (git commit -am "Automated coverage update";git push origin ${{ github.ref_name }})
