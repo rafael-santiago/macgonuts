@@ -1,7 +1,7 @@
 on: push
 name: Macgonuts CI
 jobs:
-  Build:
+  Linux:
     runs-on: ubuntu-latest
     steps:
     - name: Install basic tools
@@ -21,7 +21,7 @@ jobs:
         sudo ./build.sh < blau.txt
         echo "HEFESTO_INCLUDES_HOME=/usr/local/share/hefesto/include" >> "$GITHUB_ENV"
         echo "HEFESTO_MODULES_HOME=/usr/local/share/hefesto/module" >> "$GITHUB_ENV"
-        sudo chown -R runner /usr/local/share/hefesto
+        sudo chown -R $USER /usr/local/share/hefesto
         cd ../..
         rm -rf hefesto
     - name: Install lcov-generator
@@ -30,7 +30,7 @@ jobs:
         git clone https://github.com/rafael-santiago/helios
         cd helios
         sudo -E hefesto --install=lcov-generator
-        sudo chown -R runner /usr/local/share/hefesto
+        sudo chown -R $USER /usr/local/share/hefesto
         cd ../
         rm -rf helios
     - name: Clone project repo
@@ -46,7 +46,7 @@ jobs:
       shell: bash
       run: |
         sudo tar -cvf /home/libmacgonuts-coverage.tar src/reports/macgonuts-static-lib
-        sudo chown runner /home/libmacgonuts-coverage.tar
+        sudo chown $USER /home/libmacgonuts-coverage.tar
     - name: Upload LCOV results
       uses: actions/upload-artifact@v2
       with:
@@ -58,4 +58,46 @@ jobs:
       run: |
         git config --global user.name "GooGooMockCIBot"
         git config --global user.email "googoomockcibot@users.noreply.github.com"
-        git diff --exit-code --quiet README.md || (git commit -am "Automated coverage update";git push origin ${{ github.ref_name }})
+        git diff --exit-code --quiet README.md || \
+         (git commit -am "Automated coverage update";git push origin ${{ github.ref_name }})
+  FreeBSD:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Build
+      uses: cross-platform-actions/action@v0.15.0
+      with:
+        operating_system: freebsd
+        version: '13.2'
+        shell: bash
+        memory: 1G
+        cpu_count: 8
+        run: |
+            sudo pkg install -y git
+            echo ========================
+            echo === Installing Hefesto =
+            echo ========================
+            git clone https://github.com/rafael-santiago/hefesto --recursive
+            cd hefesto/src
+            printf "\n" > blau.txt
+            sudo ./build.sh < blau.txt
+            sudo chown -R $USER /usr/local/share/hefesto
+            HEFESTO_INCLUDES_HOME="/usr/local/share/hefesto/include"; export HEFESTO_INCLUDES_HOME
+            HEFESTO_MODULES_HOME="/usr/local/share/hefesto/module"; export HEFESTO_MODULES_HOME
+            cd ../..
+            rm -rf hefesto
+            echo ===============================
+            echo === Installing lcov-generator =
+            echo ===============================
+            git clone https://github.com/rafael-santiago/helios --recursive
+            cd helios
+            sudo -E hefesto --install=lcov-generator
+            sudo chown -R $USER /usr/local/share/hefesto
+            cd ..
+            rm -rf helios
+            cd src
+            sudo -E hefesto
+            cd ../..
+            sudo rm -rf macgonuts
