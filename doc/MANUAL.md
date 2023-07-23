@@ -41,7 +41,7 @@ my main goal was to have something to use the pun.
 
 This section describes in details all implemented commands in ``macgonuts``. Keep on reading to master up
 the tool and making a youtube video about it (because I do not have any talent or even patience to do this),
-many thanks in advance!
+many thanks in advance! :satisfied:
 
 ### The spoof command
 
@@ -63,7 +63,7 @@ Okay, it expects at least three options:
 - ``target-addr``
 - ``addr2spoff``
 
-Nice, it does support ``ARP`` and ``NDP`` because options related to addressing stuff supports ``ipv4`` or ``ipv6``.
+Nice, it does support ``ARP`` and ``NDP`` because options related to addressing stuff supports ``ipv4`` or ``ipv6``!
 
 The option ``lo-iface`` stands for "local interface", thus you need to indicate the interface that your
 machine uses to access the network that you are wanting to.. err... mess up... The option ``target-addr``
@@ -78,7 +78,7 @@ Once upon time, three persons: Alice, Bob and Eve... How creative, huh?
 - Bob is on host ``192.30.70.10``.
 - Eve is on host ``192.30.70.9``.
 
-Eve wants to use ``macgonuts`` to make Bob thinks that she is Alice on the network. So Eve runs:
+Eve wants to use ``macgonuts`` to make Bob thinks that she is Alice in the network. So Eve runs:
 
 ```
 eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
@@ -119,7 +119,7 @@ eve@RestaurantAtTheEndOfTheUniverse:~# macgonuts spoof --lo-iface=eth1 \
 > --target-addr=192.30.70.10 --addr2spoof=192.30.70.8 --timeout=500 --redirect
 ```
 
-Same effect, still spoofed but now redirecting packets and it does not abuse network throughput.
+Same effect, still spoofed but now redirecting packets and it does not abuse the network throughput.
 
 Eve hits ``ctrl+c`` to exit the application (by the way, this is how you exit spoof command, sorry!). However,
 Bob still thinks that Eve's computer is Alice's computer and at this moment he will notice that "Alice"
@@ -172,7 +172,7 @@ So... Story time!!!!!!
 Once upon time Alice and Bob, they were communicating each other by using the local network but they were
 in different network segments! Connected through switches! In order to avoid Eve of doing passive sniffing, bad girl!
 
-Eve, after some evil laughs (``- MuHahuahuahuAH...``, ``- Muhahauahuahau...``) however, she was using ``macgonuts``
+Eve, after some "evil" laughs (``- MuHahuahuahuAH...``, ``- Muhahauahuahau...``) however, she was using ``macgonuts``
 that has btw her favorite command that is able to deceive bridged/segmented networks when sniffing (Well, I love puns,
 I have to admit).
 
@@ -217,7 +217,7 @@ eve-the-sysadmin-with-lasers-and-very-silent@Tender:~# macgonuts eavesdrop --lo-
 ```
 
 Opposingly what all crypto folks tend to think, Eve respect privacy issues, so she decided to use a filter to
-log only what should be abuses on her cooporative network environment:
+log only what should be abuses on her corporate network environment:
 
 ```
 eve-the-sysadmin-with-lasers-and-very-silent@Tender:~# macgonuts eavesdrop --lo-iface=eth1 \
@@ -304,8 +304,8 @@ to communicate each other or at least unable to communicate each other without u
 
 In order to work on this command needs three basic options:
 
-1. The local interface
-2. A CIDR
+1. The local interface.
+2. A CIDR.
 3. A list of targets.
 
 So, story time!!!!
@@ -440,7 +440,7 @@ Facts about the network configuration:
 
 - ``Ulisses``'s address is ``192.168.5.111`` and his host name at the local network is ``ulisses.lo``
 - ``Polifemo``'s address is ``192.168.5.142`` and his host name at the local network is ``polifemo.lo``
--  ``Ninguém``'s address is ``192.168.5.171`` and his host name at the local network is ``ninguem.lo``
+- ``Ninguém``'s address is ``192.168.5.171`` and his host name at the local network is ``ninguem.lo``
 - The gateway address is ``192.168.5.1``.
 
 ``Ulisses`` knows that ``Polifemo`` is always seeking to troll him host up at this local network. So ``Ulisses`` want to
@@ -471,7 +471,7 @@ ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 --target-addrs=192.168.5.142
 > --etc-hoax=/tmp/i_am_ninguem --hoax-ttl=3600
 ```
 
-Now the resolutions should last for 1 hour in ``Polifemo``'s dns cache (but it also depends on his operation system policy about).
+Now the resolutions should last for 1 hour in ``Polifemo``'s dns cache (but it also depends on his operating system policy).
 
 Anyway, ``Polifemo`` has some friends in this network that should annoy ``Ulisses``, too. In this way, ``Ulisses``
 only have to indicate the ip addresss of each:
@@ -485,7 +485,7 @@ ulisses@cave:~# macgonuts dnsspooof --lo-iface=eth0 \
 Now the hosts from ``192.168.5.142`` to ``192.168.5.145`` when trying to reach ``Ulisses`` by his
 host name will reach ``Ninguém``.
 
-But ``Ulisses`` is smart and does not want to warn them of his ``FQDN escape``. Supposing that ``ulisses.lo``
+But ``Ulisses`` is smart and does not want to warn them of his ``FQDN escapade``. Supposing that ``ulisses.lo``
 goes off, it does not necessarily will do ``ninguem.lo`` goes off too, and, it could alarm ``Polifemo`` and his not
 so clever gang... Trying to make his fakery more perfect, ``Ulisses`` uses ``undo-spoof`` option:
 
@@ -511,7 +511,7 @@ meaningful fake web pages at ``192.168.5.101`` and updated his ``/tmp/i_am_ningu
 192.168.5.101           *.kwai.com
 ```
 
-Now supposing that this network start using a internal ``DNS`` at ``192.168.5.8``. All ``Ulisses`` must do
+Now supposing that this network start using an internal ``DNS`` at ``192.168.5.8``. All ``Ulisses`` must do
 is indicate the internal ``DNS`` address in ``dns-addrs`` list:
 
 ```
@@ -552,8 +552,8 @@ By using ``xablau`` you are able to discover all reachable nodes that could be p
 ``layer-2`` misconducts and, there is not much secret on using it but: story time!!!!
 
 Once upon time ``Trollman Burbank`` was looking for targets to have some fun with ``macgonuts``. He had
-just ingress into your hotel the network by getting a valid ``IP`` but he knew nothing about other hosts.
-Someone tell him to use a weird command called "xablau". "- Xa who?" he said... Even so, he gaves ``xablau``'s
+just ingress into your hotel network by getting a valid ``IP`` but he knew nothing about other hosts.
+Someone tell him to use a weird command called "xablau". "- Xa who?" he said... Even so, he gave ``xablau``'s
 quick help a try:
 
 ```
@@ -562,7 +562,7 @@ use: macgonuts xablau --lo-iface=<label> [--ipv4 --ipv6 --oui --oui-dbpath=<file
 ```
 
 Hmmm, nice, he knew that his system was using ``eth4`` to access your ``LAN`` besides also know that this local
-network was about a ``IPv4`` network. So he ran the following ``xablau``:
+network was about an ``IPv4`` network. So he ran the following ``xablau``:
 
 ```
 tr011m4n@e||TV:~# macgonuts xablau --lo-iface=eth4 --ipv4
@@ -584,7 +584,7 @@ IP Address           MAC Address
 --------------------------------------
 ```
 
-Okay, but Trollman was also accessing a ``IPv6`` local network through ``eth6`` interface. He also wanted
+Okay, but Trollman was also accessing an ``IPv6`` local network through ``eth6`` interface. He also wanted
 to have some fun with this ``IPv6``:
 
 ```
@@ -626,7 +626,7 @@ IP Address           MAC Address                       Vendor
 ```
 
 By default, ``macgonuts`` will use the standard installed ``OUI`` database at ``/usr/local/share/macgonuts/etc/oui``.
-If you want to override it you can pass the path of the new database by using ``--oui-dbpath=<filepath>``.
+If you want to override it, you can pass the path of the new database by using ``--oui-dbpath=<filepath>``.
 
 Done! Now you know how to sniff your prey through the wire. You are a ``xablau`` master!
 

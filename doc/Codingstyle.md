@@ -6,7 +6,6 @@
 well as in many other segments, ``the Truth`` is such a ``big, biiiig winged unicorn``... Anyway, the following text
 seeks to describe ``objectively`` the main features of ``my current Unicorn``.
 
-
 # Topics
 
 - [Basic formatting](#basic-formatting)
@@ -134,7 +133,7 @@ int do_something(const int i_know_but_better_to_const, const char *buf, const si
 
 Since ``C language`` does not feature a deferring or ``try..finally`` statements, here we use
 ``goto`` for accomplishing clean up necessities. With it you can conclude that here ``gotos`` only
-jump forward and to the end of the function. Try to never use explicit gotos to jump backward, please.
+jump forward and to the end of the function. Try to never use explicit gotos for jumping backward, please.
 
 ```c
 int do_messy_prologue(void) {
@@ -193,7 +192,8 @@ A new feature is considered done when:
 
 1. It does what it must do.
 2. It does not add mess, confusion or even unstability nor bugs in the previous stuff.
-3. It ships what it promises in a simple (but not simpler) way. In other words, you have used Occam's razor principle on it.
+3. It ships what it promises in a simple (but not hollow claimed "simple") way. In other words, you have used Occam's
+   razor principle on it.
 4. It is being well tested.
 5. It must not be tied up with some compiler or toolchain to work on. The opposite would be an example of lousy engineering,
    here. More concepts, less dependencies is what we love.

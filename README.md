@@ -1,20 +1,21 @@
-# Macgonuts ![ci-status](https://github.com/rafael-santiago/macgonuts/actions/workflows/forge-specs.yml/badge.svg) ![c](https://img.shields.io/badge/is_what_we_speak-black?logo=c&logoColor=white&style=plastic) ![suckless](https://img.shields.io/badge/is_what_we_seek_to_follow-white?logo=suckless&logoColor=blue&style=plastic)
+# Macgonuts ![ci-status](https://github.com/rafael-santiago/macgonuts/actions/workflows/forge-specs.yml/badge.svg)
 
 ![linux-function-coverage](https://img.shields.io/badge/function_coverage-95.9%25-lime?logo=linux&logoColor=white&style=plastic) ![linux-line-coverage](https://img.shields.io/badge/line_coverage-84.3%25-lime?logo=linux&logoColor=white&style=plastic) ![freebsd-function-coverage](https://img.shields.io/badge/function_coverage-91.9%25-lime?logo=freebsd&logoColor=white&style=plastic) ![freebsd-line-coverage](https://img.shields.io/badge/line_coverage-82.0%25-lime?logo=freebsd&logoColor=white&style=plastic)
 
 ``Macgonuts`` is an ``ARP/NDP`` swiss army knife to make ``MAC addresses`` going nuts on networks around!
 
-It supports ``IPv4/ARP`` and ``IPv6/NDP``.  It intends to bring you all in a shell. Anything related to
+It supports ``IPv4/ARP`` and ``IPv6/NDP``. It intends to bring you all in a shell. Anything related to
 spoof `layer-2` addresses can be done elegantly with a single f_cking nice ``non-scripted`` tool, a
-badass executable without clumsy zillions of dependencies. Suckless is the key here.
+badass executable without clumsy zillions of dependencies. Suckless is the key here, but simple in a
+*non-hollow-claimed-simple* is what we try to deliver here.
 
-Currently ``Macgonuts`` is compatible with ``Linux`` and ``FreeBSD`` platforms.
+Currently, ``Macgonuts`` is compatible with ``Linux`` and ``FreeBSD`` platforms.
 
 Still, if you want to do spoof from your own code, you can use basic stuff from ``Macgonuts`` as a
 ``C library`` or ``Go``, ``Python`` bind as well.
 
-You should take your first steps [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc/BUILD.md) and so
-buckle up and quickly mastering all the tool [here](https://github.com/rafael-santiago/macgonuts/blob/main/doc/MANUAL.md).
+You should take your first steps [here](doc/BUILD.md) and so
+buckle up and quickly mastering all the tool [here](doc/MANUAL.md).
 
 I hope you like it, enjoy!
 
@@ -29,8 +30,8 @@ only into well controlled environments. If you will run ``Macgonuts`` on public 
 users of your actions before. Also be sure of loading your ``ethics.ko`` module before any network hacking action.
 Finally, this software is provided with no warranty.
 
-Again, ``Macgonuts`` is an ``ARP/NDP`` swiss army knife with batteries included but ethics you need to bring it from home.
-:wink:
+Again, ``Macgonuts`` is an ``ARP/NDP`` swiss army knife with batteries included but ethics you need to bring it
+from home. :wink:
 
 Remember to be ethical when using it. Macgonuts is a tool designed to ethical hacking, pentests and
 red teams. *Once it stated, when using this tool you are assuming that any damage, data loss or even
@@ -43,6 +44,6 @@ with money, try to redirect it to a local charity institution, an ONG of your ch
 You can also do [pull requests](https://github.com/rafael-santiago/macgonuts/pulls) proposing improvements.
 Do some [bug report](https://github.com/rafael-santiago/macgonuts/issues) if a bug is annoying you. Maybe you should
 also instruct people about network security issues by using this software showing them ways of being protected against
-the attacks proposed here. Use it as a classroom lab tool. Spread your knowledge. Thank you!
+the attacks proposed here. Use it as a classroom lab tool, too. Well, spread your knowledge! Thank you!
 
 **Obvious but always good to remember**: all opinions expressed here are my own and not the views of my employers.
