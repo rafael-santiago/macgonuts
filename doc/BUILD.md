@@ -13,6 +13,7 @@ fresh ``macgonuts`` binary to get your stuff done, you can give ``the low-cost b
     - [The low-cost build](#the-low-cost-build)
     - [The developer's build](#developers-build)
         - [Extracting code coverage](#extracting-code-coverage)
+        - [List of all build options](#list-of-all-build-options)
     - [Installing the command line tool](#installing-the-command-line-tool)
 
 ## Getting newest macgonuts source code revision
@@ -42,7 +43,7 @@ build ``Macgonuts`` is:
 
 Any other dependency we ship it as sub-modules and build it during build but ``DO NOT`` polute your system
 with nothing. It is used into ``src/libs`` folder of your copy. If you delete your copy, all will gone
-with this deletion, simply, self contained and clean. Tideness is everything! :wink:
+with this deletion, simple, self contained and clean. Tideness is everything! :wink:
 
 ## Installing Hefesto
 
@@ -110,7 +111,7 @@ subdirectory is ``src/cmd``. This ``cmd`` subdirectory stands for the ``macgonut
 
 Codes directly hosted into ``src`` compound the static libraries ``libmacgonuts.a`` and ``libmacgonutssock.a``.
 The ``libmacgonutssock.a`` is a special case where all codes related to socket (into native implementations
-``macgonuts_socket.o`` and ``macgonuts_socket_common.o`` are put together into a separated `ar` file, this
+``macgonuts_socket.o`` and ``macgonuts_socket_common.o`` are put together into a separated ``ar`` file, this
 is done in order to make easy to test some communication parts).
 
 Any specific code for some platform is hosted into a subdirectory with the name of the platform, so,
@@ -150,7 +151,7 @@ you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto
 ```
 
 Libraries will be built into ``../lib`` and binaries into ``../bin``. Tests will ran automatically, if you have been
-doing a good job you will not fear them and, I am pretty sure that you will like to see them running every single time
+doing a good job you will not fear them and, I am pretty sure that you will like to watch them running every single time
 remembering you that your code is actually working and that ``TDD`` matters. :raised_hands:
 
 [``Back``](#topics)
@@ -160,7 +161,7 @@ remembering you that your code is actually working and that ``TDD`` matters. :ra
 ``Macgonuts`` build gives support for code coverage extraction, it support ``gcov`` or ``llvm-cov``. You also need to
 have ``lcov`` well-installed more on that [here](https://github.com/linux-test-project/lcov).
 
-By using ``Hefesto`` we can easily extract the code coverage of ``Macgonuts`` by invoking ``Hefesto`` as follows:
+By using ``Hefesto`` we can easily extract ``Macgonuts``' code coverage by invoking ``Hefesto`` as follows:
 
 ```
 you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --coverage
@@ -175,13 +176,34 @@ you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --coverage \
 ```
 
 By design we are only extracting code coverage from ``libmacgnuts`` (the main project under ``src``).
-The ``cmd-tool`` is pretty hard for unit testing since it would involve run all attacks that this tool
-implements in form of commands (a.k.a tasks) from the github actions' runner. Sincerely, it would be not
+The ``cmd-tool`` is pretty hard for automate tests since it would involve run all attacks that this tool
+implements in form of commands (a.k.a tasks) from the `CI`. Sincerely, it would be not
 easy to do from a rather ``restricted-docker-velotrol-like`` [sic] environment. So, *C'est la vie!*
 
 > - Wait. What does *"velotrol"* is?!
 
 Well, a image will make you understand my point much better, [look](https://duckduckgo.com/?q=velotrol&t=h_&iax=images&ia=images)! :rofl:
+
+[``Back``](#topics)
+
+### List of all build options
+
+Take a look at **Table 1** to know all build options supported by the ``Hefesto`` based build.
+
+**Table 1** : All relevant ``Macgonuts`` build options.
+| **Option**          | **Type**  |                               **Description**                                       |
+|:-------------------:|:---------:|:-----------------------------------------------------------------------------------:|
+| ``--includes``      |   list    | Specifies additional include directories                                            |
+| ``--cflags``        |   list    | Specifies additional compilation flags                                              |
+| ``--libraries``     |   list    | Specifies additional library directories                                            |
+| ``--ldflags``       |   list    | Specifies additional linker flags                                                   |
+| ``--bin-output-dir``|   value   | Specifies the binary artifact target directory                                      |
+| ``--obj-output-dir``|   value   | Specifies the object files target directory                                         |
+| ``--install``       |   flag    | Runs installing build task                                                          |
+| ``--uninstall``     |   flag    | Runs uninstalling build task                                                        |
+| ``--coverage``      |   flag    | Runs coverage build task                                                            |
+|``--genhtml-outpath``|   value   | Specifies a file path for the ``LCOV`` coverage report                              |
+| ``--toolset``       |   value   | Specifies the name of wanted compiler, can being ``gcc`` or ``clang``               |
 
 [``Back``](#topics)
 
