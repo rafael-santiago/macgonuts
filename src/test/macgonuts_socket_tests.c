@@ -139,9 +139,14 @@ static void *ping_pkt(void *args) {
 static int get_iface_addr4(char *addr, const size_t max_addr_size, const char *iface) {
     FILE *proc = NULL;
     char cmdline[1<<10];
-    snprintf(cmdline, sizeof(cmdline) - 1,
-             "ifconfig %s | grep \"inet.\\+[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\" "
-             "| sed 's/.*inet//;s/netmask.*$//;s/^[ \\t]\\+//;s/[ \\t\\n]\\+$//' | tr -d '\n'", iface);
+    if (has_ifconfig()) {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ifconfig %s | grep \"inet.\\+[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+\" "
+                 "| sed 's/.*inet//;s/netmask.*$//;s/^[ \\t]\\+//;s/[ \\t\\n]\\+$//' | tr -d '\n'", iface);
+    } else {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ip -4 -o addr show dev %s | cut -f7 -d' ' | sed 's/\\/.*//g' | tr -d '\n'", iface);
+    }
     proc = popen(cmdline, "r");
     if (proc == NULL) {
         return EFAULT;
@@ -154,9 +159,14 @@ static int get_iface_addr4(char *addr, const size_t max_addr_size, const char *i
 static int get_iface_addr6(char *addr, const size_t max_addr_size, const char *iface) {
     FILE *proc = NULL;
     char cmdline[1<<10];
-    snprintf(cmdline, sizeof(cmdline) - 1,
-             "ifconfig %s | grep \"inet.\\+[0-9,a-f]:\\+\""
-             "| sed 's/.*inet6//;s/prefixlen.*$//;s/^[ \\t]\\+//;s/[ \\t\\n]\\+$//' | tr -d '\n'", iface);
+    if (has_ifconfig()) {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ifconfig %s | grep \"inet.\\+[0-9,a-f]:\\+\""
+                 "| sed 's/.*inet6//;s/prefixlen.*$//;s/^[ \\t]\\+//;s/[ \\t\\n]\\+$//' | tr -d '\n'", iface);
+    } else {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ip -6 -o addr show dev %s | cut -f7 -d' ' | sed 's/\\/.*//g' | tr -d '\n'", iface);
+    }
     proc = popen(cmdline, "r");
     if (proc == NULL) {
         return EFAULT;
@@ -169,8 +179,12 @@ static int get_iface_addr6(char *addr, const size_t max_addr_size, const char *i
 static int get_iface_mac(char *mac, const size_t max_mac_size, const char *iface) {
     FILE *proc = NULL;
     char cmdline[1<<10];
-    snprintf(cmdline, sizeof(cmdline) - 1,
-             "ifconfig %s | grep \"ether.\\+\" | sed 's/.*ether.//;s/ \\+.*$//' | tr -d '\n'", iface);
+    if (has_ifconfig()) {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ifconfig %s | grep \"ether.\\+\" | sed 's/.*ether.//;s/ \\+.*$//' | tr -d '\n'", iface);
+    } else {
+        snprintf(cmdline, sizeof(cmdline) - 1, "ip -o link show dev %s | cut -f20 -d' ' | tr -d '\n'", iface);
+    }
     proc = popen(cmdline, "r");
     if (proc == NULL) {
         return EFAULT;
@@ -182,14 +196,24 @@ static int get_iface_mac(char *mac, const size_t max_mac_size, const char *iface
 
 static int check_promisc_mode_on(const char *iface) {
     char cmdline[1<<10];
-    snprintf(cmdline, sizeof(cmdline) - 1,
-             "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
+    if (has_ifconfig()) {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
+    } else {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ip link show dev %s | grep PROMISC >/dev/null 2>&1", iface);
+    }
     return (system(cmdline) == 0);
 }
 
 static int check_promisc_mode_off(const char *iface) {
     char cmdline[1<<10];
-    snprintf(cmdline, sizeof(cmdline) - 1,
-             "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
+    if (has_ifconfig()) {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ifconfig %s | grep PROMISC >/dev/null 2>&1", iface);
+    } else {
+        snprintf(cmdline, sizeof(cmdline) - 1,
+                 "ip link show dev %s | grep PROMISC >/dev/null 2>&1", iface);
+    }
     return (system(cmdline) != 0);
 }

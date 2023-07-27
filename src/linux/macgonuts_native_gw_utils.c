@@ -44,10 +44,6 @@ int get_gw_addr6_info(uint8_t *raw, size_t *raw_size, const char *iface) {
         bp--;
     }
 
-    if (bp == &buf[0]) {
-        return EXIT_FAILURE;
-    }
-
     rp = raw;
     rp_end = rp + 16;
     while (rp != rp_end) {

@@ -32,4 +32,6 @@ void get_gateway_addr4_from_iface(uint8_t *gw_addr, const char *iface);
 
 void get_gateway_addr6_from_iface(uint8_t *gw_addr, const char *iface);
 
+int has_ifconfig(void);
+
 #endif // MACGONUTS_TEST_MACGONUTS_TEST_UTILS_H

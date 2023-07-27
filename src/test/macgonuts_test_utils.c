@@ -17,7 +17,11 @@ const char *get_default_iface_name(void) {
     if (iface_name[0] != 0) {
         return &iface_name[0];
     }
-    proc = popen("ifconfig | sed s/:.*// | head -1", "r");
+    if (has_ifconfig()) {
+        proc = popen("ifconfig | sed s/:.*// | head -1", "r");
+    } else {
+        proc = popen("ip addr | grep -v '^[0-9]\\+:.*LOOPBACK' | grep '^[0-9]:' | cut -f 2 -d':' | sed 's/ \\+//g'", "r");
+    }
     if (proc == NULL) {
         return NULL;
     }
@@ -43,7 +47,11 @@ void get_default_iface_mac(uint8_t *mac) {
         memcpy(mac, &iface_mac[0], sizeof(iface_mac));
         return;
     }
-    proc = popen("ifconfig | grep \"ether.*\" | sed s/.*ether.// | sed s/.tx.*// | head -1", "r");
+    if (has_ifconfig()) {
+        proc = popen("ifconfig | grep \"ether.*\" | sed s/.*ether.// | sed s/.tx.*// | head -1", "r");
+    } else {
+        proc = popen("ip addr | grep 'link/ether.*' | cut -f 6 -d' '", "r");
+    }
     if (proc == NULL) {
         return;
     }
@@ -69,7 +77,11 @@ void get_default_iface_addr(char *addr) {
         memcpy(addr, &iface_addr[0], strlen(iface_addr));
         return;
     }
-    proc = popen("ifconfig | grep \"inet .*\" | sed s/.*inet// | sed s/.netmask.*// | head -1", "r");
+    if (has_ifconfig()) {
+        proc = popen("ifconfig | grep \"inet .*\" | sed s/.*inet// | sed s/.netmask.*// | head -1", "r");
+    } else {
+        proc = popen("ip addr | grep inet.*brd | cut -f 6 -d' ' | sed 's/\\/.*//g'", "r");
+    }
     if (proc == NULL) {
         return;
     }
@@ -112,6 +124,7 @@ void get_gateway_addr(uint8_t *addr) {
 #else
 # error Some code wanted.
 #endif // defined(__linux__)
+
     if (proc == NULL) {
         return;
     }
@@ -156,17 +169,24 @@ void get_gateway_iface(char *iface) {
     char *bp = NULL;
     char *bp_end = NULL;
     size_t buf_size;
+    int off = 1;
     if (gw_iface[0] != 0) {
         memcpy(iface, gw_iface, strlen(gw_iface));
         return;
     }
 #if defined(__linux__)
-    proc = popen("route | grep \"^default\"", "r");
+    if (has_ifconfig()) {
+        proc = popen("route | grep \"^default\"", "r");
+    } else {
+        proc = popen("ip r | grep default | cut -f 5 -d' '", "r");
+        off = 0;
+    }
 #elif defined(__FreeBSD__)
     proc = popen("route -4 get default | grep \"interface\" | sed 's/.*interface://'", "r");
 #else
 # error Some code wanted.
 #endif // defined(__linux__)
+
     if (proc == NULL) {
         return;
     }
@@ -178,7 +198,7 @@ void get_gateway_iface(char *iface) {
     while (bp != &buf[0] && !isblank(*bp)) {
         bp--;
     }
-    memcpy(gw_iface, bp + 1, bp_end - bp - 2);
+    memcpy(gw_iface, bp + off, bp_end - bp - 1 - off);
     memcpy(iface, gw_iface, strlen(gw_iface));
 }
 
@@ -188,22 +208,29 @@ int get_maxaddr4_from_iface(uint8_t *addr, const char *iface) {
     char buf[1<<10] = "";
     size_t buf_size;
     char *p = NULL;
-    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*broadcast | sed s/.*broadcast//", iface);
+    int has_ifc = has_ifconfig();
+    if (has_ifc) {
+        snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*broadcast | sed s/.*broadcast//", iface);
+    } else {
+        snprintf(cmd, sizeof(cmd) - 1, "ip -f inet addr show %s | grep 'brd.*scope' | cut -f 8 -d' '", iface);
+    }
     proc = popen(cmd, "r");
     if (proc == NULL) {
         return EPIPE;
     }
     buf_size = fread(&buf[0], 1, sizeof(buf), proc);
     pclose(proc);
-    if (buf[0] != ' ') {
-        return EFAULT;
+    if (has_ifc) {
+        if (buf[0] != ' ') {
+            return EFAULT;
+        }
+        p = strstr(buf, "\n");
+        if (p == NULL) {
+            return EFAULT;
+        }
+        *p = 0;
     }
-    p = strstr(buf, "\n");
-    if (p == NULL) {
-        return EFAULT;
-    }
-    *p = 0;
-    return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], buf_size - 2);
+    return macgonuts_get_raw_ip_addr(addr, 4, &buf[has_ifc], buf_size - 1 - has_ifc);
 }
 
 #if defined(__linux__)
@@ -214,22 +241,38 @@ int get_netmask4_from_iface(uint8_t *addr, const char *iface) {
     char buf[1<<10] = "";
     size_t buf_size;
     char *p = NULL;
-    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*netmask | sed s/.*netmask// | sed s/broadcast.*//", iface);
+    uint32_t nmask = 0xFFFFFFFF;
+    if (has_ifconfig()) {
+        snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*netmask | sed s/.*netmask// | sed s/broadcast.*//", iface);
+        proc = popen(cmd, "r");
+        if (proc == NULL) {
+            return EPIPE;
+        }
+        buf_size = fread(&buf[0], 1, sizeof(buf), proc);
+        pclose(proc);
+        if (buf[0] != ' ') {
+            return EFAULT;
+        }
+        p = strstr(&buf[1], " ");
+        if (p == NULL) {
+            return EFAULT;
+        }
+        *p = 0;
+        return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], strlen(&buf[1]));
+    }
+    snprintf(cmd, sizeof(cmd) - 1, "ip -o -f inet addr show dev %s scope global | cut -f7 -d' ' | cut -f2 -d'/'", iface);
     proc = popen(cmd, "r");
     if (proc == NULL) {
         return EPIPE;
     }
     buf_size = fread(&buf[0], 1, sizeof(buf), proc);
     pclose(proc);
-    if (buf[0] != ' ') {
-        return EFAULT;
-    }
-    p = strstr(&buf[1], " ");
-    if (p == NULL) {
-        return EFAULT;
-    }
-    *p = 0;
-    return macgonuts_get_raw_ip_addr(addr, 4, &buf[1], strlen(&buf[1]));
+    nmask <<= (32 - atoi(buf));
+    addr[0] = (nmask >> 24) & 0xFF;
+    addr[1] = (nmask >> 16) & 0xFF;
+    addr[2] = (nmask >>  8) & 0xFF;
+    addr[3] = nmask & 0xFF;
+    return EXIT_SUCCESS;
 }
 
 #elif defined(__FreeBSD__)
@@ -285,22 +328,29 @@ int get_netmask6_from_iface(uint8_t *addr, const char *iface) {
     size_t buf_size;
     char *p = NULL;
     uint32_t mask[4] = { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
-    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*prefixlen.*scopeid.*global | sed s/.*prefixlen// | sed s/scopeid.*//", iface);
+    int has_ifc = has_ifconfig();
+    if (has_ifc) {
+        snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep .*prefixlen.*scopeid.*global | sed s/.*prefixlen// | sed s/scopeid.*//", iface);
+    } else {
+        snprintf(cmd, sizeof(cmd) - 1, "ip -o -f inet6 addr show dev %s scope global | cut -f7 -d' ' | cut -f2 -d'/'", iface);
+    }
     proc = popen(cmd, "r");
     if (proc == NULL) {
         return EPIPE;
     }
     buf_size = fread(&buf[0], 1, sizeof(buf), proc);
     pclose(proc);
-    if (buf[0] != ' ') {
-        return EFAULT;
+    if (has_ifc) {
+        if (buf[0] != ' ') {
+            return EFAULT;
+        }
+        p = strstr(&buf[1], " ");
+        if (p == NULL) {
+            return EFAULT;
+        }
+        *p = 0;
     }
-    p = strstr(&buf[1], " ");
-    if (p == NULL) {
-        return EFAULT;
-    }
-    *p = 0;
-    shiftl128b(mask, atoi(&buf[1]));
+    shiftl128b(mask, atoi(&buf[has_ifc]));
     memcpy(addr, &mask[0], sizeof(mask));
     return EXIT_SUCCESS;
 }
@@ -335,9 +385,14 @@ int get_maxaddr6_from_iface(uint8_t *addr, const char *iface) {
     char buf[1<<10] = "";
     size_t buf_size;
     char *p[2] = { NULL, NULL };
+    int has_ifc = has_ifconfig();
 #if defined(__linux__)
-    snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep scopeid.*global | sed s/.*inet6// | "
-                                   "sed s/prefixlen.// | sed s/scopeid.*//", iface);
+    if (has_ifc) {
+        snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep scopeid.*global | sed s/.*inet6// | "
+                                       "sed s/prefixlen.// | sed s/scopeid.*//", iface);
+    } else {
+        snprintf(cmd, sizeof(cmd) - 1, "ip -o -f inet6 addr show dev %s | cut -f7 -d' ' | head -1", iface);
+    }
 #elif defined(__FreeBSD__)
     snprintf(cmd, sizeof(cmd) - 1, "ifconfig %s | grep inet6 | grep -v fe80 | sed 's/.*inet6//' | "
                                    "sed 's/prefixlen.//'", iface);
@@ -350,26 +405,33 @@ int get_maxaddr6_from_iface(uint8_t *addr, const char *iface) {
     }
     buf_size = fread(&buf[0], 1, sizeof(buf), proc);
     pclose(proc);
-    if (buf[0] != ' ') {
-        return EFAULT;
+    if (has_ifc) {
+        if (buf[0] != ' ') {
+            return EFAULT;
+        }
+        p[0] = strstr(&buf[1], " ");
+        p[1] = p[0];
+        while (*p[1] == ' ') {
+            p[1]++;
+        }
+        *p[0] = '/';
+        strcpy(p[0] + 1, p[1]);
+        p[0] = &buf[0];
+        while (*p[0] == ' ') {
+            p[0]++;
+        }
+        p[1] = strstr(p[0], " ");
+        if (p[1] == NULL) {
+            return EFAULT;
+        }
+        *p[1] = 0;
+    } else {
+        p[1] = strstr(buf, "\n");
+        if (p[1] != NULL) {
+            *p[1] = 0;
+        }
+        p[0] = &buf[0];
     }
-    p[0] = strstr(&buf[1], " ");
-    p[1] = p[0];
-    while (*p[1] == ' ') {
-        p[1]++;
-    }
-    *p[0] = '/';
-    strcpy(p[0] + 1, p[1]);
-    p[0] = &buf[0];
-    while (*p[0] == ' ') {
-        p[0]++;
-    }
-    p[1] = strstr(p[0], " ");
-    if (p[1] == NULL) {
-        return EFAULT;
-    }
-    *p[1] = 0;
-
     return macgonuts_get_last_net_addr(addr, p[0], strlen(p[0]));
 }
 
@@ -521,5 +583,19 @@ get_gateway_addr6_from_iface_epilogue:
 #else
 # error Some code wanted.
 #endif // defined(__linux__)
+
+int has_ifconfig(void) {
+    static int has = -1;
+    if (has == -1) {
+# if defined(__linux__)
+        has = (system("ifconfig --version >/dev/null 2>&1") == EXIT_SUCCESS);
+# elif defined(__FreeBSD__)
+        has = (system("ifconfig >/dev/null 2>&1") == EXIT_SUCCESS);
+# else
+#  error Some code wanted.
+#endif // defined(__linux__)
+    }
+    return has;
+}
 
 #undef get_nbv

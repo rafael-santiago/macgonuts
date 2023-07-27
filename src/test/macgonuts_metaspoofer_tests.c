@@ -47,9 +47,9 @@ CUTE_TEST_CASE(macgonuts_metaspoofer_tests)
     spfgd.layers.proto_addr_size = 4;
     spfgd.metainfo.arg[0] = &hooks;
     memcpy(&spfgd.layers.lo_hw_addr[0], "\xAA\xBB\xCC\xDD\xEE\xFF", sizeof(spfgd.layers.lo_hw_addr));
-    memcpy(&spfgd.layers.lo_proto_addr[0], "\x7F\x00\x00\x01", sizeof(spfgd.layers.lo_proto_addr));
-    memcpy(&spfgd.layers.tg_proto_addr[0], "\x7F\x00\x00\x02", sizeof(spfgd.layers.tg_proto_addr));
-    memcpy(&spfgd.layers.spoof_proto_addr[0], "\x7F\x00\x00\x03", sizeof(spfgd.layers.spoof_proto_addr));
+    memcpy(&spfgd.layers.lo_proto_addr[0], "\x7F\x00\x00\x01", 4);
+    memcpy(&spfgd.layers.tg_proto_addr[0], "\x7F\x00\x00\x02", 4);
+    memcpy(&spfgd.layers.spoof_proto_addr[0], "\x7F\x00\x00\x03", 4);
     memcpy(&spfgd.layers.tg_hw_addr[0], "\x00\x01\x02\x03\x04\x05", sizeof(spfgd.layers.tg_hw_addr));
     memcpy(&spfgd.layers.spoof_hw_addr[0], "\xAA\x01\xBB\x04\xCC\x05", sizeof(spfgd.layers.spoof_hw_addr));
     CUTE_ASSERT(macgonuts_create_thread(&td, gohome, &spfgd) == EXIT_SUCCESS);
