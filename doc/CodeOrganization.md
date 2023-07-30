@@ -9,6 +9,7 @@ besides some project and design decisions.
 - [Code coverage parameters](#code-coverage-parameters)
     - [How to avoid breaking coverage build?](#how-to-avoid-breaking-coverage-build)
     - [Coverage measures updating](#coverage-measures-updating)
+- [Design decision about libc and OS includes](#design-decision-about-libc-and-os-includes)
 
 ## The repo layout
 
@@ -58,6 +59,7 @@ This is the current repo layout:
 |       +-- ...
 |   +-- unix/
 |       +-- ...
++-- ...
 ```
 
 In order to know more details about each directory level take a look at **Table 1**.
@@ -86,16 +88,16 @@ In order to know more details about each directory level take a look at **Table 
 
 ## Code coverage parameters
 
-Code coverage here it is not a fancy measure only to plot meanginless graphs. In fact,
-here you will not find any graph (thanks gosh!); here code coverage is destined to
-developers and as pragmatic developers we like boolean stuff that help us solve quickly
-the problem, in other words:
+Code coverage here it is not a fancy measure only to plot meanginless charts. In fact,
+here you will not find any chart (thanks gosh!); here code coverage is destined to
+developers and as pragmatic developers we like objective stuff that help us to solve
+the problem quickly, in other words:
 
 - it is good.
 - it is acceptable.
 - it is bad (shame on us, let's get better), btw the build is broken, fix it before continuing.
 
-and, period. No fiddle-faddle. **Table 2** summarizes what exactly is good, acceptable and shame on us.
+and, period. No fiddle-faddle. **Table 2** summarizes what exactly is ``good``, ``acceptable`` and ``shame on us``.
 
 **Table 2**: Our adopted coverage measure range.
 | **Coverage range (line/function)**|                  **Description**                     |
@@ -119,15 +121,27 @@ needing to be more exercized during tests to make ``CI`` pass again.
 
 ### Coverage measures updating
 
-At each ``CI`` execution the coverage build runs on Linux based build step. The coverage build is
+At each ``CI`` execution the coverage build runs on ``Linux`` based build step. The coverage build is
 able to update the coverage measures indicated in the toplevel ``README.md`` file. Likewise, the ``CI`` part
 is able to detected that ``README.md`` has changed and it pushes these changes through an automated commit.
 
 Unfortunately, until now, the ``FreeBSD CI``'s part is not executing the coverage build, because it is
 just about a workaround done from a ``VM``.
 
-When you are in a coverage increasing task you will need to run the coverage build by yourself in your own
+When you are in a coverage increasement task you will need to run the coverage build by yourself in your own
 development environment, and after hitting good coverage indexes all you need to do is committing your
-changes what btw will include the ``README.md`` coverage badges updating.
+changes what btw will include the ``README.md`` coverage badges updated.
+
+[``Back``](#topics)
+
+## Design decision about libc and OS includes
+
+Any include related to the ``operating system`` and also ``libc`` should be done from within ``macgonuts_types.h``.
+Excluding platform dependent code that is shipped inside the directory named with the platform name, in those
+implementation and headers files is okay including ``libc`` and the ``OS`` headers.
+
+By doing it we are able to make easier to get all depedency for certain base stuff without inflating the ``macgonuts``
+code space with so repetitive include statements. Thus, we can include what we need to get the job done ASAP and
+focusing on implementing that exact part and, period.
 
 [``Back``](#topics)
