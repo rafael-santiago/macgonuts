@@ -1,6 +1,6 @@
 # Macgonuts documentation
 
-This directory is aimed to more specific docmentation. Get your destiny below:
+This directory is aimed to more specific documentation. Get your destiny below:
 
 - Do you are wanting to build ``Macgonuts``? Read [BUILD.md](BUILD.md).
 - Do you are wanting to learn how to use ``Macgonuts``? Read [MANUAL.md](MANUAL.md).
