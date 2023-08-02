@@ -15,6 +15,7 @@ fresh ``macgonuts`` binary to get your stuff done, you can give ``the low-cost b
         - [Extracting code coverage](#extracting-code-coverage)
         - [List of all build options](#list-of-all-build-options)
     - [Installing the command line tool](#installing-the-command-line-tool)
+    - [Building the debian package](#building-the-debian-package)
 
 ## Getting newest macgonuts source code revision
 
@@ -204,6 +205,7 @@ Take a look at **Table 1** to know all build options supported by the ``Hefesto`
 | ``--coverage``      |   flag    | Runs coverage build task                                                            |
 |``--genhtml-outpath``|   value   | Specifies a file path for the ``LCOV`` coverage report                              |
 | ``--toolset``       |   value   | Specifies the name of wanted compiler, can being ``gcc`` or ``clang``               |
+| ``--debian-pkg``    |   flag    | Runs the debian packaging build task                                                |
 
 [``Back``](#topics)
 
@@ -219,6 +221,25 @@ Uninstalling is similar:
 
 ```
 you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --uninstall
+```
+
+[``Back``](#topics)
+
+## Building the debian package
+
+The ``debian`` package can be built through the ``developer's`` build or through the ``low-cost`` build.
+The ``package`` is created in the toplevel ``deb`` sub-directory.
+
+By using the ``developer's`` build and being into ``src`` sub-directory, you need to invoke ``Hefesto`` as follows:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --debian-pkg
+```
+
+By using the ``low-cost`` build and being into ``src`` sub-directory, you need to run ``make`` as follows:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# make deb
 ```
 
 [``Back``](#topics)

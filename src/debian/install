@@ -1,0 +1,4 @@
+../bin/macgonuts usr/local/bin
+../doc/man1/macgonuts.1 usr/share/man/man1
+../etc/hoax usr/share/macgonuts/etc
+../etc/oui usr/share/macgonuts/etc

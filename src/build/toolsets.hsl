@@ -27,6 +27,14 @@ function installer() : result type none {
     }
 }
 
+function debian_packer() : result type none {
+    var option type list;
+    $option = hefesto.sys.get_option("debian-pkg");
+    if ($option.count() > 0) {
+        hefesto.project.abort(build("debian_pkg"));
+    }
+}
+
 function build_projects(projects type list) : result type int {
     if ($projects.count() == 0) {
         hefesto.sys.echo("ERROR: No projects to build.\n");
@@ -476,4 +484,9 @@ local function build_uninstall() : result type int {
     hefesto.sys.echo("INFO: Uninstalled.\n");
 
     result 0;
+}
+
+local function build_debian_pkg() : result type int {
+    mktree(hefesto.sys.make_path(get_rootdir(), "../deb"));
+    result hefesto.sys.run("dpkg-buildpackage -uc -us --pre-clean -j1 && mv ../macgonuts*.* ../deb");
 }
