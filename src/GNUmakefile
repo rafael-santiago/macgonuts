@@ -43,7 +43,7 @@ $(OBJDIR)/%.o: %.c
 
 clean:
 	@rm -rf .o
-	@rm $(LIBDIR)/$(BINARY)
+	@rm -f $(LIBDIR)/$(BINARY)
 
 install:
 	@mkdir -p /usr/local/bin && cp ../bin/macgonuts /usr/local/bin &&\
@@ -51,6 +51,12 @@ install:
  mkdir -p $(MACGONUTS_SHARE_DIR)/etc && cp ../etc/hoax $(MACGONUTS_SHARE_DIR)/etc/hoax &&\
  cp ../etc/oui $(MACGONUTS_SHARE_DIR)/etc/oui
 	@echo installed.
+
 uninstall:
 	@rm /usr/local/bin/macgonuts && rm /usr/local/man/man1/macgonuts.1 && rm -rf $(MACGONUTS_SHARE_DIR)
 	@echo uninstalled.
+
+deb:
+	@mkdir -p ../deb
+	@dpkg-buildpackage -uc -us --pre-clean -j1
+	@mv ../macgonuts*.* ../deb

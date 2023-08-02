@@ -1,5 +1,11 @@
 **/lib/*
 **/bin/*
+**/deb/*
+**/debian/.debhelper
+**/debian/debhelper-build-stamp
+**/debian/macgonuts
+**/debian/macgonuts.substvars
+**/debian/files
 *.Forgefile-*
 *.o/
 coverage.info

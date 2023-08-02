@@ -1,0 +1,20 @@
+Source: macgonuts
+Section: hacking-tools
+Priority: extra
+Maintainer: Rafael Santiago <voidbrainvoid@tutanota.com>
+Build-Depends: debhelper (>= 10.0.0)
+Standards-Version: 3.9.3
+Vcs-Git: git@github.com:rafael-santiago/macgonuts.git
+Vcs-Browser: http://github.com/rafael-santiago/macgonuts
+
+Package: macgonuts
+Section: hacking-tools
+Priority: extra
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: An ARP/NDP swiss army knife to make MAC going nuts
+ Macgonuts is an ARP/NDP swiss army knife to make MAC addresses going nuts on networks around!
+ It supports IPv4/ARP and IPv6/NDP. It intends to bring you all in a shell. Anything related to
+ spoof layer-2 addresses can be done elegantly with a single f_cking nice non-scripted tool, a
+ badass executable without clumsy zillions of dependencies. Suckless is the key here, but simple
+ in a non-hollow-claimed-simple is what we try to deliver here.

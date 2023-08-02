@@ -24,8 +24,9 @@ macgonuts-static-lib.preloading() {
 }
 
 macgonuts-static-lib.prologue() {
-    installer();
     set_rootdir(".");
+    installer();
+    debian_packer();
     if (build("accacia") != 0) {
         hefesto.project.abort(1);
     }

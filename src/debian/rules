@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+%:
+	@dh $@
+
+override_dh_auto_make:
+	make -j1
+
+#override_dh_auto_clean:
+#	@make clean
+
+override_dh_usrlocal:
+	rm /usr/local/bin/macgonuts
+	rm /usr/local/man/man1/macgonuts.1
