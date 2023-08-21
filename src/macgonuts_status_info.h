@@ -33,4 +33,4 @@ void macgonuts_si_mode_enter_announce(const char *mode_name);
 
 void macgonuts_si_mode_leave_announce(const char *mode_name);
 
-#endif // MACGONUTS_STATUS_INFO
+#endif // MACGONUTS_STATUS_INFO_H

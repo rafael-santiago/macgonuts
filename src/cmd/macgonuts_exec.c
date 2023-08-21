@@ -16,6 +16,7 @@
 #include <cmd/macgonuts_mayhem_task.h>
 #include <cmd/macgonuts_dnsspoof_task.h>
 #include <cmd/macgonuts_xablau_task.h>
+#include <cmd/macgonuts_caleaboqui_task.h>
 #include <cmd/macgonuts_version_task.h>
 #include <cmd/macgonuts_banners.h>
 #include <macgonuts_status_info.h>
@@ -30,12 +31,16 @@ static int macgonuts_help_task_help(void); // :S
 
 static int macgonuts_no_help_topic(void);
 
-#define MACGONUTS_CMD_REGISTER_TASK(t) { #t, macgonuts_## t ##_task, macgonuts_## t ##_task_help }
+#define MACGONUTS_CMD_REGISTER_TASK(t) { #t, macgonuts_## t ##_task, macgonuts_## t ##_task_help, "" }
+
+#define MACGONUTS_CMD_REGISTER_TASK_ALIAS(t,a) { #a, macgonuts_## t ##_task,\
+                                                    macgonuts_## t ##_task_help, " (alias of "#t ")" }
 
 struct macgonuts_task_ctx {
     const char *name;
     macgonuts_task_func task;
     macgonuts_task_func help;
+    const char *is_alias_of;
 } g_MacgonutsCmdTasks[] = {
     MACGONUTS_CMD_REGISTER_TASK(spoof),
     MACGONUTS_CMD_REGISTER_TASK(eavesdrop),
@@ -43,9 +48,14 @@ struct macgonuts_task_ctx {
     MACGONUTS_CMD_REGISTER_TASK(mayhem),
     MACGONUTS_CMD_REGISTER_TASK(dnsspoof),
     MACGONUTS_CMD_REGISTER_TASK(xablau),
+    MACGONUTS_CMD_REGISTER_TASK(caleaboqui),
+    MACGONUTS_CMD_REGISTER_TASK_ALIAS(xablau, neighscan),
+    MACGONUTS_CMD_REGISTER_TASK_ALIAS(caleaboqui, shh),
     MACGONUTS_CMD_REGISTER_TASK(version),
     MACGONUTS_CMD_REGISTER_TASK(help),
 };
+
+#undef MACGONUTS_CMD_REGISTER_TASK_ALIAS
 
 #undef MACGONUTS_CMD_REGISTER_TASK
 
@@ -105,7 +115,7 @@ static int macgonuts_help_task(void) {
     char avail_tasks[8<<10] = "";
     char *ap = NULL, *ap_end = NULL;
     size_t written = 0;
-    const char *sep[2] = { ", ", "." };
+    const char *sep[2] = { ",\n\t", "" };
     struct macgonuts_task_ctx *tp = &g_MacgonutsCmdTasks[0], *tp_end = tp +
         sizeof(g_MacgonutsCmdTasks) / sizeof(g_MacgonutsCmdTasks[0]);
     macgonuts_task_func help_subprogram = macgonuts_no_help_topic;
@@ -113,11 +123,12 @@ static int macgonuts_help_task(void) {
         ap = &avail_tasks[0];
         ap_end = ap + sizeof(avail_tasks);
         do {
-            written = snprintf(ap, sizeof(avail_tasks) - written, "'%s'%s", tp->name, sep[(tp + 1) == tp_end]);
+            written = snprintf(ap, sizeof(avail_tasks) - written, " * '%s'%s%s", tp->name, tp->is_alias_of,
+                               sep[(tp + 1) == tp_end]);
             ap += written;
             tp += 1;
         } while (ap < ap_end && tp != tp_end);
-        macgonuts_si_warn("no help topic provided, try %s\n_________\n", avail_tasks);
+        macgonuts_si_warn("no help topic provided, try:\n\t%s\n_________\n", avail_tasks);
         macgonuts_si_print("Macgonuts is Copyright (C) 2022-2023 by Rafael Santiago and licensed under BSD-4.\n"
                            "This is a free software. You can redistribute it and/or modify under the terms of "
                            "BSD-4 license.\n\n");
