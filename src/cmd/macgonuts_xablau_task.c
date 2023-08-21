@@ -103,8 +103,8 @@ int macgonuts_xablau_task(void) {
 }
 
 int macgonuts_xablau_task_help(void) {
-    macgonuts_si_print("use: macgonuts xablau --lo-iface=<label> [--ipv4 --ipv6 --oui --oui-dbpath=<filepath> "
-                       "--out=<filepath>]\n");
+    macgonuts_si_print("use: macgonuts xablau | neighscan --lo-iface=<label> "
+                       "[--ipv4 --ipv6 --oui --oui-dbpath=<filepath> --out=<filepath>]\n");
     return EXIT_SUCCESS;
 }
 

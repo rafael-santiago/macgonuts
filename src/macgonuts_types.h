@@ -104,7 +104,7 @@ struct macgonuts_spoof_layers_ctx {
 struct macgonuts_spoofing_guidance_ctx {
     struct {
         macgonuts_mutex_t lock;
-        macgonuts_thread_t thread;
+        //macgonuts_thread_t thread;
         macgonuts_socket_t wire;
     } handles;
 

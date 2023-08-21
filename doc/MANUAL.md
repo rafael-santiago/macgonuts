@@ -15,6 +15,7 @@
     - [The mayhem command](#the-mayhem-command)
     - [The dnsspoof command](#the-dnsspoof-command)
     - [The xablau command](#the-xablau-command)
+    - [The caleaboqui command](#the-caleaboqui-command)
 
 ## What does ``macgonuts`` is for?
 
@@ -606,7 +607,7 @@ Now, nice facts about ``xablau`` command:
 - So passing ``--ipv4`` and ``--ipv6`` is a thing that in Portuguese we say "perfunctório", do not do that. ``Macgonuts``
   will understand that you want both when you pass none...
 
-Now you should are asking: is there something more that I should known about ``xablau``? Well...
+Now maybe you are asking: is there something more that I should known about ``xablau``? Well...
 
 <p align="center">
     <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/oui.gif" title="puns, puns, lousy puns!!!"
@@ -634,5 +635,144 @@ Maybe you are still asking ``WTF "xablau" does mean??!``. ``Xablau`` is a kind o
 from one brazilian TV show favorite of mine, called ``Larica Total``. A kind of tribute for the best food TV show
 in the Universe. A no-frills food TV show I would say... If you did not understand, relax, ``xablau`` is ``xablau``
 and even, not knowing, you are from now on a ``f_cking-amazing-macgonuts-xablau-master``. Congrats!
+
+Anyway, if jot down `xablau` is too much for you, you can try its well behaved alias: `neighscan`.
+
+[``Back``](#topics)
+
+### The caleaboqui command
+
+> If there is someone in your network consuming all `Internet` bandwidth getting in the way your downloads... you can
+drive away this noisy host from your gateway (wait... `_ modprobe -rf euphemism`) err... You can cut off its
+`Internet` access and with it rip off all this bandwidth slice all to you :trollface:, :godmode:!
+
+In order to achive this misconduct with `macgonuts` all you need is:
+
+<p align="center">
+    <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/keep_calm_and_caleaboqui.jpg" title="shhh..."
+     alt="CALEABOQUI!" width="320" height2="200" />
+</p>
+
+Using `caleaboqui` you will be able to make a host from your local network "forget" how to find out a way
+to the `Internet` and by doing it the noisy person or even device will be silented out and as a result freeing up
+bandwidth. Simple but a little egoistic I would say and you need to admit!
+
+So... you are used to already: Story time!!!!
+
+Once upon time `Narciso`, he was trying to save all the `Internet` to your local network but there was `Pär-hot` in his way,
+`Pär-hot Diesel` was addicted to `Internet` websites with names starting with three X's, well... you understood.
+
+The problem was that `Pär-hot Diesel` was consuming a bunch of network bandwidth from your host `192.168.5.69` and
+`Narciso` at host `192.168.5.101` was not getting much from his network gateway a.k.a `192.168.5.1`. Making far from
+impossible his quixotic "Let's Save The Internet!" task...
+
+Facing that `Narciso` has decided be an inedit thing: egoistic. He remembered that his system had `macgonuts` installed
+and that this tool has a strange but useful `egoistic` command: `"caleaboqui"`. That by the way he has been in love since
+them buuuut not so much... Because his love was really destined to another well known person... Well, well...
+
+Anyway, `Narciso` simply called `macgonuts` requesting from it `caleaboqui`'s quick help:
+
+```
+Narciso@s0m3l4k3:~# macgonuts help caleaboqui
+use: macgonuts caleaboqui | shh --lo-iface=<label> --target-addrs=<ip4|ip6|cidr4|cidr6 list>
+                            [--undo-spoof --hide-my-ass --timeout=<ms> --fake-pkts-amount=<ms> --spoof-threads=<n>]
+```
+
+Nice, he knows that he was accessing his local network through `eth0` interface. Thus all he did was:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.69
+```
+
+Done! His screen was flooded with a bunch of info saying that `Internet` access of `Pär-hot Diesel` had been cut off.
+For sure from that time the gateway overhead got lower. `Narciso` had the whole bandwidth to him to save the
+whole `Internet` in your workstation: `all-just-2-&&-4-him`...
+
+But supposing that `Narciso` wanted be nice with his system and network giving them a time to breath between the
+cutting off operation... All he should use was `--timeout=<mss>` option:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.69 \
+> --timeout=3000
+```
+
+It would inject fake resolutions in the local network and wait for `3 seconds` before doing it again.
+
+`Narciso` also would take care of staying incognito by using `--hide-my-ass` option:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.69 \
+> --timeout=3000 --hide-my-ass
+```
+
+By using `--hide-my-ass` the target host will be informed to access random `MAC` addresses instead of yours,
+when trying to talk to the "external world".
+
+However, the work of staying really incognito requires two options. One is `--hide-my-ass` and the another is `--undo-spoof`:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.69 \
+> --timeout=3000 --hide-my-ass --undo-spoof
+```
+
+When passed `--undo-spoof` `macgonuts` will take care of restablishing the `Internet` access when exiting. In
+this way people will think that the lack of access to `Internet` was momentaneous.
+
+Oh yes: to exit `caleaboqui` only hit `Ctrl + C`.
+
+The option `--target-addrs` also supports `CIDR` ranges. So you can cut off `Internet` access from all hosts
+currently on. Let's suppose that `Narciso` wanted to ensure that nobody besides him access `Internet`:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.0/24
+```
+
+In this case it was about a common `class C` local net (`255.255.255.0`).
+
+It take us to important things to take into consideration when cutting `Internet` of inferred hosts from a `CIDR`:
+
+- By default `macgonuts` will send out `five` fake packets to the found out targets.
+- It will use only one spoofing thread.
+- It will avoid messing with your own host and the network gateway.
+- You can hide your ass but you cannot restablish the `Internet` access of the targets when exiting `macgonuts`.
+
+If you want to traverse the `CIDR` more efficiently you should pass `--spoof-threads=<n>` option.
+This option defines the amount of concurrent spoofing tasks, so you can attack more
+than one target simultaneously, take a look:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.0/24 \
+> --spoof-threads=32
+```
+
+If you want to change the quantity of `five` fake packets sent out to targets, use `--fake-pkts-amount`:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.0/24 \
+> --spoof-threads=32 --fake-pkts-amount=42
+```
+
+Anyway, if you want a more efficient `Internet` cutting off, try to pass `unicast` targets:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.69,192.168.5.169
+```
+
+If your network interface is configured with `IPv4` and `IPv6` you are able to handle those different network
+protocol versions with a single `macgonuts` process:
+
+```
+Narciso@s0m3l4k3:~# macgonuts caleaboqui --lo-iface=eth0 --target-addrs=192.168.5.69,dead::beef:45 \
+> --timeout=500 --hide-my-ass --undo-spoof
+
+```
+
+Maybe you are asking:
+
+> - Man, why this strange name, "caleaboqui"?
+
+Well, `caleaboqui` was picked from a famous `redub` done by a `Brazilian` comedy group called `Hermes e Renato`.
+"caleaboqui" is a wrong form of "cale a boca" (said by people that talks bad portuguese, or even a slang form) it
+does mean `shut up`. If `caleaboqui` is too much for you, I would suggest you `shh` :bowtie: :smirk:
 
 [``Back``](#topics)
