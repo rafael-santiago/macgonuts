@@ -150,11 +150,11 @@ focusing on implementing that exact part and, period.
 ## How does versioning work on `macgonuts`?
 
 <p align="center">
-<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/warning_unpopular_content.png" title="I love The Cramps, don't you?"
+<img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/warning_unpopular_content.png" title="I love The Cramps, don't you?"
      alt="I love The Cramps, don't you?" width="320" /><br>
-<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/the_surprise_in_terror_1790.png" title="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)"
+<img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/the_surprise_in_terror_1790.png" title="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)"
      alt="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)" width="320" />
-<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/le_discret_1791.png" title="Le Discret (1791) by Joseph Ducreux (Public Domain)"
+<img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/le_discret_1791.png" title="Le Discret (1791) by Joseph Ducreux (Public Domain)"
      alt="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)" width="320" />
 </p>
 

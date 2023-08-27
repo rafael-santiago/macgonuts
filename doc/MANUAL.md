@@ -51,7 +51,7 @@ People sometimes are lot strange, getting together to sleep in uncomfortable pos
 In **Figure 1** you can see a typical conference listener :satisfied:
 
 <p align="center">
-<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/sloth_yawm.gif" title="Zzzz..."
+<img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/sloth_yawm.gif" title="Zzzz..."
          alt="'- Questions? - Questions? - Gimme a question, pleeease?!'" width="320" /><br>
 <b>Figure 1</b>: In this figure you see a "hacker" self-claimed "Casanova" at<br>
     <i>the most interesting part of a sleepines... oh! tech talk</i>.
@@ -61,7 +61,7 @@ But let's focus on the `macgonuts`...
 
 ### The spoof command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
  Maybe the ``spoof`` command is the command what you arrived here for. With ``spoof`` command you can deceive
 a host by making it thinks that you are the droid that it was looking for...
@@ -170,7 +170,7 @@ Congrats! Now you are a ``macgonuts spoofing`` master!
 
 ### The eavesdrop command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
  If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
 looking for...
@@ -256,7 +256,7 @@ Congrats again! Welcome to the paradise, now you are a ``macgonuts eavesdrop`` m
 
 ### The isolate command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
 With the isolate command it is possible to make a specific host an island. Any contact done from anyone in the
 local network will be "cut off" by letting that target alone.
@@ -320,7 +320,7 @@ Congrats! Now you are a ``macgonuts`` troll master by knowing every single thing
 
 ### The mayhem command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
 If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
 With mayhem you are able to make `ARP/Neighbor` tables a total mess. As a result the host will be unable
@@ -416,7 +416,7 @@ Congrats! Now you are a layer-2 disorder master by knowing every single detail a
 
 ### The dnsspoof command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
  If you are finding a way of redirecting some host to another by making this host accept fake name resolutions, dnsspoof
 is your command of choice...
@@ -564,7 +564,7 @@ proud of you ``Pinocchio``! You nasty busybody... Use it with care!
 
 ### The xablau command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
  If you are looking around for possible targets to your offensive actions, maybe ``macgonuts`` features
 one command to do it and, this command is...
@@ -669,7 +669,7 @@ Anyway, if jot down `xablau` is too much for you, you can try its well behaved a
 
 ### The caleaboqui command
 
-><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
  If there is someone in your network consuming all `Internet` bandwidth getting in the way your downloads... you can
 drive away this noisy host from your gateway (wait... `_ modprobe -rf euphemism`) err... You can cut off its
@@ -811,7 +811,7 @@ Well, now you master anything about silence, congrats!
 
 ## Catsparrow's ``macgonuts`` commands cheat sheet
 
-> <img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/catsparrow.gif" title="Grrrr! C4uTion is now logged in..."
+> <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/catsparrow.gif" title="Grrrr! C4uTion is now logged in..."
          alt="Grrrr! C4uTion is now logged in..." width="100" />
  "Fifteen men on the dead man's chest -<br>
 ...Yo-ho-ho, and a bottle of rum!<br>
