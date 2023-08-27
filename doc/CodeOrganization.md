@@ -10,7 +10,8 @@ besides some project and design decisions.
     - [How to avoid breaking coverage build?](#how-to-avoid-breaking-coverage-build)
     - [Coverage measures updating](#coverage-measures-updating)
 - [Design decision about libc and OS includes](#design-decision-about-libc-and-os-includes)
-
+- [How does versioning work on `macgonuts`?](#how-does-versioning-work-on-macgonuts)
+    - [But why taking this so unpopular decision?](#but-why-taking-this-so-unpopular-decision)
 ## The repo layout
 
 This is the current repo layout:
@@ -123,7 +124,7 @@ needing to be more exercized during tests to make ``CI`` pass again.
 
 At each ``CI`` execution the coverage build runs on ``Linux`` based build step. The coverage build is
 able to update the coverage measures indicated in the toplevel ``README.md`` file. Likewise, the ``CI`` part
-is able to detected that ``README.md`` has changed and it pushes these changes through an automated commit.
+is able to detect that ``README.md`` has changed and it pushes these changes through an automated commit.
 
 Unfortunately, until now, the ``FreeBSD CI``'s part is not executing the coverage build, because it is
 just about a workaround done from a ``VM``.
@@ -143,5 +144,70 @@ implementation and headers files is okay including ``libc`` and the ``OS`` heade
 By doing it we are able to make easier to get all depedency for certain base stuff without inflating the ``macgonuts``
 code space with so repetitive include statements. Thus, we can include what we need to get the job done ASAP and
 focusing on implementing that exact part and, period.
+
+[``Back``](#topics)
+
+## How does versioning work on `macgonuts`?
+
+<p align="center">
+<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/warning_unpopular_content.png" title="I love The Cramps, don't you?"
+     alt="I love The Cramps, don't you?" width="320" /><br>
+<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/the_surprise_in_terror_1790.png" title="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)"
+     alt="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)" width="320" />
+<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/le_discret_1791.png" title="Le Discret (1791) by Joseph Ducreux (Public Domain)"
+     alt="The Surprise in Terror (1790) by Joseph Ducreux (Public Domain)" width="320" />
+</p>
+
+After thinking about endless months! I have decided to use an arcane and unusual (really) way of versioning computer
+programs. It is so unusual that deserves a whole paragraph and in all caps (sorry).
+
+HERE WE ARE USING INTEGERS AND ALWAYS COUNTING IN ASCENDENT ORDER, STARTING FROM THE NUMBER ONE.
+
+Very, very unusual. So unusual that it needs to be more well explained. One more paragraph (no caps, I promise)...
+
+So, the first version is `v1`, the next `v2` and after `v3`. Now it is up to you...
+
+I tried avoid reinventing math axioms, better to stick with the previous, they work and they are amazing.
+
+Now, in other words: arabic numbers going in ascendent order starting from one, prefixed with `v` (suggesting "version").
+
+With this decision, unfortunately, here you will not find ridiculous names (besides `macgonuts`)... You know,
+things like:
+
+- `vCucumber-from-space-and-beyond`
+- `vProjeto-pangaio`
+- `vMais-um`
+- `v_i`
+- `v_ii`
+- `v_ii.i`
+- `vVamos-ver-se-agora-vai-1.2.3.4.5.6`
+- `v3.14+E10`
+- `vNome-de-pessoa-aleatório-e-bem-bobo`
+- `vZumbi-pindoba`
+- `vMais-um-jabuti-que-subiu-na-arvore`
+- `vNomeDeAnimalFofuxim`
+- `vHlp_whr_r_th_vgls`
+
+etc...
+
+Instead, here you will find:
+
+- `v1`
+
+and possibly:
+
+- `v2`
+- `v3`
+- `v4`
+
+- and counting... if we have new ideas or bugs to fix... Because here subjectless "new" versions are totally pointless and
+unable to be released.
+
+[``Back``](#topics)
+
+### But why taking this so unpopular decision?
+
+`Macgonuts` is the only ridiculous name that you will find here, there is no place for another one.
+It is a thing like `Highlanders`. We are predatory about it, period.
 
 [``Back``](#topics)
