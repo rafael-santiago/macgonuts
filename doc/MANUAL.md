@@ -16,6 +16,7 @@
     - [The dnsspoof command](#the-dnsspoof-command)
     - [The xablau command](#the-xablau-command)
     - [The caleaboqui command](#the-caleaboqui-command)
+- [Catsparrow's ``macgonuts`` commands cheat sheet](#catsparrows-macgonuts-commands-cheat-sheet)
 
 ## What does ``macgonuts`` is for?
 
@@ -44,9 +45,25 @@ This section describes in details all implemented commands in ``macgonuts``. Kee
 the tool and making a youtube video about it (because I do not have any talent or even patience to do this),
 many thanks in advance! :satisfied:
 
+Maybe you should also try out slides to speak in some tech talk as a kind of excuse to promote
+sleepiness orgies around the World. Seriously, I also do not have any patience to this kind of stuff... What about?!
+People sometimes are lot strange, getting together to sleep in uncomfortable positions, craziness...
+In **Figure 1** you can see a typical conference listener :satisfied:
+
+<p align="center">
+<img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/sloth_yawm.gif" title="Zzzz..."
+         alt="'- Questions? - Questions? - Gimme a question, pleeease?!'" width="320" /><br>
+<b>Figure 1</b>: In this figure you see a "hacker" self-claimed "Casanova" at<br>
+    <i>the most interesting part of a sleepines... oh! tech talk</i>.
+</p>
+
+But let's focus on the `macgonuts`...
+
 ### The spoof command
 
->Maybe the ``spoof`` command is the command what you arrived here for. With ``spoof`` command you can deceive
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+ Maybe the ``spoof`` command is the command what you arrived here for. With ``spoof`` command you can deceive
 a host by making it thinks that you are the droid that it was looking for...
 
 If you run:
@@ -153,7 +170,9 @@ Congrats! Now you are a ``macgonuts spoofing`` master!
 
 ### The eavesdrop command
 
->If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+ If you are wanting to do some active sniffing between two points this is the ``macgonuts`` command that you are
 looking for...
 
 With ``eavesdrop`` command you are able to simply watch the network traffic or log it to later inspection. You can
@@ -237,7 +256,9 @@ Congrats again! Welcome to the paradise, now you are a ``macgonuts eavesdrop`` m
 
 ### The isolate command
 
->With the isolate command it is possible to make a specific host an island. Any contact done from anyone in the
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+With the isolate command it is possible to make a specific host an island. Any contact done from anyone in the
 local network will be "cut off" by letting that target alone.
 
 If you ask the quick help of the isolate command you will get the following:
@@ -299,7 +320,9 @@ Congrats! Now you are a ``macgonuts`` troll master by knowing every single thing
 
 ### The mayhem command
 
->If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+If you are only seeking to annoy a network as whole, maybe the mayhem command is the command for you.
 With mayhem you are able to make `ARP/Neighbor` tables a total mess. As a result the host will be unable
 to communicate each other or at least unable to communicate each other without unstability.
 
@@ -393,7 +416,9 @@ Congrats! Now you are a layer-2 disorder master by knowing every single detail a
 
 ### The dnsspoof command
 
-> If you are finding a way of redirecting some host to another by making this host accept fake name resolutions, dnsspoof
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+ If you are finding a way of redirecting some host to another by making this host accept fake name resolutions, dnsspoof
 is your command of choice...
 
 Let's take a look at ``dnsspoof`` quick help:
@@ -539,7 +564,9 @@ proud of you ``Pinocchio``! You nasty busybody... Use it with care!
 
 ### The xablau command
 
->If you are looking around for possible targets to your offensive actions, maybe ``macgonuts`` features
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+ If you are looking around for possible targets to your offensive actions, maybe ``macgonuts`` features
 one command to do it and, this command is...
 
 <h1 align="center">X    A    B    L    A    U    !</h1>
@@ -607,7 +634,7 @@ Now, nice facts about ``xablau`` command:
 - So passing ``--ipv4`` and ``--ipv6`` is a thing that in Portuguese we say "perfunctório", do not do that. ``Macgonuts``
   will understand that you want both when you pass none...
 
-Now maybe you are asking: is there something more that I should known about ``xablau``? Well...
+Now maybe you are asking: is there something more that I should know about ``xablau``? Well...
 
 <p align="center">
     <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/oui.gif" title="puns, puns, lousy puns!!!"
@@ -642,11 +669,14 @@ Anyway, if jot down `xablau` is too much for you, you can try its well behaved a
 
 ### The caleaboqui command
 
-> If there is someone in your network consuming all `Internet` bandwidth getting in the way your downloads... you can
+><img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+ If there is someone in your network consuming all `Internet` bandwidth getting in the way your downloads... you can
 drive away this noisy host from your gateway (wait... `_ modprobe -rf euphemism`) err... You can cut off its
 `Internet` access and with it rip off all this bandwidth slice all to you :trollface:, :godmode:!
 
-In order to achive this misconduct with `macgonuts` all you need is:
+In order to achive this misconduct with `macgonuts` all you need is... "- love?"... Love is always good
+but not in this case, here you need to:
 
 <p align="center">
     <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/keep_calm_and_caleaboqui.jpg" title="shhh..."
@@ -774,5 +804,36 @@ Maybe you are asking:
 Well, `caleaboqui` was picked from a famous `redub` done by a `Brazilian` comedy group called `Hermes e Renato`.
 "caleaboqui" is a wrong form of "cale a boca" (said by people that talks bad portuguese, or even a slang form) it
 does mean `shut up`. If `caleaboqui` is too much for you, I would suggest you `shh` :bowtie: :smirk:
+
+Well, now you master anything about silence, congrats!
+
+[``Back``](#topics)
+
+## Catsparrow's ``macgonuts`` commands cheat sheet
+
+> <img src="https://github.com/rafael-santiago/macgonuts/blob/update-doc/etc/catsparrow.gif" title="Grrrr! C4uTion is now logged in..."
+         alt="Grrrr! C4uTion is now logged in..." width="100" />
+ "Fifteen men on the dead man's chest -<br>
+...Yo-ho-ho, and a bottle of rum!<br>
+But one man of her crew alive,<br>
+What put to sea with seventy-five." -- Robert Louis Stevenson's (Treasure Island [1883])
+
+**Table 1** brings Catsparrow's cheat sheet intended to novice buccaneers in this intrepid flying gang of
+exploiting addressing resolution on `IPv4/IPv6` networks around, "yo-ho-ho!" :rofl:
+
+**Table 1**: Catsparrow's ``macgonuts`` commands cheat sheet.
+| **Situation** | **Best command to use** |
+|:-------------:|:-------------------------:|
+| I need to make a host thinks that I am another host, so I can manipulate this traffic somehow | `spoof` |
+| I need to capture the session between two hosts into my `LAN` or segmented `LAN` | `eavesdrop` |
+| I need to avoid n hosts to talk to one | `isolate` |
+| I need to spread disorder into my `LAN` by making it unstable | `mayhem` |
+| I need to redirect a host to another host through a fake `FQDN` resolution | `dnsspoof` |
+| I need to discover possible targets into my `LAN` | `xablau` (or its alias `neighscan`) |
+| I need to avoid internet access from a single host or multiple hosts | `caleaboqui` (or its alias `shh`) |
+| I need to know what `macgonuts` version I am running | `version` |
+| I need some help | `help` |
+
+Enjoy, with responsibility! :wink:
 
 [``Back``](#topics)
