@@ -33,6 +33,12 @@ macgonuts-static-lib.prologue() {
 
     $includes = hefesto.sys.get_option("includes");
     $cflags = hefesto.sys.get_option("cflags");
+    var option type list;
+    $option = hefesto.sys.get_option("with-pybind");
+    if ($option.count() > 0) {
+        # INFO(Rafael): It is necessary to build macgonuts_pybind .so stuff.
+        $cflags.add_item("-fPIC");
+    }
     $libraries = hefesto.sys.get_option("libraries");
     $ldflags = hefesto.sys.get_option("ldflags");
 
@@ -71,8 +77,12 @@ macgonuts-static-lib.epilogue() {
         var subprojects type list;
         $subprojects.add_item("test");
         $subprojects.add_item("cmd");
+        var option type list;
+        $option = hefesto.sys.get_option("with-pybind");
+        if ($option.count() > 0) {
+            $subprojects.add_item("pybind");
+        }
         if (build_projects($subprojects) == 0) {
-            var option type list;
             $option = hefesto.sys.get_option("coverage");
             if ($option.count() > 0) {
                 var report_path type string;

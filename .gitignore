@@ -9,3 +9,6 @@
 *.Forgefile-*
 *.o/
 coverage.info
+**/binds/py/*.so
+**/binds/py/macgonuts.c
+**/binds/py/build

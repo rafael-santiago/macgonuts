@@ -490,3 +490,29 @@ local function build_debian_pkg() : result type int {
     mktree(hefesto.sys.make_path(get_rootdir(), "../deb"));
     result hefesto.sys.run("dpkg-buildpackage -uc -us --pre-clean -j1 && mv ../macgonuts*.* ../deb");
 }
+
+local function build_pybind() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+
+    if (hefesto.sys.cd("binds/py") != 1) {
+        hefesto.sys.echo("ERROR: Unable to find pybind implementation.\n");
+        result 1;
+    }
+
+    hefesto.sys.echo("*** Now building macgonuts_pybind...\n");
+
+    var err type int;
+    $err = hefesto.sys.run("rm -rf build && rm -f macgonuts.c && " +
+                           "python setup.py build_ext --inplace");
+
+    hefesto.sys.cd($oldcwd);
+
+    if ($err == 0) {
+        hefesto.sys.echo("*** success.\n");
+    } else {
+        hefesto.sys.echo("*** failure.\n");
+    }
+
+    result $err;
+}
