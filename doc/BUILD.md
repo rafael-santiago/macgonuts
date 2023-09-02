@@ -16,6 +16,8 @@ fresh ``macgonuts`` binary to get your stuff done, you can give ``the low-cost b
         - [List of all build options](#list-of-all-build-options)
     - [Installing the command line tool](#installing-the-command-line-tool)
     - [Building the debian package](#building-the-debian-package)
+    - [Building the binds](#building-the-binds)
+        - [pybind](#pybind)
 
 ## Getting newest macgonuts source code revision
 
@@ -241,5 +243,39 @@ By using the ``low-cost`` build and being into ``src`` sub-directory, you need t
 ```
 you@somewhere-over-the-rainbow:~/macgonuts/src# make deb
 ```
+
+[``Back``](#topics)
+
+## Building the binds
+
+In this part you can find instructions about how to build the available ``macgonuts`` binds.
+
+[``Back``](#topics)
+
+### pybind
+
+The ``Macgonuts`` ``Python`` bind depends on ``cython``, so in order to install it you can use the following:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# pip install cython
+```
+
+Done! Now is time to actually build ``macgonuts_pybind``.
+
+By using the ``developer's`` build and being into ``src`` sub-directory, you need to invoke ``Hefesto`` passing
+the option ``--with-pybind``:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --with-pybind
+```
+
+When using the ``low-cost`` build you also need to be into ``src`` sub-directory and call ``make`` defining the
+build parameter ``with-pybind``:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# make with-pybind
+```
+
+The ``python`` bind artifacts will be built into ``src/binds/py``.
 
 [``Back``](#topics)

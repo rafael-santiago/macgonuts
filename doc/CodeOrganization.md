@@ -38,7 +38,9 @@ This is the current repo layout:
 |   +-- ...
 +-- src/
 |   +-- Forgefile.hsl
-|   +-- ...
+|   |   +-- ...
+|   +-- binds/
+|   |   +-- ...
 |   +-- build/
 |       +-- toolsets.hsl
 |   +-- cmd/
@@ -66,24 +68,25 @@ This is the current repo layout:
 In order to know more details about each directory level take a look at **Table 1**.
 
 **Table 1**: Directory levels overview.
-| **Directory level**    |          **Here goes**                           |
-|:----------------------:|:------------------------------------------------:|
-|     toplevel           | Main configuration and information files         |
-|   ``.github``          | Files related to github configuration            |
-| ``.github/workspaces`` | Configuration of ``CI`` stuff                    |
-|  ``doc``               | More specific documentation                      |
-|  ``doc/man1``          | ``Macgonuts`` tool man page                      |
-| ``etc``                | Miscellaneous stuff                              |
-| ``src``                | Main source (library)                            |
-| ``src/build``          | Build conveniences stuff                         |
-| ``src/cmd``            | Command line tool source code                    |
-| ``src/cmd/hooks``      | Source code for task hooks of ``CLI`` tool       |
-| ``src/cmd/test``       | Tests for the ``CLI`` tool                       |
-| ``src/freebsd``        | ``FreeBSD`` native code of main source (library) |
-| ``src/libs``           | All dependencies used by ``Macgonuts`` code      |
-| ``src/linux``          | ``Linux`` native code of main source (library)   |
-| ``src/test``           | Tests for the library                            |
-| ``src/unix``           | Common ``UNIX-like`` codes                       |
+| **Directory level**    |          **Here goes**                              |
+|:----------------------:|:---------------------------------------------------:|
+|     toplevel           | Main configuration and information files            |
+|   ``.github``          | Files related to github configuration               |
+| ``.github/workspaces`` | Configuration of ``CI`` stuff                       |
+|  ``doc``               | More specific documentation                         |
+|  ``doc/man1``          | ``Macgonuts`` tool man page                         |
+| ``etc``                | Miscellaneous stuff                                 |
+| ``src``                | Main source (library)                               |
+| ``src/binds``          | ``Macgonuts`` binds for other programming languages |
+| ``src/build``          | Build conveniences stuff                            |
+| ``src/cmd``            | Command line tool source code                       |
+| ``src/cmd/hooks``      | Source code for task hooks of ``CLI`` tool          |
+| ``src/cmd/test``       | Tests for the ``CLI`` tool                          |
+| ``src/freebsd``        | ``FreeBSD`` native code of main source (library)    |
+| ``src/libs``           | All dependencies used by ``Macgonuts`` code         |
+| ``src/linux``          | ``Linux`` native code of main source (library)      |
+| ``src/test``           | Tests for the library                               |
+| ``src/unix``           | Common ``UNIX-like`` codes                          |
 
 [``Back``](#topics)
 
