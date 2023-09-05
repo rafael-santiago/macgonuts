@@ -516,3 +516,28 @@ local function build_pybind() : result type int {
 
     result $err;
 }
+
+local function build_gobind() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+
+    if (hefesto.sys.cd("binds/go/v1") != 1) {
+        hefesto.sys.echo("ERROR: Unable to find gobind implementation.\n");
+        result 1;
+    }
+
+    hefesto.sys.echo("*** Now building macgonuts golang bind...\n");
+
+    var err type int;
+    $err = hefesto.sys.run("go build\n");
+
+    hefesto.sys.cd($oldcwd);
+
+    if ($err == 0) {
+        hefesto.sys.echo("*** success.\n");
+    } else {
+        hefesto.sys.echo("*** failure.\n");
+    }
+
+    result $err;
+}

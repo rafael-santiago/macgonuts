@@ -22,6 +22,8 @@ ifdef with-pybind
     LIBACCACIA_CFLAGS += -fPIC
 endif
 
+CURR_GOBIND_VERSION = v1
+
 SOURCES := $(wildcard *.c)
 SOURCES += $(wildcard unix/*.c)
 SOURCES += $(wildcard $(NATIVE_SRC)/*.c)
@@ -34,6 +36,9 @@ all: setup build_accacia $(BINARY)
 ifdef with-pybind
 	ar -r $(LIBDIR)/libmacgonutssock.a
 	cd binds/py && rm -rf build && rm -f macgonuts.c && python setup.py build_ext --inplace
+endif
+ifdef with-gobind
+	cd binds/go/$(CURR_GOBIND_VERSION) && go build
 endif
 
 setup:

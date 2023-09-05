@@ -12,7 +12,7 @@ from Cython.Build import cythonize
 setup(
     name = 'macgonuts_pybind',
     ext_modules=cythonize([
-        Extension("macgonuts_pybind", ["macgonuts.pyx", "macgonuts_pybind.c"],
+        Extension("macgonuts_pybind", ["macgonuts.pyx", "macgonuts_pybind.c", "../macgonuts_binds.c"],
                   include_dirs=['../..'],
                   library_dirs=['../../../lib','../../libs/accacia/lib'],
                   libraries=['macgonuts', 'macgonutssock','accacia']),
