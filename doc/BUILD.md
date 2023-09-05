@@ -18,6 +18,7 @@ fresh ``macgonuts`` binary to get your stuff done, you can give ``the low-cost b
     - [Building the debian package](#building-the-debian-package)
     - [Building the binds](#building-the-binds)
         - [pybind](#pybind)
+        - [gobind](#gobind)
 
 ## Getting newest macgonuts source code revision
 
@@ -208,6 +209,8 @@ Take a look at **Table 1** to know all build options supported by the ``Hefesto`
 |``--genhtml-outpath``|   value   | Specifies a file path for the ``LCOV`` coverage report                              |
 | ``--toolset``       |   value   | Specifies the name of wanted compiler, can being ``gcc`` or ``clang``               |
 | ``--debian-pkg``    |   flag    | Runs the debian packaging build task                                                |
+| ``--with-pybind``   |   flag    | Includes ``Python``'s bind compilation in the main build task                       |
+| ``--with-gobind``   |   flag    | Includes ``Golang``'s bind compilation in the main build task                       |
 
 [``Back``](#topics)
 
@@ -273,9 +276,25 @@ When using the ``low-cost`` build you also need to be into ``src`` sub-directory
 build parameter ``with-pybind``:
 
 ```
-you@somewhere-over-the-rainbow:~/macgonuts/src# make with-pybind
+you@somewhere-over-the-rainbow:~/macgonuts/src# make with-pybind=yes
 ```
 
 The ``python`` bind artifacts will be built into ``src/binds/py``.
 
 [``Back``](#topics)
+
+### gobind
+
+In order to build ``Macgonuts`` ``Golang`` bind by using the ``developer's`` build you need to invoke ``Hefesto`` passing
+the option ``--with-gobind`` (supposing you are into ``src`` sub-directory):
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# hefesto --with-gobind
+```
+
+If you want to use ``low-cost`` build instead, also being into ``src`` sub-directory, call ``make`` defining the build
+parameter ``with-gobind``:
+
+```
+you@somewhere-over-the-rainbow:~/macgonuts/src# make with-gobind=yes
+```

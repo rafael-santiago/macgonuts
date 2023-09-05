@@ -82,6 +82,10 @@ macgonuts-static-lib.epilogue() {
         if ($option.count() > 0) {
             $subprojects.add_item("pybind");
         }
+        $option = hefesto.sys.get_option("with-gobind");
+        if ($option.count() > 0) {
+            $subprojects.add_item("gobind");
+        }
         if (build_projects($subprojects) == 0) {
             $option = hefesto.sys.get_option("coverage");
             if ($option.count() > 0) {
