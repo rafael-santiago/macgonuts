@@ -10,5 +10,5 @@
 *.o/
 coverage.info
 **/binds/py/*.so
-**/binds/py/macgonuts.c
+**/binds/py/macgonuts_pybind.c
 **/binds/py/build

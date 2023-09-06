@@ -503,7 +503,7 @@ local function build_pybind() : result type int {
     hefesto.sys.echo("*** Now building macgonuts_pybind...\n");
 
     var err type int;
-    $err = hefesto.sys.run("rm -rf build && rm -f macgonuts.c && " +
+    $err = hefesto.sys.run("rm -rf build && rm -f macgonuts_pybind.c && " +
                            "python setup.py build_ext --inplace");
 
     hefesto.sys.cd($oldcwd);
