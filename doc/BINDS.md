@@ -6,7 +6,7 @@ Details about how to build is not discussed here, take a look at `doc/BUILD.md`.
 ## Topics
 
 - [What is available until now](#what-is-available-until-now)
-- [Using `macgonuts_pybind`](#using-macgonuts_pybind)
+- [Using `macgonuts` from `Python`](#using-macgonuts-from-python)
 - [Using `macgonuts` from `Golang`](#using-macgonuts-from-golang)
 
 ## What is available until now
@@ -26,15 +26,15 @@ Until now `macgonuts` features binds for `Python`.
 
 [``Back``](#topics)
 
-## Using `macgonuts_pybind`
+## Using `macgonuts` from `Python`
 
-Once it build and well-installed, it is fairly simple to use `macgonuts_pyind` module.
+Once it build and well-installed, it is fairly simple to use `macgonuts` module.
 The functions present in this module are:
 
-- `macgonuts_spoof()`
-- `macgonuts_undo_spoof()`
+- `spoof()`
+- `undo_spoof()`
 
-The `macgonuts_spoof()` function can receive five arguments:
+The `spoof()` function can receive five arguments:
 
 - `lo_iface` is the name of the interface you are accessing the network.
 - `target_addr` is the network address of the target, it can be a `IPv4` or `IPv6` address.
@@ -42,7 +42,7 @@ The `macgonuts_spoof()` function can receive five arguments:
 - `fake_pkts_amount` is the total of spoofed packets sent to target, it defaults to one.
 - `timeout` is the timeout in `mss` between a spoofed packet and the next, it defauts to no timeout.
 
-The `macgonuts_undo_spoof()` undoes a previous promoted spoof attack against a specific target.
+The `undo_spoof()` undoes a previous promoted spoof attack against a specific target.
 This function expects three arguments:
 
 - `lo_iface` is the name of the interface you are accessing the network.
@@ -52,37 +52,37 @@ This function expects three arguments:
 Follows the general idea when using `macgonuts` spoofing primitives from `Python`:
 
 ```python
-import macgonuts_pybind
+import macgonuts
 
 (...)
 
 # INFO(Rafael): Send one fake ARP packet to 192.168.5.142.
-if macgonuts_pybind.macgonuts_spoof('eth0', '192.168.5.142', '192.168.5.1') != 0:
+if macgonuts.spoof('eth0', '192.168.5.142', '192.168.5.1') != 0:
     print('error when trying to spoof.\n');
     (...)
 
 (...)
 
 # INFO(Rafael): Send 200 fake NDP packets to dead::beef:1 at each 500 mss.
-if macgonuts_pybind.macgonuts_spoof('eth1',
-                                    'dead::beef::8e',
-                                    'dead::beef:1', 200, 500) != 0:
+if macgonuts.spoof('eth1', 'dead::beef::8e', 'dead::beef:1', 200, 500) != 0:
     print('error when trying to spoof.\n');
     (...)
 
 (...)
 
 # INFO(Rafael): Now undoing all promoted spoofing attacks.
-if macgonuts_undo_spoof('eth0', '192.168.5.142', '192.168.5.1') != 0:
+if macgonuts.undo_spoof('eth0', '192.168.5.142', '192.168.5.1') != 0:
     print('unable to undo spoof attack done from eth0')
     (...)
 
-if macgonuts_undo_spoof('eth1', 'dead::beef:8e', 'dead::beef:1') != 0:
+if macgonuts.undo_spoof('eth1', 'dead::beef:8e', 'dead::beef:1') != 0:
     print('unable to undo spoof attack done from eth1')
     (...)
 
 (...)
 ```
+
+You also can check a more complete sample at `src/binds/py/sample.py`.
 
 [``Back``](#topics)
 

@@ -10,9 +10,9 @@ from distutils.extension import Extension
 from Cython.Build import cythonize
 
 setup(
-    name = 'macgonuts_pybind',
+    name = 'macgonuts',
     ext_modules=cythonize([
-        Extension("macgonuts_pybind", ["macgonuts.pyx", "macgonuts_pybind.c", "../macgonuts_binds.c"],
+        Extension("macgonuts", ["macgonuts_pybind.pyx", "macgonuts.c", "../macgonuts_binds.c"],
                   include_dirs=['../..'],
                   library_dirs=['../../../lib','../../libs/accacia/lib'],
                   libraries=['macgonuts', 'macgonutssock','accacia']),

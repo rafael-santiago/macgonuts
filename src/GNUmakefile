@@ -35,7 +35,7 @@ all: setup build_accacia $(BINARY)
 	cd cmd && $(MAKE)
 ifdef with-pybind
 	ar -r $(LIBDIR)/libmacgonutssock.a
-	cd binds/py && rm -rf build && rm -f macgonuts.c && python setup.py build_ext --inplace
+	cd binds/py && rm -rf build && rm -f macgonuts_pybind.c && python setup.py build_ext --inplace
 endif
 ifdef with-gobind
 	cd binds/go/$(CURR_GOBIND_VERSION) && go build

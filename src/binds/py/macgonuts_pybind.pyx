@@ -8,14 +8,16 @@
 
 """ Macgonuts general spoofing utilities binds for Python """
 
-cdef extern from "macgonuts_pybind.h":
+import sys
+
+cdef extern from "macgonuts.h":
     int macgonuts_pybind_spoof(char *lo_iface, char *target_addr, char *addr2spoof,
                                int fake_pkts_amount, int timeout);
 
-cdef extern from "macgonuts_pybind.h":
+cdef extern from "macgonuts.h":
     int macgonuts_pybind_undo_spoof(char *lo_iface, char *target_addr, char *addr2spoof);
 
-def macgonuts_spoof(lo_iface, target_addr, addr2spoof, fake_pkts_amount = 1, timeout = 0):
+def spoof(lo_iface, target_addr, addr2spoof, fake_pkts_amount = 1, timeout = 0):
     """The python wrapper for macgonuts_spoof() C function
 
     By using this function you can easily promote a spoofing attack based on IPv4 or IPv6.
@@ -30,12 +32,17 @@ def macgonuts_spoof(lo_iface, target_addr, addr2spoof, fake_pkts_amount = 1, tim
 
     It returns zero on success and non-zero value on failure, besides writing some error description to stderr.
     """
-    return macgonuts_pybind_spoof(bytes(lo_iface, 'ascii'),
-                                  bytes(target_addr, 'ascii'),
-                                  bytes(addr2spoof, 'ascii'),
+    if sys.version_info >= (3,):
+        return macgonuts_pybind_spoof(bytes(lo_iface, 'ascii'),
+                                      bytes(target_addr, 'ascii'),
+                                      bytes(addr2spoof, 'ascii'),
+                                      fake_pkts_amount, timeout)
+    return macgonuts_pybind_spoof(bytes(lo_iface),
+                                  bytes(target_addr),
+                                  bytes(addr2spoof),
                                   fake_pkts_amount, timeout)
 
-def macgonuts_undo_spoof(lo_iface, target_addr, addr2spoof):
+def undo_spoof(lo_iface, target_addr, addr2spoof):
     """The python wrapper for macgonuts_undo_spoof() C function
 
     By using this function you can easily undo a previous promoted spoofing attack based on IPv4 or IPV6.
@@ -48,6 +55,10 @@ def macgonuts_undo_spoof(lo_iface, target_addr, addr2spoof):
 
     It returns zero on success and non-zero value on failure, besides writing some error description to stderr.
     """
-    return macgonuts_pybind_undo_spoof(bytes(lo_iface, 'ascii'),
-                                       bytes(target_addr, 'ascii'),
-                                       bytes(addr2spoof, 'ascii'))
+    if sys.version_info >= (3,):
+        return macgonuts_pybind_undo_spoof(bytes(lo_iface, 'ascii'),
+                                           bytes(target_addr, 'ascii'),
+                                           bytes(addr2spoof, 'ascii'))
+    return macgonuts_pybind_undo_spoof(bytes(lo_iface),
+                                       bytes(target_addr),
+                                       bytes(addr2spoof))
