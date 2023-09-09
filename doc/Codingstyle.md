@@ -34,6 +34,9 @@ as 8 spaces, maybe due to a different "base" of Truth...).
 
 4. Yes, ``80`` columns is such a really short limit, try not to exceed ``120``!
 
+5. Use ``UNIX`` format (I meant line endings...) for all files, avoid ``DOS`` format. Try to find out how to deal with it
+   by using ``git`` or use ``dos2unix`` tool, but do not push ``DOS`` formatted files, please. Thanks! :wink:
+
 ## Header files
 
 1. Header files have to start with a copyright disclaimer (that you can get from ``macgonuts_types.h``, for example).
