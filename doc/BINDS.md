@@ -49,6 +49,9 @@ This function expects three arguments:
 - `target_addr` is the network address of the target, it can be a `IPv4` or `IPv6` address.
 - `addr2spoof` is the address that was spoofed at target, it can be a `IPv4` or `IPv6` address.
 
+In order to check the version of the bind stuff you can call the `version()` function.
+It returns a string. It follows the main version of the project.
+
 Follows the general idea when using `macgonuts` spoofing primitives from `Python`:
 
 ```python

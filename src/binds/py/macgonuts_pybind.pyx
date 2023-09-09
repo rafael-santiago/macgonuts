@@ -62,3 +62,7 @@ def undo_spoof(lo_iface, target_addr, addr2spoof):
     return macgonuts_pybind_undo_spoof(bytes(lo_iface),
                                        bytes(target_addr),
                                        bytes(addr2spoof))
+
+def version():
+    """ Returns the version of the bind stuff. """
+    return "v1"
