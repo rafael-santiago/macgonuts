@@ -47,3 +47,6 @@ also instruct people about network security issues by using this software showin
 the attacks proposed here. Use it as a classroom lab tool, too. Well, spread your knowledge! Thank you!
 
 **Obvious but always good to remember**: all opinions expressed here are my own and not the views of my employers.
+
+**Last but not least**: I do not provide pre-builts, if you have found any pre-built of ``macgonuts`` somewhere,
+I **do not** endorse it.
