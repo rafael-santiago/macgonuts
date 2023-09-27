@@ -815,7 +815,7 @@ Well, now you master anything about silence, congrats!
 ><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
  If you want to deny `SLAAC` based `link-local` address atribution in an `IPv6` network or being more straightforward if you
-want to promote a `DoS` attack by exploiting `DAD`. "Let's go baby, let's go bad, you should give try to ma-ma-ma-maddady" :stuck_out_tongue_winking_eye:
+want to promote a `DoS` attack by exploiting `DAD`. "Let's go baby, let's go bad, you should give a try to ma-ma-ma-maddady" :stuck_out_tongue_winking_eye:
 
 The `maddaddy` is a pretty straightforward command. All it expects is the interface that you use to access the `IPv6` available
 in your network environment.
