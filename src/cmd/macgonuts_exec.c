@@ -17,6 +17,7 @@
 #include <cmd/macgonuts_dnsspoof_task.h>
 #include <cmd/macgonuts_xablau_task.h>
 #include <cmd/macgonuts_caleaboqui_task.h>
+#include <cmd/macgonuts_maddaddy_task.h>
 #include <cmd/macgonuts_version_task.h>
 #include <cmd/macgonuts_banners.h>
 #include <macgonuts_status_info.h>
@@ -49,6 +50,7 @@ struct macgonuts_task_ctx {
     MACGONUTS_CMD_REGISTER_TASK(dnsspoof),
     MACGONUTS_CMD_REGISTER_TASK(xablau),
     MACGONUTS_CMD_REGISTER_TASK(caleaboqui),
+    MACGONUTS_CMD_REGISTER_TASK(maddaddy),
     MACGONUTS_CMD_REGISTER_TASK_ALIAS(xablau, neighscan),
     MACGONUTS_CMD_REGISTER_TASK_ALIAS(caleaboqui, shh),
     MACGONUTS_CMD_REGISTER_TASK(version),
