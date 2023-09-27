@@ -16,6 +16,7 @@
     - [The dnsspoof command](#the-dnsspoof-command)
     - [The xablau command](#the-xablau-command)
     - [The caleaboqui command](#the-caleaboqui-command)
+    - [The maddaddy command](#the-maddaddy-command)
 - [Catsparrow's ``macgonuts`` commands cheat sheet](#catsparrows-macgonuts-commands-cheat-sheet)
 
 ## What does ``macgonuts`` is for?
@@ -53,7 +54,7 @@ In **Figure 1** you can see a typical conference listener :satisfied:
 <p align="center">
 <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/sloth_yawm.gif" title="Zzzz..."
          alt="'- Questions? - Questions? - Gimme a question, pleeease?!'" width="320" /><br>
-<b>Figure 1</b>: In this figure you see a "hacker" self-claimed "Casanova" at<br>
+<b>Figure 1</b>: In this figure you see a "hacker" self-claimed "KaZaan0va" at<br>
     <i>the most interesting part of a sleepines... oh! tech talk</i>.
 </p>
 
@@ -809,6 +810,52 @@ Well, now you master anything about silence, congrats!
 
 [``Back``](#topics)
 
+### The maddaddy command
+
+><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
+     alt="Grrrr! C4uTion is now logged in..." width="70" />
+ If you want to deny `SLAAC` based `link-local` address atribution in an `IPv6` network or being more straightforward if you
+want to promote a `DoS` attack by exploiting `DAD`. "Let's go baby, let's go bad, you should give try to ma-ma-ma-maddady" :stuck_out_tongue_winking_eye:
+
+The `maddaddy` is a pretty straightforward command. All it expects is the interface that you use to access the `IPv6` available
+in your network environment.
+
+Yeah, ridiculous but: story time!!!!
+
+Once upon time `GooGoo`. He hated network addresses in hexadecimal format and made up his mind about deny any device in his
+network of using this bad idea. Otherwise he would use name callings in `IPv6` addresses as a kind of mnemonics, since
+`GooGoo` was a well-behaved guy, he decided to promote a `DoS` on `IPv6` with his favorite `macgonuts`' command: `maddaddy`.
+
+So all `GooGoo` did was:
+
+```
+GooGoo@OffTheRoad:~# macgonuts maddaddy --lo-iface=eth0
+```
+
+At this point `GooGoo` started to listen to `neighbor solicitation` in a certain addressing range and when it found
+`GooGoo` mocked fake `neighbor advertisements` by avoiding new hosts of ingressing in the network with a valid `IPv6`
+address. As a result no hosts will be automatically configured by `SLAAC`. Muahauhauahuahauhaua!
+
+However, let's supose that `GooGoo` had specific targets. So only those targets should be blocked of ingressing in the network.
+Well all `GooGoo` needed to use was the `--targets` option. This option expects `MAC` addresses separated by comma.
+Take a look:
+
+```
+GooGoo@OffTheRoad:~# macgonuts maddaddy --lo-iface=eth0 \
+> --targets=00:11:22:33:44:55,AA:BB:CC:DD:EE:00,ab:cd:ef:12:23:56
+```
+
+From now on only the hosts using the indicated `MAC` address would be blocked.
+
+So `maddaddy` causes in the target hosts a `"dadfailed"` by making the hosts of automatically be able to have the minimal
+link-local addressing to boot up `IPv6`. You know, `maddaddy` is a kind of bad command for bad people...
+
+Well, if you did not notice yet, `maddaddy` is a humble tribute to one of my favorite rock bands ever: `The Cramps`!
+
+Congrats! Now you are a master of `ma-ma ma-ma ma-ma-mad daddy`! :satisfied: :sunglasses:
+
+[``Back``](#topics)
+
 ## Catsparrow's ``macgonuts`` commands cheat sheet
 
 > <img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/catsparrow.gif" title="Grrrr! C4uTion is now logged in..."
@@ -826,11 +873,12 @@ exploiting addressing resolution on `IPv4/IPv6` networks around, "yo-ho-ho!" :ro
 |:-------------:|:-------------------------:|
 | I need to make a host thinks that I am another host, so I can manipulate this traffic somehow | `spoof` |
 | I need to capture the session between two hosts into my `LAN` or segmented `LAN` | `eavesdrop` |
-| I need to avoid n hosts to talk to one | `isolate` |
+| I need to avoid `n` hosts to talk to one | `isolate` |
 | I need to spread disorder into my `LAN` by making it unstable | `mayhem` |
 | I need to redirect a host to another host through a fake `FQDN` resolution | `dnsspoof` |
 | I need to discover possible targets into my `LAN` | `xablau` (or its alias `neighscan`) |
 | I need to avoid internet access from a single host or multiple hosts | `caleaboqui` (or its alias `shh`) |
+| I need to make any host in my `IPv6 LAN` be unable to get a valid `link-local` | `maddaddy` |
 | I need to know what `macgonuts` version I am running | `version` |
 | I need some help | `help` |
 

@@ -38,8 +38,8 @@ red teams. *Once it stated, when using this tool you are assuming that any damag
 law infringements that some wrong action taken by you could cause is of your entire responsibility*.
 
 **Sponsoring**:  I have not been running this project for profit. It is only a thing that I do at my spare time. It is a
-weekend project. I try to evolve it according to necessities I have been facing up during my information security
-professional career. If you liked it or it is being useful to you somehow and you really want to contribute
+weekend project. A pet project. I try to evolve it according to necessities I have been facing up during my information
+security professional career. If you liked it or it is being useful to you somehow and you really want to contribute
 with money, try to redirect it to a local charity institution, an ONG of your choice or even your own community.
 You can also do [pull requests](https://github.com/rafael-santiago/macgonuts/pulls) proposing improvements.
 Do some [bug report](https://github.com/rafael-santiago/macgonuts/issues) if a bug is annoying you. Maybe you should
