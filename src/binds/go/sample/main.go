@@ -17,7 +17,7 @@ import (
 
 func main() {
 	if len(os.Args) < 4 {
-		fmt.Fprintf(os.Stderr, "use: %s <iface> <target-ip> <address-to-spoof> [ <packets-total> <timeout in mss> ]",
+		fmt.Fprintf(os.Stderr, "use: %s <iface> <target-ip> <address-to-spoof> [ <packets-total> <timeout in mss> ]\n",
 			os.Args[0])
 		os.Exit(1)
 	}

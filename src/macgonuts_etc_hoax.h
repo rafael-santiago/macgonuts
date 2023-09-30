@@ -16,7 +16,7 @@ macgonuts_etc_hoax_handle *macgonuts_open_etc_hoax(const char *filepath);
 
 void macgonuts_close_etc_hoax(macgonuts_etc_hoax_handle *etc_hoax);
 
-int macgonuts_gethostbyname(uint8_t *in_addr, const size_t in_addr_max_size, size_t *in_addr_size,
+int macgonuts_gethoaxbyname(uint8_t *in_addr, const size_t in_addr_max_size, size_t *in_addr_size,
                             macgonuts_etc_hoax_handle *etc_hoax, const char *name, const size_t name_size);
 
 #endif // MACGONUTS_ETC_HOAX_H

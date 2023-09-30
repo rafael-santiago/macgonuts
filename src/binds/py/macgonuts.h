@@ -13,4 +13,6 @@ int macgonuts_pybind_spoof(char *lo_iface, char *target_addr, char *addr2spoof,
 
 int macgonuts_pybind_undo_spoof(char *lo_iface, char *target_addr, char *addr2spoof);
 
+void macgonuts_pybind_version(char *version);
+
 #endif // MACGONUTS_BINDS_PY_MACGONUTS_H

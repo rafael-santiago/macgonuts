@@ -34,7 +34,7 @@ int macgonuts_dnsspoof_redirect_hook(struct macgonuts_spoofing_guidance_ctx *spf
     } else {
         spoofed_hostname = macgonuts_get_dns_qname_from_ethernet_frame(ethfrm, ethfrm_size);
         if (spoofed_hostname != NULL
-            && !(macgonuts_gethostbyname(&in_addr[0], spfgd->layers.proto_addr_size, &in_addr_size,
+            && !(macgonuts_gethoaxbyname(&in_addr[0], spfgd->layers.proto_addr_size, &in_addr_size,
                                       macgonuts_dnsspoof_etc_hoax(spfgd),
                                       spoofed_hostname, strlen(spoofed_hostname)) == EXIT_SUCCESS
                  && macgonuts_raw_ip2literal(&lit_addr[0], sizeof(lit_addr) - 1,

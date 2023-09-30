@@ -333,7 +333,7 @@ static int do_dnsspoof_layer4to7(struct macgonuts_udphdr_ctx *udphdr,
 
     err = ENOENT;
     for (qp = dnshdr->qd; qp != NULL && err != EXIT_SUCCESS; qp = qp->next) {
-        err = macgonuts_gethostbyname(in_addr, kWantedInAddrSize[(ip_version == 4)], &in_addr_size, etc_hoax,
+        err = macgonuts_gethoaxbyname(in_addr, kWantedInAddrSize[(ip_version == 4)], &in_addr_size, etc_hoax,
                                       (char *)qp->name, qp->name_size);
     }
 

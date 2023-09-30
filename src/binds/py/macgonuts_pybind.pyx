@@ -17,6 +17,9 @@ cdef extern from "macgonuts.h":
 cdef extern from "macgonuts.h":
     int macgonuts_pybind_undo_spoof(char *lo_iface, char *target_addr, char *addr2spoof);
 
+cdef extern from "macgonuts.h":
+    void macgonuts_pybind_version(char *version);
+
 def spoof(lo_iface, target_addr, addr2spoof, fake_pkts_amount = 1, timeout = 0):
     """The python wrapper for macgonuts_spoof() C function
 
@@ -65,4 +68,6 @@ def undo_spoof(lo_iface, target_addr, addr2spoof):
 
 def version():
     """ Returns the version of the bind stuff. """
-    return "v1"
+    cdef char buf[256]
+    macgonuts_pybind_version(buf);
+    return bytes(buf).decode('ascii')

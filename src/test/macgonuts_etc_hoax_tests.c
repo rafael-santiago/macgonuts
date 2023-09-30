@@ -66,22 +66,22 @@ CUTE_TEST_CASE(macgonuts_etc_hoax_tests)
     fclose(fp);
     etc_hoax_handle = macgonuts_open_etc_hoax("etc-hoax");
     CUTE_ASSERT(etc_hoax_handle != NULL);
-    CUTE_ASSERT(macgonuts_gethostbyname(NULL, sizeof(in_addr), &in_addr_size, etc_hoax_handle, "abc", 3) == EINVAL);
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, 0, &in_addr_size, etc_hoax_handle, "abc", 3) == EINVAL);
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), NULL, etc_hoax_handle, "abc", 3) == EINVAL);
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size, NULL, "abc", 3) == EINVAL);
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax_handle, NULL, 3) == EINVAL);
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax_handle, "abc", 0) == EINVAL);
+    CUTE_ASSERT(macgonuts_gethoaxbyname(NULL, sizeof(in_addr), &in_addr_size, etc_hoax_handle, "abc", 3) == EINVAL);
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, 0, &in_addr_size, etc_hoax_handle, "abc", 3) == EINVAL);
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, sizeof(in_addr), NULL, etc_hoax_handle, "abc", 3) == EINVAL);
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, sizeof(in_addr), &in_addr_size, NULL, "abc", 3) == EINVAL);
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax_handle, NULL, 3) == EINVAL);
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, sizeof(in_addr), &in_addr_size, etc_hoax_handle, "abc", 0) == EINVAL);
     while (test != test_end) {
-        CUTE_ASSERT(macgonuts_gethostbyname(in_addr, test->expected_in_addr_size, &in_addr_size,
+        CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, test->expected_in_addr_size, &in_addr_size,
                                             etc_hoax_handle, test->name, strlen(test->name)) == EXIT_SUCCESS);
         CUTE_ASSERT(in_addr_size == test->expected_in_addr_size);
         CUTE_ASSERT(memcmp(in_addr, test->expected_in_addr, in_addr_size) == 0);
         test++;
     }
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size,
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, sizeof(in_addr), &in_addr_size,
                                         etc_hoax_handle, "404", 3) == ENOENT);
-    CUTE_ASSERT(macgonuts_gethostbyname(in_addr, sizeof(in_addr), &in_addr_size,
+    CUTE_ASSERT(macgonuts_gethoaxbyname(in_addr, sizeof(in_addr), &in_addr_size,
                                         etc_hoax_handle, "commented.io", 12) == ENOENT);
     macgonuts_close_etc_hoax(etc_hoax_handle);
     remove("etc-hoax");
