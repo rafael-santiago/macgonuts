@@ -20,10 +20,6 @@ import (
 	"fmt"
 )
 
-// Indicates the current version of the bind stuff. Always it is directly
-// linked to Macgonuts main release version.
-const kMacgonutsGoBindVersion string = "v1"
-
 // The Golang bind for macgonuts_spoof() function from libmacgonuts.
 // By using this function you can easily promote a spoofing attack based on IPv4 or IPv6. It receives:
 // - the local interface label (loIface)
@@ -78,5 +74,5 @@ func UndoSpoof(loIface, targetAddr, addr2Spoof string) error {
 
 // Returns the version of the bind stuff.
 func Version() string {
-	return kMacgonutsGoBindVersion
+	return C.MACGONUTS_VERSION
 }

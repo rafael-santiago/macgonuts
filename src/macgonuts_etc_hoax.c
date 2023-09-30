@@ -201,7 +201,7 @@ macgonuts_open_etc_hoax_epilogue:
     return etc_hoax_handle;
 }
 
-int macgonuts_gethostbyname(uint8_t *in_addr, const size_t in_addr_max_size, size_t *in_addr_size,
+int macgonuts_gethoaxbyname(uint8_t *in_addr, const size_t in_addr_max_size, size_t *in_addr_size,
                             macgonuts_etc_hoax_handle *etc_hoax, const char *name, const size_t name_size) {
     const macgonuts_etc_hoax_handle *ep = NULL;
     const struct macgonuts_ht_glob_ctx *hp = NULL;

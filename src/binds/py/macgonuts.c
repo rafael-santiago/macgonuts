@@ -9,7 +9,6 @@
 #include <macgonuts_status_info.h>
 #include <binds/macgonuts_binds.h>
 
-
 int macgonuts_pybind_spoof(char *lo_iface, char *target_addr, char *addr2spoof,
                            int fake_pkts_amount, int timeout) {
     if (lo_iface == NULL
@@ -31,4 +30,8 @@ int macgonuts_pybind_undo_spoof(char *lo_iface, char *target_addr, char *addr2sp
     }
 
     return macgonuts_binds_undo_spoof(lo_iface, target_addr, addr2spoof);
+}
+
+void macgonuts_pybind_version(char *version) {
+    snprintf(version, 3, "%s", MACGONUTS_VERSION);
 }

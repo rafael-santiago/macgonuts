@@ -814,15 +814,15 @@ Well, now you master anything about silence, congrats!
 
 ><img src="https://github.com/rafael-santiago/macgonuts/blob/main/etc/angry-hiss.gif" title="Grrrr! C4uTion is now logged in..."
      alt="Grrrr! C4uTion is now logged in..." width="70" />
- If you want to deny `SLAAC` based `link-local` address atribution in an `IPv6` network or being more straightforward if you
+ If you want to deny `SLAAC` based `link-local` address attribution in an `IPv6` network or being more straightforward if you
 want to promote a `DoS` attack by exploiting `DAD`. "Let's go baby, let's go bad, you should give a try to ma-ma-ma-maddady" :stuck_out_tongue_winking_eye:
 
-The `maddaddy` is a pretty straightforward command. All it expects is the interface that you use to access the `IPv6` available
-in your network environment.
+The `maddaddy` is a pretty straightforward command. All it expects is the interface that you use to access `IPv6`
+stuff in your network environment.
 
 Yeah, ridiculous but: story time!!!!
 
-Once upon time `GooGoo`. He hated network addresses in hexadecimal format and made up his mind about deny any device in his
+Once upon time `GooGoo`. He hated network addresses in hexadecimal format and made up his mind about denying any device in his
 network of using this bad idea. Otherwise he would use name callings in `IPv6` addresses as a kind of mnemonics, since
 `GooGoo` was a well-behaved guy, he decided to promote a `DoS` on `IPv6` with his favorite `macgonuts`' command: `maddaddy`.
 
@@ -832,12 +832,12 @@ So all `GooGoo` did was:
 GooGoo@OffTheRoad:~# macgonuts maddaddy --lo-iface=eth0
 ```
 
-At this point `GooGoo` started to listen to `neighbor solicitation` in a certain addressing range and when it found
+At this point `GooGoo` started to listen to `neighbor solicitations` in a certain addressing range and when it found,
 `GooGoo` mocked fake `neighbor advertisements` by avoiding new hosts of ingressing in the network with a valid `IPv6`
 address. As a result no hosts will be automatically configured by `SLAAC`. Muahauhauahuahauhaua!
 
 However, let's supose that `GooGoo` had specific targets. So only those targets should be blocked of ingressing in the network.
-Well all `GooGoo` needed to use was the `--targets` option. This option expects `MAC` addresses separated by comma.
+Well all `GooGoo` needed was the `--targets` option. This option expects `MAC` addresses separated by comma.
 Take a look:
 
 ```
@@ -845,10 +845,10 @@ GooGoo@OffTheRoad:~# macgonuts maddaddy --lo-iface=eth0 \
 > --targets=00:11:22:33:44:55,AA:BB:CC:DD:EE:00,ab:cd:ef:12:23:56
 ```
 
-From now on only the hosts using the indicated `MAC` address would be blocked.
+From now on only the hosts using the indicated `MAC` addresses would be blocked.
 
-So `maddaddy` causes in the target hosts a `"dadfailed"` by making the hosts of automatically be able to have the minimal
-link-local addressing to boot up `IPv6`. You know, `maddaddy` is a kind of bad command for bad people...
+So `maddaddy` causes in the target hosts a `"dadfailed"` by making the hosts of automatically be unable to have a minimal
+link-local addressing to boot up `IPv6`. You know, `maddaddy` is a kind of `bad command for bad people`...
 
 Well, if you did not notice yet, `maddaddy` is a humble tribute to one of my favorite rock bands ever: `The Cramps`!
 
