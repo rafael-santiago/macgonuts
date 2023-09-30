@@ -1,0 +1,21 @@
+1. Latest releases are on the top.
+2. The versions are cumulative, any feature drop is informed.
+3. Usually, I try to do my best in order to bring you 'RELNOTES' instead of notes from hell ;)
+
+    Rafael
+--
+
+v1 [git-tag: 'v1']
+
+    First release.
+
+    Features:
+
+        - Command line tool featuring the following exploitation tasks: spoof, eveasdrop,
+          isolate, mayhem, dnsspoof, xablau (a.k.a neighscan), caleaboqui (a.k.a shh), maddaddy.
+        - Python minimal bind.
+        - Golang minimal bind.
+
+    Bugfixes:
+
+        - None yet.
